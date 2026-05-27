@@ -1,0 +1,222 @@
+<script setup lang="ts">
+import { usePropertyState } from '~/composables/usePropertyState'
+
+definePageMeta({
+  layout: 'dashboard',
+})
+
+const { activePropertyId } = usePropertyState()
+
+const tenants = ref<any[]>([])
+const availableRooms = ref<any[]>([])
+const isLoading = ref(false)
+const isCreating = ref(false)
+const editingId = ref<string | null>(null)
+
+const formData = reactive({
+  roomId: '',
+  name: '',
+  phone: '',
+  checkIn: ''
+})
+
+const fetchTenants = async () => {
+  isLoading.value = true
+  try {
+    const propertyQuery = activePropertyId.value ? `?propertyId=${activePropertyId.value}` : ''
+    const res = await $fetch<any>(`/api/tenants${propertyQuery}`)
+    if (res.success) {
+      tenants.value = res.data
+    }
+  } catch (err) {
+    console.error('Failed to fetch tenants', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const fetchAvailableRooms = async () => {
+  if (!activePropertyId.value) return
+  try {
+    const res = await $fetch<any>(`/api/rooms?propertyId=${activePropertyId.value}`)
+    if (res.success) {
+      availableRooms.value = res.data.filter((r: any) => r.status === 'available')
+    }
+  } catch (err) {
+    console.error('Failed to fetch rooms', err)
+  }
+}
+
+watch(activePropertyId, () => {
+  fetchTenants()
+  fetchAvailableRooms()
+}, { immediate: true })
+
+const startEdit = (tenant: any) => {
+  editingId.value = tenant.id
+  formData.roomId = tenant.roomId // Not editable usually, but keep for state
+  formData.name = tenant.name
+  formData.phone = tenant.phone || ''
+  formData.checkIn = new Date(tenant.checkIn).toISOString().split('T')[0]
+}
+
+const cancelEdit = () => {
+  editingId.value = null
+  formData.roomId = ''
+  formData.name = ''
+  formData.phone = ''
+  formData.checkIn = ''
+}
+
+const submitTenant = async () => {
+  if (!activePropertyId.value || !formData.name || !formData.checkIn) return
+  isCreating.value = true
+  
+  try {
+    if (editingId.value) {
+      await $fetch(`/api/tenants/${editingId.value}`, {
+        method: 'PATCH',
+        body: {
+          action: 'update',
+          name: formData.name,
+          phone: formData.phone,
+          checkIn: formData.checkIn
+        }
+      })
+    } else {
+      if (!formData.roomId) return
+      await $fetch('/api/tenants', {
+        method: 'POST',
+        body: {
+          propertyId: activePropertyId.value,
+          ...formData
+        }
+      })
+    }
+    
+    cancelEdit()
+    await fetchTenants()
+    await fetchAvailableRooms() // Refresh available rooms list
+  } catch (err: any) {
+    alert(err.data?.statusMessage || 'Failed to save tenant')
+  } finally {
+    isCreating.value = false
+  }
+}
+
+const checkoutTenant = async (id: string) => {
+  if (!confirm('Checkout penghuni ini? Kamar akan kembali tersedia.')) return
+  try {
+    await $fetch(`/api/tenants/${id}`, {
+      method: 'PATCH',
+      body: { action: 'checkout' }
+    })
+    await fetchTenants()
+    await fetchAvailableRooms()
+  } catch (err: any) {
+    alert(err.data?.statusMessage || 'Gagal melakukan checkout.')
+  }
+}
+
+const deleteTenant = async (id: string) => {
+  if (!confirm('Hapus data historis penghuni ini secara permanen?')) return
+  try {
+    await $fetch(`/api/tenants/${id}`, {
+      method: 'DELETE'
+    })
+    await fetchTenants()
+  } catch (err: any) {
+    alert(err.data?.statusMessage || 'Gagal menghapus data.')
+  }
+}
+</script>
+
+<template>
+  <div>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-slate-900 font-outfit">Tenant Directory</h1>
+    </div>
+    
+    <div v-if="!activePropertyId" class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-8 flex items-center gap-3">
+      <div class="flex-1">
+        <h2 class="font-bold text-sm">Mode Global View Aktif</h2>
+        <p class="text-xs">Menampilkan seluruh penghuni dari semua properti. Pilih properti spesifik di menu atas untuk menambah penghuni baru.</p>
+      </div>
+    </div>
+
+    <div v-if="activePropertyId" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
+      <h2 class="text-lg font-bold mb-4 font-outfit">{{ editingId ? 'Edit Tenant' : 'Onboard New Tenant' }}</h2>
+        <form @submit.prevent="submitTenant" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <div class="md:col-span-1" v-if="!editingId">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Assign Room</label>
+            <select v-model="formData.roomId" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors">
+              <option value="" disabled>Select Room</option>
+              <option v-for="room in availableRooms" :key="room.id" :value="room.id">{{ room.roomNumber }}</option>
+            </select>
+          </div>
+          <div :class="editingId ? 'md:col-span-2' : 'md:col-span-1'">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+            <input v-model="formData.name" type="text" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+          </div>
+          <div class="md:col-span-1">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+            <input v-model="formData.phone" type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+          </div>
+          <div class="md:col-span-1">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Check-in Date</label>
+            <input v-model="formData.checkIn" type="date" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+          </div>
+          <div class="md:col-span-1 flex gap-2">
+            <button v-if="editingId" type="button" @click="cancelEdit" class="w-full text-slate-600 hover:bg-slate-100 font-medium rounded-lg px-2 py-2.5 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" :disabled="isCreating || (!editingId && availableRooms.length === 0)" class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg px-2 py-2.5 transition-colors">
+              {{ isCreating ? 'Saving...' : (editingId ? 'Update' : 'Onboard') }}
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm text-left text-slate-500">
+          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th v-if="!activePropertyId" scope="col" class="px-6 py-3">Property</th>
+              <th scope="col" class="px-6 py-3">Room</th>
+              <th scope="col" class="px-6 py-3">Tenant Name</th>
+              <th scope="col" class="px-6 py-3">Phone</th>
+              <th scope="col" class="px-6 py-3">Check In</th>
+              <th scope="col" class="px-6 py-3">Status</th>
+              <th scope="col" class="px-6 py-3">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="isLoading">
+              <td colspan="6" class="px-6 py-8 text-center text-slate-500">Loading tenants...</td>
+            </tr>
+            <tr v-else-if="tenants.length === 0">
+              <td colspan="6" class="px-6 py-8 text-center text-slate-500">No tenants found for this property.</td>
+            </tr>
+            <tr v-for="tenant in tenants" :key="tenant.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
+              <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">{{ tenant.room?.property?.name || '-' }}</td>
+              <td class="px-6 py-4 font-bold text-slate-900">{{ tenant.room?.roomNumber }}</td>
+              <td class="px-6 py-4 font-medium text-slate-900">{{ tenant.name }}</td>
+              <td class="px-6 py-4">{{ tenant.phone || '-' }}</td>
+              <td class="px-6 py-4">{{ new Date(tenant.checkIn).toLocaleDateString() }}</td>
+              <td class="px-6 py-4">
+                <span v-if="tenant.isActive === 1" class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Active</span>
+                <span v-else class="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded border border-slate-200">Inactive</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex gap-2">
+                  <button @click="startEdit(tenant)" class="text-blue-600 hover:text-blue-800 font-medium text-xs">Edit</button>
+                  <button v-if="tenant.isActive === 1" @click="checkoutTenant(tenant.id)" class="text-amber-600 hover:text-amber-800 font-medium text-xs">Check Out</button>
+                  <button @click="deleteTenant(tenant.id)" class="text-rose-600 hover:text-rose-800 font-medium text-xs">Hapus</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  </div>
+</template>
