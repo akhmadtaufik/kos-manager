@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kosmanager-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    # CRITICAL: Enable Docker container to access host machine's PostgreSQL
+    # Required for Linux (Linux Mint) — maps host.docker.internal to host gateway
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - kosmanager-network
+
+networks:
+  kosmanager-network:
+    driver: bridge
