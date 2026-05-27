@@ -13,6 +13,7 @@ node_modules
 .env
 .env.local
 .env.*.local
+.env.example
 
 # IDE
 .vscode
@@ -32,3 +33,9 @@ server/db/migrations/meta/
 
 # Docker
 docker-compose.override.yml
+
+# etc
+prd.md
+.dockerignore
+README.md
+.antigravitycli/
