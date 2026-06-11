@@ -1,5 +1,5 @@
 import { generateMonthlyInvoices } from '../../services/payment.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId and billingMonth are required' })
   }
 
-  await requirePropertyAccess(event.context.user, propertyId)
+  await requirePropertyPermission(event.context.user, propertyId, 'manage_payments')
 
   const result = await generateMonthlyInvoices(propertyId, billingMonth, event.context.user.id)
   

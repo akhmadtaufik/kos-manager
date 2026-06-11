@@ -1,5 +1,5 @@
 import { markPaymentAsPaid } from '../../services/payment.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { db } from '../../db'
 import { payments } from '../../db/schema'
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Payment not found' })
   }
 
-  await requirePropertyAccess(event.context.user, payment.propertyId)
+  await requirePropertyPermission(event.context.user, payment.propertyId, 'manage_payments')
 
   const updated = await markPaymentAsPaid(id, event.context.user.id)
   
