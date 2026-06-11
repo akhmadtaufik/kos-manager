@@ -7,7 +7,7 @@ import { logActivity } from '../../utils/audit'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { propertyId, email } = body
+  const { propertyId, email, permissions } = body
 
   if (!propertyId || !email) {
     throw createError({ statusCode: 400, statusMessage: 'Property ID and Email are required' })
@@ -42,9 +42,11 @@ export default defineEventHandler(async (event) => {
   }
 
   // Assign to property
+  const defaultPermissions = ['manage_rooms', 'manage_tenants', 'manage_payments', 'manage_expenses', 'view_reports']
   await db.insert(userProperties).values({
     userId: targetUser.id,
-    propertyId: propertyId
+    propertyId: propertyId,
+    permissions: Array.isArray(permissions) ? permissions : defaultPermissions
   })
 
   // If role is pending, update to operator
