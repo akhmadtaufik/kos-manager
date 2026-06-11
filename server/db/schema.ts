@@ -110,6 +110,7 @@ export const properties = pgTable('properties', {
 export const userProperties = pgTable('user_properties', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   propertyId: uuid('property_id').notNull().references(() => properties.id, { onDelete: 'cascade' }),
+  permissions: jsonb('permissions').default(['manage_rooms', 'manage_tenants', 'manage_payments', 'manage_expenses', 'view_reports']),
   assignedAt: timestamp('assigned_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => [
   primaryKey({ columns: [table.userId, table.propertyId] }),
