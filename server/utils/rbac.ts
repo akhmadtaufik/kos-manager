@@ -45,6 +45,42 @@ export async function verifyPropertyAccess(user: AuthUser, propertyId: string): 
 }
 
 /**
+ * Checks if a user has a specific permission for a property.
+ */
+export async function verifyPropertyPermission(user: AuthUser, propertyId: string, permission: string): Promise<boolean> {
+  if (user.role === 'superadmin') {
+    return true
+  }
+
+  if (user.role === 'owner') {
+    const property = await db.query.properties.findFirst({
+      where: and(
+        eq(properties.id, propertyId),
+        eq(properties.userId, user.id)
+      ),
+    })
+    return !!property
+  }
+
+  if (user.role === 'operator') {
+    const access = await db.query.userProperties.findFirst({
+      where: and(
+        eq(userProperties.userId, user.id),
+        eq(userProperties.propertyId, propertyId)
+      ),
+    })
+
+    if (!access || !access.permissions) return false
+    
+    // Check if permissions array contains the required permission
+    const permissions = access.permissions as string[]
+    return permissions.includes(permission)
+  }
+
+  return false
+}
+
+/**
  * Throws a 403 Forbidden error if the user does not have access to the property.
  * Useful for fast-failing inside API handlers.
  */
@@ -58,6 +94,23 @@ export async function requirePropertyAccess(user: AuthUser | undefined, property
     throw createError({ 
       statusCode: 403, 
       statusMessage: 'Forbidden: You do not have access to this property' 
+    })
+  }
+}
+
+/**
+ * Throws a 403 Forbidden error if the user does not have the specific permission for the property.
+ */
+export async function requirePropertyPermission(user: AuthUser | undefined, propertyId: string, permission: string): Promise<void> {
+  if (!user) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
+
+  const hasPermission = await verifyPropertyPermission(user, propertyId, permission)
+  if (!hasPermission) {
+    throw createError({ 
+      statusCode: 403, 
+      statusMessage: `Forbidden: You do not have the required permission (${permission}) for this property` 
     })
   }
 }
