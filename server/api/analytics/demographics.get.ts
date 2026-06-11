@@ -2,18 +2,18 @@ import { db } from '../../db'
 import { tenants, rooms } from '../../db/schema'
 import { and, eq, inArray, sql, count } from 'drizzle-orm'
 import { getUserProperties } from '../../services/property.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const propertyId = query.propertyId as string
+  const propertyId = String(query.propertyId)
   const user = event.context.user
 
   let targetPropertyIds: string[] = []
 
-  if (propertyId && propertyId !== 'null' && propertyId !== 'undefined') {
-    await requirePropertyAccess(user, propertyId)
+  if (propertyId && propertyId !== 'null' && propertyId !== 'undefined' && propertyId !== '') {
+    await requirePropertyPermission(user, propertyId, 'view_reports')
     targetPropertyIds = [propertyId]
   } else {
     // Global view
