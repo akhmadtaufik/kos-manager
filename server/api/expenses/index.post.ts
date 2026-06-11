@@ -1,5 +1,5 @@
 import { createExpense } from '../../services/expense.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId, category, amount, and date are required' })
   }
 
-  await requirePropertyAccess(event.context.user, propertyId)
+  await requirePropertyPermission(event.context.user, propertyId, 'manage_expenses')
 
   const newExpense = await createExpense(propertyId, { category, amount, description, date }, event.context.user.id)
   

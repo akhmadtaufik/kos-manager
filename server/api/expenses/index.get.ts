@@ -1,6 +1,6 @@
 import { getExpensesByProperty } from '../../services/expense.service'
 import { getUserProperties } from '../../services/property.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   let targetPropertyIds: string[] = []
 
   if (propertyId && propertyId !== 'null' && propertyId !== 'undefined') {
-    await requirePropertyAccess(user, propertyId)
+    await requirePropertyPermission(user, propertyId)
     targetPropertyIds = [propertyId]
   } else {
     const props = await getUserProperties(user)

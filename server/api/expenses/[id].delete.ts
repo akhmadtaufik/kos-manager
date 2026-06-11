@@ -1,7 +1,7 @@
 import { db } from '../../db'
 import { expenses } from '../../db/schema'
 import { eq } from 'drizzle-orm'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
 
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Expense not found' })
   }
 
-  await requirePropertyAccess(event.context.user, expense.propertyId)
+  await requirePropertyPermission(event.context.user, expense.propertyId, 'manage_expenses')
 
   // Delete expense
   await db.delete(expenses).where(eq(expenses.id, id))
