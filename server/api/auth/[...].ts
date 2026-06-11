@@ -9,6 +9,8 @@ const config = useRuntimeConfig()
 
 export default NuxtAuthHandler({
   secret: config.authSecret,
+  trustHost: true,
+  useSecureCookies: config.public.authOrigin ? config.public.authOrigin.startsWith('https://') : false,
 
   // Drizzle Adapter — persists sessions/accounts to PostgreSQL
   adapter: DrizzleAdapter(db, {
