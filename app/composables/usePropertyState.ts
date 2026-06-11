@@ -30,12 +30,21 @@ export const usePropertyState = () => {
     return properties.value.find(p => p.id === activePropertyId.value) || null
   })
 
+  // Full access for superadmin/owner. For operators, use the permissions array
+  const hasPermission = (permission: string) => {
+    if (!activeProperty.value) return false
+    // If it doesn't have a permissions array, assume they are owner/superadmin with full access
+    if (!activeProperty.value.permissions) return true
+    return activeProperty.value.permissions.includes(permission)
+  }
+
   return {
     properties,
     activePropertyId,
     activeProperty,
     isLoaded,
     loadProperties,
-    setActiveProperty
+    setActiveProperty,
+    hasPermission
   }
 }
