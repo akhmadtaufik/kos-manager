@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useAuth } from '#imports'
+import { usePropertyState } from '~/composables/usePropertyState'
 
 const { data } = useAuth()
+const { hasPermission } = usePropertyState()
 </script>
 
 <template>
@@ -17,16 +19,16 @@ const { data } = useAuth()
       <NuxtLink to="/properties" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Properties</span>
       </NuxtLink>
-      <NuxtLink to="/rooms" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
+      <NuxtLink v-if="hasPermission('manage_rooms')" to="/rooms" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Rooms</span>
       </NuxtLink>
-      <NuxtLink to="/tenants" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
+      <NuxtLink v-if="hasPermission('manage_tenants')" to="/tenants" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Tenants</span>
       </NuxtLink>
-      <NuxtLink to="/payments" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
+      <NuxtLink v-if="hasPermission('manage_payments')" to="/payments" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Payments</span>
       </NuxtLink>
-      <NuxtLink to="/expenses" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
+      <NuxtLink v-if="hasPermission('manage_expenses')" to="/expenses" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Expenses</span>
       </NuxtLink>
       <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/staff" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
