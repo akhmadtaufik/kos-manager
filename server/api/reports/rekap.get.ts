@@ -2,7 +2,7 @@ import { db } from '../../db'
 import { rooms, payments, expenses } from '../../db/schema'
 import { and, eq, inArray, sql, sum, count } from 'drizzle-orm'
 import { getUserProperties } from '../../services/property.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess, HttpError } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   let targetPropertyIds: string[] = []
 
   if (propertyId && propertyId !== 'null' && propertyId !== 'undefined') {
-    await requirePropertyAccess(user, propertyId)
+    await requirePropertyPermission(user, propertyId, 'view_reports')
     targetPropertyIds = [propertyId]
   } else {
     // Global view
