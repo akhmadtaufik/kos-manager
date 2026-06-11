@@ -1,7 +1,7 @@
 import { db } from '../../db'
 import { tenants, rooms } from '../../db/schema'
 import { eq } from 'drizzle-orm'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
 
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Tenant not found' })
   }
 
-  await requirePropertyAccess(event.context.user, tenant.room.propertyId)
+  await requirePropertyPermission(event.context.user, tenant.room.propertyId, 'manage_tenants')
 
   const body = await readBody(event)
   const action = body.action // 'update' or 'checkout'

@@ -1,5 +1,5 @@
 import { createTenant } from '../../services/tenant.service'
-import { requirePropertyAccess } from '../../utils/rbac'
+import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId, roomId, name, and checkIn are required' })
   }
 
-  await requirePropertyAccess(event.context.user, propertyId)
+  await requirePropertyPermission(event.context.user, propertyId, 'manage_tenants')
 
   const newTenant = await createTenant(event.context.user, propertyId, {
     roomId: body.roomId,
