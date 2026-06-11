@@ -1,20 +1,21 @@
 # ===========================
 # Stage 1: Dependencies
 # ===========================
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci --prefer-offline
+# Install build tools and dependencies
+RUN apk add --no-cache python3 make g++
+RUN npm ci --legacy-peer-deps --prefer-offline
 
 # ===========================
 # Stage 2: Builder
 # ===========================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -28,7 +29,7 @@ RUN npm run build
 # ===========================
 # Stage 3: Production Runner
 # ===========================
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
