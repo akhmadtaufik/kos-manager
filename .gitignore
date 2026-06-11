@@ -39,3 +39,4 @@ prd.md
 .dockerignore
 README.md
 .antigravitycli/
+.npmrc
