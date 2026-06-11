@@ -15,14 +15,17 @@ export async function getUserProperties(user: AuthUser) {
       orderBy: (props, { desc }) => [desc(props.createdAt)],
     })
   } else {
-    // Operator: get only mapped properties
+    // Operator: get only mapped properties and include permissions
     const mappings = await db.query.userProperties.findMany({
       where: eq(userProperties.userId, user.id),
       with: {
         property: true,
       },
     })
-    return mappings.map(m => m.property)
+    return mappings.map(m => ({
+      ...m.property,
+      permissions: m.permissions || []
+    }))
   }
 }
 
