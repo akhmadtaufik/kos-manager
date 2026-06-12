@@ -3,8 +3,8 @@ export const usePropertyState = () => {
   const activePropertyId = useState<string | null>('active_property_id', () => null)
   const isLoaded = useState<boolean>('property_state_loaded', () => false)
 
-  const loadProperties = async () => {
-    if (isLoaded.value) return
+  const loadProperties = async (force: boolean = false) => {
+    if (isLoaded.value && !force) return
 
     try {
       const res = await $fetch<any>('/api/properties')
