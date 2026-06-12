@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const newRoom = await createRoom(event.context.user, propertyId, {
     roomNumber: body.roomNumber,
     monthlyRate: body.monthlyRate,
+    additionalFees: body.additionalFees,
   })
   
   return apiSuccess(newRoom, 'Room created successfully')

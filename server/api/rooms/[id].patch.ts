@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
     .set({
       roomNumber: body.roomNumber,
       monthlyRate: String(body.monthlyRate),
+      additionalFees: body.additionalFees !== undefined ? body.additionalFees : room.additionalFees,
       updatedAt: new Date()
     })
     .where(eq(rooms.id, id))
