@@ -19,11 +19,12 @@ export async function getRooms(propertyIds: string[]) {
   })
 }
 
-export async function createRoom(user: AuthUser, propertyId: string, payload: { roomNumber: string; monthlyRate: string | number }) {
+export async function createRoom(user: AuthUser, propertyId: string, payload: { roomNumber: string; monthlyRate: string | number; additionalFees?: any[] }) {
   const [newRoom] = await db.insert(rooms).values({
     propertyId,
     roomNumber: payload.roomNumber,
     monthlyRate: String(payload.monthlyRate),
+    additionalFees: payload.additionalFees || [],
   }).returning()
 
   await logActivity({

@@ -44,12 +44,17 @@ export async function generateMonthlyInvoices(propertyId: string, billingMonth: 
 
     if (!existing) {
       const baseRent = tenant.room.monthlyRate
+      const roomFees = Array.isArray(tenant.room.additionalFees) ? tenant.room.additionalFees : []
+      const feesTotal = roomFees.reduce((sum: number, fee: any) => sum + (Number(fee.amount) || 0), 0)
+      const totalAmount = String(Number(baseRent) + feesTotal)
+
       await db.insert(payments).values({
         tenantId: tenant.id,
         propertyId,
         billingMonth,
         baseRent,
-        totalAmount: baseRent, // Initially same as baseRent (no additional fees yet)
+        additionalFees: roomFees,
+        totalAmount: totalAmount,
         status: 'unpaid',
       })
       generatedCount++
