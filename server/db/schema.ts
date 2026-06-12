@@ -125,6 +125,7 @@ export const rooms = pgTable('rooms', {
   roomNumber: varchar('room_number', { length: 50 }).notNull(),
   status: roomStatusEnum('status').notNull().default('available'),
   monthlyRate: decimal('monthly_rate', { precision: 12, scale: 2 }).notNull().default('0'),
+  additionalFees: jsonb('additional_fees').default([]), // JSONB array of { name, amount }
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => [
