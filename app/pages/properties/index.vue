@@ -51,8 +51,7 @@ const submitProperty = async () => {
     }
     
     cancelEdit()
-    properties.value = [] // Reset to force reload
-    await loadProperties()
+    await loadProperties(true)
   } catch (err: any) {
     alert(err.data?.statusMessage || 'Failed to save property')
   } finally {
@@ -66,8 +65,7 @@ const deleteProperty = async (id: string) => {
     await $fetch(`/api/properties/${id}`, {
       method: 'DELETE'
     })
-    properties.value = []
-    await loadProperties()
+    await loadProperties(true)
     alert('Property deleted successfully!')
   } catch (err: any) {
     alert(err.data?.statusMessage || 'Failed to delete property')
