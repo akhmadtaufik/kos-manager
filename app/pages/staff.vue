@@ -163,37 +163,46 @@ const savePermissions = async () => {
         </form>
       </div>
       
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <table class="w-full text-sm text-left text-slate-500">
-          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th scope="col" class="px-6 py-3">Nama</th>
-              <th scope="col" class="px-6 py-3">Email</th>
-              <th scope="col" class="px-6 py-3">Ditugaskan Sejak</th>
-              <th scope="col" class="px-6 py-3">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="isLoading">
-              <td colspan="4" class="px-6 py-8 text-center text-slate-500">Memuat data...</td>
-            </tr>
-            <tr v-else-if="staffList.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-slate-500">Belum ada operator untuk properti ini.</td>
-            </tr>
-            <tr v-for="staff in staffList" :key="staff.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
-              <td class="px-6 py-4 font-bold text-slate-900">{{ staff.name || '-' }}</td>
-              <td class="px-6 py-4">{{ staff.email }}</td>
-              <td class="px-6 py-4">{{ new Date(staff.assignedAt).toLocaleDateString() }}</td>
-              <td class="px-6 py-4">
-                <div class="flex gap-3">
-                  <button @click="openPermissionModal(staff)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Atur Akses</button>
-                  <button @click="removeOperator(staff.id)" class="text-rose-600 hover:text-rose-800 font-medium transition-colors">Cabut Akses</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <phantom-ui :loading="isLoading">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <table class="w-full text-sm text-left text-slate-500">
+            <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th scope="col" class="px-6 py-3">Nama</th>
+                <th scope="col" class="px-6 py-3">Email</th>
+                <th scope="col" class="px-6 py-3">Ditugaskan Sejak</th>
+                <th scope="col" class="px-6 py-3">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-if="isLoading">
+                <tr v-for="i in 3" :key="'skel-'+i" class="bg-white border-b border-slate-100">
+                  <td class="px-6 py-4 font-bold text-slate-900">Operator Budi</td>
+                  <td class="px-6 py-4">operator@gmail.com</td>
+                  <td class="px-6 py-4">01/01/2026</td>
+                  <td class="px-6 py-4"><span class="text-blue-600 font-medium">Atur Akses</span></td>
+                </tr>
+              </template>
+              <tr v-else-if="staffList.length === 0">
+                <td colspan="4" class="px-6 py-8 text-center text-slate-500">Belum ada operator untuk properti ini.</td>
+              </tr>
+              <template v-else>
+                <tr v-for="staff in staffList" :key="staff.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <td class="px-6 py-4 font-bold text-slate-900">{{ staff.name || '-' }}</td>
+                  <td class="px-6 py-4">{{ staff.email }}</td>
+                  <td class="px-6 py-4">{{ new Date(staff.assignedAt).toLocaleDateString() }}</td>
+                  <td class="px-6 py-4">
+                    <div class="flex gap-3">
+                      <button @click="openPermissionModal(staff)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Atur Akses</button>
+                      <button @click="removeOperator(staff.id)" class="text-rose-600 hover:text-rose-800 font-medium transition-colors">Cabut Akses</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </phantom-ui>
     </template>
   </div>
 
