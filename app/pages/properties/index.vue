@@ -6,7 +6,7 @@ definePageMeta({
   layout: 'dashboard',
 })
 
-const { properties, loadProperties } = usePropertyState()
+const { properties, loadProperties, isLoading } = usePropertyState()
 const { data } = useAuth()
 const isSuperadmin = computed(() => (data.value?.user as any)?.role === 'superadmin')
 const isOwner = computed(() => (data.value?.user as any)?.role === 'owner')
@@ -99,36 +99,48 @@ const deleteProperty = async (id: string) => {
       </form>
     </div>
     
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <table class="w-full text-sm text-left text-slate-500">
-        <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
-          <tr>
-            <th scope="col" class="px-6 py-3">Property Name</th>
-            <th scope="col" class="px-6 py-3">Address</th>
-            <th scope="col" class="px-6 py-3">Created</th>
-            <th scope="col" class="px-6 py-3">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="prop in properties" :key="prop.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
-            <td class="px-6 py-4 font-medium text-slate-900">{{ prop.name }}</td>
-            <td class="px-6 py-4">{{ prop.address || '-' }}</td>
-            <td class="px-6 py-4">{{ new Date(prop.createdAt).toLocaleDateString() }}</td>
-            <td class="px-6 py-4">
-              <div v-if="canManage" class="flex gap-3">
-                <button @click="startEdit(prop)" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
-                <button @click="deleteProperty(prop.id)" class="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
-              </div>
-              <span v-else class="text-slate-400">-</span>
-            </td>
-          </tr>
-          <tr v-if="properties.length === 0">
-            <td colspan="4" class="px-6 py-8 text-center text-slate-500">
-              No properties found.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <phantom-ui :loading="isLoading">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm text-left text-slate-500">
+          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th scope="col" class="px-6 py-3">Property Name</th>
+              <th scope="col" class="px-6 py-3">Address</th>
+              <th scope="col" class="px-6 py-3">Created</th>
+              <th scope="col" class="px-6 py-3">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-if="isLoading">
+              <tr v-for="i in 3" :key="'skel-'+i" class="bg-white border-b border-slate-100">
+                <td class="px-6 py-4 font-medium text-slate-900">Mock Property Name</td>
+                <td class="px-6 py-4">Jl. Mock Address No. 123</td>
+                <td class="px-6 py-4">01/01/2026</td>
+                <td class="px-6 py-4"><span class="text-blue-600 font-medium">Edit</span></td>
+              </tr>
+            </template>
+            <tr v-else-if="properties.length === 0">
+              <td colspan="4" class="px-6 py-8 text-center text-slate-500">
+                No properties found.
+              </td>
+            </tr>
+            <template v-else>
+              <tr v-for="prop in properties" :key="prop.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-slate-900">{{ prop.name }}</td>
+                <td class="px-6 py-4">{{ prop.address || '-' }}</td>
+                <td class="px-6 py-4">{{ new Date(prop.createdAt).toLocaleDateString() }}</td>
+                <td class="px-6 py-4">
+                  <div v-if="canManage" class="flex gap-3">
+                    <button @click="startEdit(prop)" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                    <button @click="deleteProperty(prop.id)" class="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
+                  </div>
+                  <span v-else class="text-slate-400">-</span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </phantom-ui>
   </div>
 </template>
