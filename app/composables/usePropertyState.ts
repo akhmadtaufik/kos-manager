@@ -2,10 +2,11 @@ export const usePropertyState = () => {
   const properties = useState<any[]>('user_properties', () => [])
   const activePropertyId = useState<string | null>('active_property_id', () => null)
   const isLoaded = useState<boolean>('property_state_loaded', () => false)
+  const isLoading = useState<boolean>('property_state_loading', () => false)
 
   const loadProperties = async (force: boolean = false) => {
     if (isLoaded.value && !force) return
-
+    isLoading.value = true
     try {
       const res = await $fetch<any>('/api/properties')
       if (res.success) {
@@ -18,6 +19,8 @@ export const usePropertyState = () => {
       isLoaded.value = true
     } catch (e) {
       console.error('Failed to load properties', e)
+    } finally {
+      isLoading.value = false
     }
   }
 
@@ -43,6 +46,7 @@ export const usePropertyState = () => {
     activePropertyId,
     activeProperty,
     isLoaded,
+    isLoading,
     loadProperties,
     setActiveProperty,
     hasPermission
