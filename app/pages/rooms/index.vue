@@ -158,52 +158,63 @@ const calculateTotalRent = (room: any) => {
       </form>
     </div>
       
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <table class="w-full text-sm text-left text-slate-500">
-        <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
-          <tr>
-            <th v-if="!activePropertyId" scope="col" class="px-6 py-3">Property</th>
-            <th scope="col" class="px-6 py-3">Room Number</th>
-            <th scope="col" class="px-6 py-3">Status</th>
-            <th scope="col" class="px-6 py-3">Total Rent</th>
-            <th scope="col" class="px-6 py-3">Current Tenant</th>
-            <th scope="col" class="px-6 py-3">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="isLoading">
-            <td colspan="6" class="px-6 py-8 text-center text-slate-500">Loading rooms...</td>
-          </tr>
-          <tr v-else-if="rooms.length === 0">
-            <td colspan="6" class="px-6 py-8 text-center text-slate-500">No rooms found. Add one above.</td>
-          </tr>
-          <tr v-for="room in rooms" :key="room.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
-            <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">{{ room.property?.name || '-' }}</td>
-            <td class="px-6 py-4 font-bold text-slate-900">{{ room.roomNumber }}</td>
-            <td class="px-6 py-4">
-              <span v-if="room.status === 'available'" class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Available</span>
-              <span v-else class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded border border-red-200">Occupied</span>
-            </td>
-            <td class="px-6 py-4 font-medium text-slate-900">
-              <div>Rp {{ calculateTotalRent(room).toLocaleString('id-ID') }}</div>
-              <div v-if="room.additionalFees && room.additionalFees.length > 0" class="text-xs text-slate-400 font-normal mt-0.5">
-                (Base: {{ Number(room.monthlyRate).toLocaleString('id-ID') }} + {{ room.additionalFees.length }} fees)
-              </div>
-            </td>
-            <td class="px-6 py-4">
-              <span v-if="room.tenants && room.tenants.length > 0">{{ room.tenants[0].name }}</span>
-              <span v-else class="text-slate-400">-</span>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex gap-3">
-                <button @click="startEdit(room)" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
-                <button @click="deleteRoom(room.id)" class="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <phantom-ui :loading="isLoading">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm text-left text-slate-500">
+          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th v-if="!activePropertyId" scope="col" class="px-6 py-3">Property</th>
+              <th scope="col" class="px-6 py-3">Room Number</th>
+              <th scope="col" class="px-6 py-3">Status</th>
+              <th scope="col" class="px-6 py-3">Total Rent</th>
+              <th scope="col" class="px-6 py-3">Current Tenant</th>
+              <th scope="col" class="px-6 py-3">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-if="isLoading">
+              <tr v-for="i in 5" :key="'skel-'+i" class="bg-white border-b border-slate-100">
+                <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">Mock Property</td>
+                <td class="px-6 py-4 font-bold text-slate-900">A101</td>
+                <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Available</span></td>
+                <td class="px-6 py-4 font-medium text-slate-900">Rp 1.500.000</td>
+                <td class="px-6 py-4">Budi Santoso</td>
+                <td class="px-6 py-4"><span class="text-blue-600 font-medium">Edit</span></td>
+              </tr>
+            </template>
+            <tr v-else-if="rooms.length === 0">
+              <td colspan="6" class="px-6 py-8 text-center text-slate-500">No rooms found. Add one above.</td>
+            </tr>
+            <template v-else>
+              <tr v-for="room in rooms" :key="room.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">{{ room.property?.name || '-' }}</td>
+                <td class="px-6 py-4 font-bold text-slate-900">{{ room.roomNumber }}</td>
+                <td class="px-6 py-4">
+                  <span v-if="room.status === 'available'" class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Available</span>
+                  <span v-else class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded border border-red-200">Occupied</span>
+                </td>
+                <td class="px-6 py-4 font-medium text-slate-900">
+                  <div>Rp {{ calculateTotalRent(room).toLocaleString('id-ID') }}</div>
+                  <div v-if="room.additionalFees && room.additionalFees.length > 0" class="text-xs text-slate-400 font-normal mt-0.5">
+                    (Base: {{ Number(room.monthlyRate).toLocaleString('id-ID') }} + {{ room.additionalFees.length }} fees)
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <span v-if="room.tenants && room.tenants.length > 0">{{ room.tenants[0].name }}</span>
+                  <span v-else class="text-slate-400">-</span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex gap-3">
+                    <button @click="startEdit(room)" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                    <button @click="deleteRoom(room.id)" class="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </phantom-ui>
 
     <!-- Edit Modal -->
     <div v-if="isEditing" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
