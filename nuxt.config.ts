@@ -5,6 +5,12 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === 'phantom-ui'
+    }
+  },
+
   devtools: { enabled: true },
 
   modules: [
