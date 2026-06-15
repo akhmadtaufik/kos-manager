@@ -68,43 +68,53 @@
       </div>
     </div>
 
-    <!-- Expenses Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-slate-50 border-b border-slate-200">
-            <th v-if="!activeProperty" class="p-4 font-medium text-slate-600">Properti</th>
-            <th class="p-4 font-medium text-slate-600">Tanggal</th>
-            <th class="p-4 font-medium text-slate-600">Kategori</th>
-            <th class="p-4 font-medium text-slate-600">Deskripsi</th>
-            <th class="p-4 font-medium text-slate-600">Nominal</th>
-            <th class="p-4 font-medium text-slate-600">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="pending" class="border-b border-slate-100">
-            <td colspan="4" class="p-4 text-center text-slate-500">Memuat data...</td>
-          </tr>
-          <tr v-else-if="!expenses?.data?.length" class="border-b border-slate-100">
-            <td colspan="4" class="p-4 text-center text-slate-500">Belum ada catatan pengeluaran.</td>
-          </tr>
-          <tr v-for="exp in expenses.data" :key="exp.id" class="border-b border-slate-100 hover:bg-slate-50">
-            <td v-if="!activeProperty" class="p-4 text-slate-700 font-medium">{{ exp.property?.name || '-' }}</td>
-            <td class="p-4 text-slate-600">{{ new Date(exp.date).toLocaleDateString('id-ID') }}</td>
-            <td class="p-4">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                {{ exp.category }}
-              </span>
-            </td>
-            <td class="p-4 text-slate-600">{{ exp.description || '-' }}</td>
-            <td class="p-4 font-medium text-rose-600">Rp {{ Number(exp.amount).toLocaleString('id-ID') }}</td>
-            <td class="p-4">
-              <button @click="deleteExpense(exp.id)" class="text-rose-600 hover:text-rose-800 font-medium text-xs">Hapus</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <phantom-ui :loading="pending">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th v-if="!activeProperty" class="p-4 font-medium text-slate-600">Properti</th>
+              <th class="p-4 font-medium text-slate-600">Tanggal</th>
+              <th class="p-4 font-medium text-slate-600">Kategori</th>
+              <th class="p-4 font-medium text-slate-600">Deskripsi</th>
+              <th class="p-4 font-medium text-slate-600">Nominal</th>
+              <th class="p-4 font-medium text-slate-600">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-if="pending">
+              <tr v-for="i in 5" :key="'skel-'+i" class="border-b border-slate-100 hover:bg-slate-50">
+                <td v-if="!activeProperty" class="p-4 text-slate-700 font-medium">Mock Property</td>
+                <td class="p-4 text-slate-600">01/01/2026</td>
+                <td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Listrik</span></td>
+                <td class="p-4 text-slate-600">Pembayaran Listrik Bulanan</td>
+                <td class="p-4 font-medium text-rose-600">Rp 500.000</td>
+                <td class="p-4"><span class="text-rose-600 text-xs font-medium">Hapus</span></td>
+              </tr>
+            </template>
+            <tr v-else-if="!expenses?.data?.length" class="border-b border-slate-100">
+              <td colspan="6" class="p-4 text-center text-slate-500">Belum ada catatan pengeluaran.</td>
+            </tr>
+            <template v-else>
+              <tr v-for="exp in expenses.data" :key="exp.id" class="border-b border-slate-100 hover:bg-slate-50">
+                <td v-if="!activeProperty" class="p-4 text-slate-700 font-medium">{{ exp.property?.name || '-' }}</td>
+                <td class="p-4 text-slate-600">{{ new Date(exp.date).toLocaleDateString('id-ID') }}</td>
+                <td class="p-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                    {{ exp.category }}
+                  </span>
+                </td>
+                <td class="p-4 text-slate-600">{{ exp.description || '-' }}</td>
+                <td class="p-4 font-medium text-rose-600">Rp {{ Number(exp.amount).toLocaleString('id-ID') }}</td>
+                <td class="p-4">
+                  <button @click="deleteExpense(exp.id)" class="text-rose-600 hover:text-rose-800 font-medium text-xs">Hapus</button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </phantom-ui>
   </div>
 </template>
 
