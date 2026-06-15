@@ -177,46 +177,58 @@ const deleteTenant = async (id: string) => {
         </form>
       </div>
       
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <table class="w-full text-sm text-left text-slate-500">
-          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th v-if="!activePropertyId" scope="col" class="px-6 py-3">Property</th>
-              <th scope="col" class="px-6 py-3">Room</th>
-              <th scope="col" class="px-6 py-3">Tenant Name</th>
-              <th scope="col" class="px-6 py-3">Phone</th>
-              <th scope="col" class="px-6 py-3">Check In</th>
-              <th scope="col" class="px-6 py-3">Status</th>
-              <th scope="col" class="px-6 py-3">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="isLoading">
-              <td colspan="6" class="px-6 py-8 text-center text-slate-500">Loading tenants...</td>
-            </tr>
-            <tr v-else-if="tenants.length === 0">
-              <td colspan="6" class="px-6 py-8 text-center text-slate-500">No tenants found for this property.</td>
-            </tr>
-            <tr v-for="tenant in tenants" :key="tenant.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
-              <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">{{ tenant.room?.property?.name || '-' }}</td>
-              <td class="px-6 py-4 font-bold text-slate-900">{{ tenant.room?.roomNumber }}</td>
-              <td class="px-6 py-4 font-medium text-slate-900">{{ tenant.name }}</td>
-              <td class="px-6 py-4">{{ tenant.phone || '-' }}</td>
-              <td class="px-6 py-4">{{ new Date(tenant.checkIn).toLocaleDateString() }}</td>
-              <td class="px-6 py-4">
-                <span v-if="tenant.isActive === 1" class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Active</span>
-                <span v-else class="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded border border-slate-200">Inactive</span>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex gap-2">
-                  <button @click="startEdit(tenant)" class="text-blue-600 hover:text-blue-800 font-medium text-xs">Edit</button>
-                  <button v-if="tenant.isActive === 1" @click="checkoutTenant(tenant.id)" class="text-amber-600 hover:text-amber-800 font-medium text-xs">Check Out</button>
-                  <button @click="deleteTenant(tenant.id)" class="text-rose-600 hover:text-rose-800 font-medium text-xs">Hapus</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <phantom-ui :loading="isLoading">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <table class="w-full text-sm text-left text-slate-500">
+            <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th v-if="!activePropertyId" scope="col" class="px-6 py-3">Property</th>
+                <th scope="col" class="px-6 py-3">Room</th>
+                <th scope="col" class="px-6 py-3">Tenant Name</th>
+                <th scope="col" class="px-6 py-3">Phone</th>
+                <th scope="col" class="px-6 py-3">Check In</th>
+                <th scope="col" class="px-6 py-3">Status</th>
+                <th scope="col" class="px-6 py-3">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-if="isLoading">
+                <tr v-for="i in 5" :key="'skel-'+i" class="bg-white border-b border-slate-100">
+                  <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">Mock Property</td>
+                  <td class="px-6 py-4 font-bold text-slate-900">A101</td>
+                  <td class="px-6 py-4 font-medium text-slate-900">Budi Santoso</td>
+                  <td class="px-6 py-4">081234567890</td>
+                  <td class="px-6 py-4">01/01/2026</td>
+                  <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Active</span></td>
+                  <td class="px-6 py-4"><div class="flex gap-2"><span class="text-blue-600 text-xs font-medium">Edit</span></div></td>
+                </tr>
+              </template>
+              <tr v-else-if="tenants.length === 0">
+                <td colspan="7" class="px-6 py-8 text-center text-slate-500">No tenants found for this property.</td>
+              </tr>
+              <template v-else>
+                <tr v-for="tenant in tenants" :key="tenant.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">{{ tenant.room?.property?.name || '-' }}</td>
+                  <td class="px-6 py-4 font-bold text-slate-900">{{ tenant.room?.roomNumber }}</td>
+                  <td class="px-6 py-4 font-medium text-slate-900">{{ tenant.name }}</td>
+                  <td class="px-6 py-4">{{ tenant.phone || '-' }}</td>
+                  <td class="px-6 py-4">{{ new Date(tenant.checkIn).toLocaleDateString() }}</td>
+                  <td class="px-6 py-4">
+                    <span v-if="tenant.isActive === 1" class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Active</span>
+                    <span v-else class="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded border border-slate-200">Inactive</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex gap-2">
+                      <button @click="startEdit(tenant)" class="text-blue-600 hover:text-blue-800 font-medium text-xs">Edit</button>
+                      <button v-if="tenant.isActive === 1" @click="checkoutTenant(tenant.id)" class="text-amber-600 hover:text-amber-800 font-medium text-xs">Check Out</button>
+                      <button @click="deleteTenant(tenant.id)" class="text-rose-600 hover:text-rose-800 font-medium text-xs">Hapus</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </phantom-ui>
   </div>
 </template>
