@@ -38,6 +38,7 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
   phone?: string;
   provinceId?: string;
   regencyId?: string;
+  districtId?: string;
   checkIn: string;
 }) {
   // Verify the room actually belongs to the specified property
@@ -57,6 +58,7 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
       phone: payload.phone || null,
       provinceId: payload.provinceId || null,
       regencyId: payload.regencyId || null,
+      districtId: payload.districtId || null,
       checkIn: new Date(payload.checkIn),
       isActive: 1,
     }).returning()
