@@ -146,6 +146,7 @@ export const tenants = pgTable('tenants', {
   idCardUrl: text('id_card_url'),
   provinceId: varchar('province_id', { length: 10 }), // Static API identifier
   regencyId: varchar('regency_id', { length: 10 }),   // Static API identifier
+  districtId: varchar('district_id', { length: 10 }), // Static API identifier
   checkIn: date('check_in', { mode: 'date' }).notNull(),
   checkOut: date('check_out', { mode: 'date' }),
   isActive: integer('is_active').notNull().default(1), // 1 = active, 0 = inactive
@@ -155,6 +156,7 @@ export const tenants = pgTable('tenants', {
   index('tenants_room_id_idx').on(table.roomId),
   index('tenants_province_id_idx').on(table.provinceId),
   index('tenants_regency_id_idx').on(table.regencyId),
+  index('tenants_district_id_idx').on(table.districtId),
 ])
 
 /**
