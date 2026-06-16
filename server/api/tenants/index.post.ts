@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
     phone: body.phone,
     provinceId: body.provinceId,
     regencyId: body.regencyId,
+    districtId: body.districtId,
     checkIn: body.checkIn,
   })
   
