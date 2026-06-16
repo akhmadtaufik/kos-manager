@@ -17,8 +17,53 @@ const formData = reactive({
   roomId: '',
   name: '',
   phone: '',
-  checkIn: ''
+  checkIn: '',
+  provinceId: '',
+  regencyId: '',
+  districtId: ''
 })
+
+const PROVINCES = [
+  { id: '31', name: 'DKI Jakarta' },
+  { id: '32', name: 'Jawa Barat' }
+]
+
+const regencies = ref<any[]>([])
+const districts = ref<any[]>([])
+const isLoadingRegencies = ref(false)
+const isLoadingDistricts = ref(false)
+
+const onProvinceChange = async () => {
+  formData.regencyId = ''
+  formData.districtId = ''
+  regencies.value = []
+  districts.value = []
+  if (!formData.provinceId) return
+  
+  isLoadingRegencies.value = true
+  try {
+    regencies.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoadingRegencies.value = false
+  }
+}
+
+const onRegencyChange = async () => {
+  formData.districtId = ''
+  districts.value = []
+  if (!formData.regencyId) return
+  
+  isLoadingDistricts.value = true
+  try {
+    districts.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${formData.regencyId}.json`)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoadingDistricts.value = false
+  }
+}
 
 const fetchTenants = async () => {
   isLoading.value = true
@@ -52,12 +97,33 @@ watch(activePropertyId, () => {
   fetchAvailableRooms()
 }, { immediate: true })
 
-const startEdit = (tenant: any) => {
+const startEdit = async (tenant: any) => {
   editingId.value = tenant.id
   formData.roomId = tenant.roomId // Not editable usually, but keep for state
   formData.name = tenant.name
   formData.phone = tenant.phone || ''
   formData.checkIn = new Date(tenant.checkIn).toISOString().split('T')[0]
+  formData.provinceId = tenant.provinceId || ''
+  formData.regencyId = tenant.regencyId || ''
+  formData.districtId = tenant.districtId || ''
+
+  // Pre-load regencies and districts if editing an existing tenant with region data
+  if (formData.provinceId) {
+    isLoadingRegencies.value = true
+    try {
+      regencies.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
+    } finally {
+      isLoadingRegencies.value = false
+    }
+  }
+  if (formData.regencyId) {
+    isLoadingDistricts.value = true
+    try {
+      districts.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${formData.regencyId}.json`)
+    } finally {
+      isLoadingDistricts.value = false
+    }
+  }
 }
 
 const cancelEdit = () => {
@@ -66,6 +132,11 @@ const cancelEdit = () => {
   formData.name = ''
   formData.phone = ''
   formData.checkIn = ''
+  formData.provinceId = ''
+  formData.regencyId = ''
+  formData.districtId = ''
+  regencies.value = []
+  districts.value = []
 }
 
 const submitTenant = async () => {
@@ -80,7 +151,10 @@ const submitTenant = async () => {
           action: 'update',
           name: formData.name,
           phone: formData.phone,
-          checkIn: formData.checkIn
+          checkIn: formData.checkIn,
+          provinceId: formData.provinceId,
+          regencyId: formData.regencyId,
+          districtId: formData.districtId
         }
       })
     } else {
@@ -146,32 +220,61 @@ const deleteTenant = async (id: string) => {
 
     <div v-if="activePropertyId" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
       <h2 class="text-lg font-bold mb-4 font-outfit">{{ editingId ? 'Edit Tenant' : 'Onboard New Tenant' }}</h2>
-        <form @submit.prevent="submitTenant" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-          <div class="md:col-span-1" v-if="!editingId">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Assign Room</label>
-            <select v-model="formData.roomId" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors">
-              <option value="" disabled>Select Room</option>
-              <option v-for="room in availableRooms" :key="room.id" :value="room.id">{{ room.roomNumber }}</option>
-            </select>
+        <form @submit.prevent="submitTenant" class="flex flex-col gap-5">
+          <!-- Primary Info -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div v-if="!editingId">
+              <label class="block text-sm font-medium text-slate-700 mb-1">Assign Room</label>
+              <select v-model="formData.roomId" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors">
+                <option value="" disabled>Select Room</option>
+                <option v-for="room in availableRooms" :key="room.id" :value="room.id">{{ room.roomNumber }}</option>
+              </select>
+            </div>
+            <div :class="editingId ? 'md:col-span-2' : 'md:col-span-1'">
+              <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+              <input v-model="formData.name" type="text" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+              <input v-model="formData.phone" type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Check-in Date</label>
+              <input v-model="formData.checkIn" type="date" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+            </div>
           </div>
-          <div :class="editingId ? 'md:col-span-2' : 'md:col-span-1'">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-            <input v-model="formData.name" type="text" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
+
+          <!-- Demographics -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Province</label>
+              <select id="province-select" v-model="formData.provinceId" @change="onProvinceChange" class="w-full bg-white border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors">
+                <option value="">Select Province</option>
+                <option v-for="prov in PROVINCES" :key="prov.id" :value="prov.id">{{ prov.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Regency/City</label>
+              <select id="regency-select" v-model="formData.regencyId" @change="onRegencyChange" :disabled="!formData.provinceId || isLoadingRegencies" class="w-full bg-white border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors disabled:opacity-60">
+                <option value="">{{ isLoadingRegencies ? 'Loading...' : 'Select Regency' }}</option>
+                <option v-for="reg in regencies" :key="reg.id" :value="reg.id">{{ reg.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">District/Kecamatan</label>
+              <select id="district-select" v-model="formData.districtId" :disabled="!formData.regencyId || isLoadingDistricts" class="w-full bg-white border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors disabled:opacity-60">
+                <option value="">{{ isLoadingDistricts ? 'Loading...' : 'Select District' }}</option>
+                <option v-for="dist in districts" :key="dist.id" :value="dist.id">{{ dist.name }}</option>
+              </select>
+            </div>
           </div>
-          <div class="md:col-span-1">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-            <input v-model="formData.phone" type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
-          </div>
-          <div class="md:col-span-1">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Check-in Date</label>
-            <input v-model="formData.checkIn" type="date" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
-          </div>
-          <div class="md:col-span-1 flex gap-2">
-            <button v-if="editingId" type="button" @click="cancelEdit" class="w-full text-slate-600 hover:bg-slate-100 font-medium rounded-lg px-2 py-2.5 transition-colors">
+
+          <div class="flex gap-3 justify-end mt-2">
+            <button v-if="editingId" type="button" @click="cancelEdit" class="text-slate-600 hover:bg-slate-100 font-medium rounded-lg px-6 py-2.5 transition-colors">
               Cancel
             </button>
-            <button type="submit" :disabled="isCreating || (!editingId && availableRooms.length === 0)" class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg px-2 py-2.5 transition-colors">
-              {{ isCreating ? 'Saving...' : (editingId ? 'Update' : 'Onboard') }}
+            <button type="submit" :disabled="isCreating || (!editingId && availableRooms.length === 0)" class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg px-8 py-2.5 transition-colors">
+              {{ isCreating ? 'Saving...' : (editingId ? 'Update Tenant' : 'Onboard Tenant') }}
             </button>
           </div>
         </form>
