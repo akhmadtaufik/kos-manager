@@ -12,7 +12,8 @@
     "db:migrate": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
     "db:studio": "npx drizzle-kit studio",
-    "test": "vitest"
+    "test": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@aejkatappaja/phantom-ui": "^1.3.0",
@@ -33,7 +34,9 @@
     "drizzle-kit": "^0.31.10",
     "happy-dom": "^20.10.4",
     "typescript": "^5.8.3",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.0.0"
   },
   "overrides": {
     "vue": "3.5.13",
