@@ -40,3 +40,7 @@ prd.md
 README.md
 .antigravitycli/
 .npmrc
+
+# Playwright
+test-results/
+playwright-report/
