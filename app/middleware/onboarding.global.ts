@@ -4,8 +4,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
   if (status.value === 'authenticated' && data.value?.user) {
     const role = (data.value.user as any).role
     
-    // Redirect pending users to onboarding (allow access to /login or /api if somehow hit)
-    if (role === 'pending' && to.path !== '/onboarding' && to.path !== '/login') {
+    // Redirect pending users to onboarding (allow access to /api if somehow hit)
+    if (role === 'pending' && to.path !== '/onboarding') {
       return navigateTo('/onboarding')
     }
     
