@@ -35,6 +35,7 @@ server/db/migrations/meta/
 docker-compose.override.yml
 
 # etc
+.agents/
 prd.md
 .dockerignore
 README.md
