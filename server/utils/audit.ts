@@ -3,7 +3,7 @@ import { activityLogs } from '../db/schema'
 
 interface LogActivityParams {
   userId?: string
-  action: 'CREATE' | 'UPDATE' | 'DELETE'
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'FAILED_LOGIN_ATTEMPT'
   entityType: string
   entityId?: string
   details?: Record<string, unknown>
