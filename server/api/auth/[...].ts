@@ -60,22 +60,34 @@ export default NuxtAuthHandler({
           .limit(1)
           .then((rows) => rows[0])
 
+        let isFailed = false
+
         if (!user || !user.password) {
-          throw new Error('Email atau password salah.')
+          isFailed = true
+        } else {
+          // Verify password using bcrypt utility
+          const isValid = await verifyPassword(credentials.password, user.password)
+          if (!isValid) {
+            isFailed = true
+          }
         }
 
-        // Verify password using bcrypt utility
-        const isValid = await verifyPassword(credentials.password, user.password)
-        if (!isValid) {
-          throw new Error('Email atau password salah.')
+        if (isFailed) {
+          await new Promise(resolve => setTimeout(resolve, 1500))
+          await logActivity({
+            action: 'FAILED_LOGIN_ATTEMPT',
+            entityType: 'auth',
+            details: { email: credentials.email }
+          })
+          throw new Error('Invalid email or password.')
         }
 
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: user.role,
+          id: user!.id,
+          name: user!.name,
+          email: user!.email,
+          image: user!.image,
+          role: user!.role,
         }
       },
     }),

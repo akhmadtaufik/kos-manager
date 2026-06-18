@@ -1,17 +1,6 @@
-import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { db, users } from '../../db'
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'Nama minimal 2 karakter').max(100),
-  email: z.string().email('Format email tidak valid'),
-  password: z
-    .string()
-    .min(8, 'Password minimal 8 karakter')
-    .regex(/[A-Z]/, 'Password harus memiliki minimal 1 huruf kapital')
-    .regex(/[0-9]/, 'Password harus memiliki minimal 1 angka'),
-  role: z.enum(['superadmin', 'owner', 'operator', 'pending']).default('pending'),
-})
+import { registerSchema } from '../../../utils/validations'
 
 export default defineEventHandler(async (event) => {
   // Parse and validate body
