@@ -48,6 +48,11 @@ export default defineNuxtConfig({
     originEnvKey: 'NONE',
     provider: {
       type: 'authjs',
+      defaultProvider: 'credentials',
+      addDefaultCallbackUrl: true,
+      pages: {
+        signIn: '/'
+      }
     },
     globalAppMiddleware: {
       isEnabled: true,
