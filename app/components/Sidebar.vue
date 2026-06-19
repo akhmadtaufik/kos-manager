@@ -34,6 +34,9 @@ const { hasPermission } = usePropertyState()
       <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/staff" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Staf & Operator</span>
       </NuxtLink>
+      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/dashboard/activity" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
+        <span>Activity Logs</span>
+      </NuxtLink>
     </nav>
     
     <div class="p-4 border-t border-slate-200">
