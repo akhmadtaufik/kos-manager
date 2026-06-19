@@ -135,7 +135,7 @@ export default NuxtAuthHandler({
   },
 
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: '/',
+    error: '/',
   },
 })
