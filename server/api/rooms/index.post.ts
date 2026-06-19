@@ -1,6 +1,7 @@
 import { createRoom } from '../../services/room.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
+import { logActivity } from '../../utils/audit'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -16,6 +17,16 @@ export default defineEventHandler(async (event) => {
     roomNumber: body.roomNumber,
     monthlyRate: body.monthlyRate,
     additionalFees: body.additionalFees,
+  })
+  
+  await logActivity({
+    userId: event.context.user.id,
+    actorName: event.context.user.name,
+    actorRole: event.context.user.role,
+    action: 'ADD_ROOM',
+    entityType: 'room',
+    entityId: newRoom.id,
+    details: { roomNumber: newRoom.roomNumber, propertyId },
   })
   
   return apiSuccess(newRoom, 'Room created successfully')
