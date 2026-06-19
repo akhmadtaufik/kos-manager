@@ -1,6 +1,7 @@
 import { db } from '../db'
 import { userProperties, properties } from '../db/schema'
 import { and, eq } from 'drizzle-orm'
+import { logActivity } from './audit'
 
 export interface AuthUser {
   id: string
@@ -91,6 +92,15 @@ export async function requirePropertyAccess(user: AuthUser | undefined, property
 
   const hasAccess = await verifyPropertyAccess(user, propertyId)
   if (!hasAccess) {
+    await logActivity({
+      userId: user.id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'UNAUTHORIZED_ATTEMPT',
+      entityType: 'property',
+      entityId: propertyId,
+      details: { reason: 'Attempted to access a property without basic access rights' }
+    })
     throw createError({ 
       statusCode: 403, 
       statusMessage: 'Forbidden: You do not have access to this property' 
@@ -108,6 +118,15 @@ export async function requirePropertyPermission(user: AuthUser | undefined, prop
 
   const hasPermission = await verifyPropertyPermission(user, propertyId, permission)
   if (!hasPermission) {
+    await logActivity({
+      userId: user.id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'UNAUTHORIZED_ATTEMPT',
+      entityType: 'property',
+      entityId: propertyId,
+      details: { reason: `Attempted an action requiring '${permission}' permission` }
+    })
     throw createError({ 
       statusCode: 403, 
       statusMessage: `Forbidden: You do not have the required permission (${permission}) for this property` 
@@ -125,6 +144,15 @@ export async function requirePropertyOwnership(user: AuthUser | undefined, prope
   }
   
   if (user.role === 'operator') {
+    await logActivity({
+      userId: user.id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'UNAUTHORIZED_ATTEMPT',
+      entityType: 'property',
+      entityId: propertyId,
+      details: { reason: 'Operator attempted to perform an owner-only action (Ownership check failed)' }
+    })
     throw createError({ 
       statusCode: 403, 
       statusMessage: 'Forbidden: Operators cannot perform this action' 
@@ -134,6 +162,15 @@ export async function requirePropertyOwnership(user: AuthUser | undefined, prope
   // Still verify they actually own this specific property (or are superadmin)
   const hasAccess = await verifyPropertyAccess(user, propertyId)
   if (!hasAccess) {
+    await logActivity({
+      userId: user.id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'UNAUTHORIZED_ATTEMPT',
+      entityType: 'property',
+      entityId: propertyId,
+      details: { reason: 'Attempted an owner-only action without property access' }
+    })
     throw createError({ 
       statusCode: 403, 
       statusMessage: 'Forbidden: You do not have access to this property' 
