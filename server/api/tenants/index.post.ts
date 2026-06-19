@@ -1,6 +1,7 @@
 import { createTenant } from '../../services/tenant.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
+import { logActivity } from '../../utils/audit'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -20,6 +21,16 @@ export default defineEventHandler(async (event) => {
     regencyId: body.regencyId,
     districtId: body.districtId,
     checkIn: body.checkIn,
+  })
+  
+  await logActivity({
+    userId: event.context.user.id,
+    actorName: event.context.user.name,
+    actorRole: event.context.user.role,
+    action: 'CHECKIN_TENANT',
+    entityType: 'tenant',
+    entityId: newTenant.id,
+    details: { name: newTenant.name, propertyId, roomId: newTenant.roomId },
   })
   
   return apiSuccess(newTenant, 'Tenant created successfully')
