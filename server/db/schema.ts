@@ -207,6 +207,8 @@ export const expenses = pgTable('expenses', {
 export const activityLogs = pgTable('activity_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  actorName: varchar('actor_name', { length: 255 }),
+  actorRole: varchar('actor_role', { length: 50 }),
   action: varchar('action', { length: 50 }).notNull(), // e.g., 'CREATE', 'UPDATE', 'DELETE'
   entityType: varchar('entity_type', { length: 50 }).notNull(), // e.g., 'tenant', 'payment'
   entityId: uuid('entity_id'),
