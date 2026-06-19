@@ -3,7 +3,9 @@ import { activityLogs } from '../db/schema'
 
 interface LogActivityParams {
   userId?: string
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'FAILED_LOGIN_ATTEMPT'
+  actorName?: string
+  actorRole?: string
+  action: string
   entityType: string
   entityId?: string
   details?: Record<string, unknown>
@@ -29,6 +31,8 @@ export async function logActivity(params: LogActivityParams): Promise<void> {
   try {
     await db.insert(activityLogs).values({
       userId: params.userId || null,
+      actorName: params.actorName || null,
+      actorRole: params.actorRole || null,
       action: params.action,
       entityType: params.entityType,
       entityId: params.entityId || null,
