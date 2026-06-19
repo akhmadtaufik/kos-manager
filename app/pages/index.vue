@@ -300,7 +300,8 @@ watch(loginForm, (newVal) => {
   if (!result.success) {
     const errs: Record<string, string> = {}
     result.error.issues.forEach(issue => {
-      errs[issue.path[0] as string] = issue.message
+      const key = issue.path[0] as string
+      if (!errs[key]) errs[key] = issue.message
     })
     loginFieldErrors.value = errs
   } else {
@@ -314,7 +315,8 @@ watch(registerForm, (newVal) => {
   if (!result.success) {
     const errs: Record<string, string> = {}
     result.error.issues.forEach(issue => {
-      errs[issue.path[0] as string] = issue.message
+      const key = issue.path[0] as string
+      if (!errs[key]) errs[key] = issue.message
     })
     registerFieldErrors.value = errs
   } else {
