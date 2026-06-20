@@ -1,24 +1,23 @@
 import { db } from '../../db'
 import { activityLogs, properties, userProperties } from '../../db/schema'
-import { eq, desc, and, inArray, SQL } from 'drizzle-orm'
+import { eq, desc, and, inArray, SQL, count } from 'drizzle-orm'
 import { getServerSession } from '#auth'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
   if (!session?.user) {
-    console.log('[Audit API] 401 Unauthorized - No Session User')
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
   const userRole = (session.user as any).role
   const userId = (session.user as any).id
   if (userRole !== 'owner' && userRole !== 'superadmin') {
-    console.log(`[Audit API] 403 Forbidden - Role is ${userRole}`)
     throw createError({ statusCode: 403, statusMessage: 'Forbidden: Owners only' })
   }
 
   const query = getQuery(event)
   const roleFilter = query.role as string // 'all', 'owner', 'operator'
+  const operatorIdFilter = query.operatorId as string // Specific operator
   const page = parseInt(query.page as string) || 1
   const limit = parseInt(query.limit as string) || 20
   const offset = (page - 1) * limit
@@ -27,6 +26,10 @@ export default defineEventHandler(async (event) => {
 
   if (roleFilter && roleFilter !== 'all') {
     conditions.push(eq(activityLogs.actorRole, roleFilter))
+  }
+  
+  if (operatorIdFilter) {
+    conditions.push(eq(activityLogs.userId, operatorIdFilter))
   }
 
   if (userRole === 'owner') {
@@ -44,38 +47,42 @@ export default defineEventHandler(async (event) => {
     // 3. The valid user IDs are the owner's ID + operator IDs
     const validUserIds = [userId, ...operatorIds].filter(Boolean)
     
-    console.log(`[Audit API DEBUG] Session userId: ${userId}, Property IDs: ${propertyIds.join(',')}, Operator IDs: ${operatorIds.join(',')}, Valid User IDs: ${validUserIds.join(',')}`)
-    
-    // 4. Exclude 'system' and restrict to valid users
-    if (validUserIds.length > 0) {
+    // 4. Exclude 'system' and restrict to valid users (if not explicitly querying a specific operator)
+    if (validUserIds.length > 0 && !operatorIdFilter) {
       conditions.push(inArray(activityLogs.userId, validUserIds))
-    } else {
+    } else if (!operatorIdFilter) {
       // If no valid users (shouldn't happen since userId is there, but just in case)
       conditions.push(eq(activityLogs.userId, userId))
     }
+    
+    // Security Check: If requesting a specific operator, ensure they belong to this owner
+    if (operatorIdFilter && !validUserIds.includes(operatorIdFilter)) {
+        throw createError({ statusCode: 403, statusMessage: 'Forbidden: Cannot access logs for this operator' })
+    }
   }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
   // Fetch paginated logs
   const logs = await db.query.activityLogs.findMany({
-    where: conditions.length > 0 ? and(...conditions) : undefined,
+    where: whereClause,
     orderBy: [desc(activityLogs.createdAt)],
     limit,
     offset,
   })
 
-  // Count total for pagination
-  // This is a naive count; for ultra-scale we might use a separate count query or an estimate
-  const totalLogs = await db.select({ id: activityLogs.id }).from(activityLogs).where(conditions.length > 0 ? and(...conditions) : undefined)
-
-  console.log(`[Audit API] roleFilter: ${roleFilter}, logs found: ${logs.length}, total: ${totalLogs.length}`)
+  // Count total for pagination (True Database Count)
+  const [{ total }] = await db.select({ total: count() })
+    .from(activityLogs)
+    .where(whereClause)
 
   return {
     data: logs,
     meta: {
       page,
       limit,
-      total: totalLogs.length,
-      totalPages: Math.ceil(totalLogs.length / limit)
+      total,
+      totalPages: Math.ceil(total / limit)
     }
   }
 })
