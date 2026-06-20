@@ -71,7 +71,8 @@ export default defineEventHandler(async (event) => {
     action: 'UPDATE',
     entityType: 'tenant',
     entityId: id,
-    details: { name: body.name }
+    before: tenant,
+    after: updated
   })
 
   return apiSuccess(updated, 'Tenant updated successfully')
