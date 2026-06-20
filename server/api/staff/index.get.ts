@@ -23,11 +23,13 @@ export default defineEventHandler(async (event) => {
   })
 
   // Format to return just the user objects with the assignedAt date and permissions
-  const formatted = staffList.map(item => ({
-    ...item.user,
-    assignedAt: item.assignedAt,
-    permissions: item.permissions || []
-  }))
+  const formatted = staffList
+    .filter(item => item.user && item.user.role !== 'owner')
+    .map(item => ({
+      ...item.user,
+      assignedAt: item.assignedAt,
+      permissions: item.permissions || []
+    }))
 
   return apiSuccess(formatted, 'Staff list retrieved successfully')
 })
