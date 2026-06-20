@@ -8,12 +8,18 @@
       <div class="flex items-center space-x-3">
         <!-- Filter Bar -->
         <select
-          v-model="roleFilter"
-          class="block w-40 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-slate-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+          id="actor-filter-select"
+          v-model="actorFilter"
+          class="block w-48 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-slate-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
         >
           <option value="all">All Actors</option>
-          <option value="owner">Owners</option>
-          <option value="operator">Operators</option>
+          <option value="role:owner">All Owners</option>
+          <option value="role:operator">All Operators</option>
+          <optgroup v-if="operators.length > 0" label="Specific Operators">
+            <option v-for="op in operators" :key="op.id" :value="'user:' + op.id">
+              {{ op.name }} (Operator)
+            </option>
+          </optgroup>
         </select>
         <button
           @click="fetchLogs"
@@ -95,6 +101,15 @@
               <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                 <p class="font-medium text-slate-900 dark:text-white">{{ formatAction(log.action) }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">{{ formatDetails(log) }}</p>
+                
+                <div v-if="log.details && log.details.changes" class="mt-2 space-y-1 rounded-md bg-slate-50 p-2 text-xs ring-1 ring-inset ring-slate-200 dark:bg-slate-800/50 dark:ring-slate-700/50">
+                  <div v-for="(change, key) in log.details.changes" :key="key" class="flex items-center space-x-2">
+                    <span class="font-medium text-slate-700 dark:text-slate-300">{{ formatKey(key) }}:</span>
+                    <span class="text-slate-500 line-through dark:text-slate-500">{{ change.old || 'none' }}</span>
+                    <span class="text-slate-400">➔</span>
+                    <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ change.new || 'none' }}</span>
+                  </div>
+                </div>
               </td>
             </tr>
           </template>
@@ -148,8 +163,9 @@ definePageMeta({
 
 // State
 const logs = ref<any[]>([])
+const operators = ref<any[]>([])
 const isLoading = ref(true)
-const roleFilter = ref('all')
+const actorFilter = ref('all')
 const page = ref(1)
 const totalPages = ref(1)
 
@@ -157,14 +173,23 @@ const totalPages = ref(1)
 const fetchLogs = async () => {
   isLoading.value = true
   try {
+    let role = 'all'
+    let operatorId = ''
+    
+    if (actorFilter.value.startsWith('role:')) {
+      role = actorFilter.value.split(':')[1]
+    } else if (actorFilter.value.startsWith('user:')) {
+      operatorId = actorFilter.value.split(':')[1]
+    }
+
     const response = await $fetch('/api/audit', {
       params: {
-        role: roleFilter.value,
+        role,
+        operatorId,
         page: page.value,
         limit: 15
       }
     })
-    console.error('AUDIT FETCH RESPONSE:', JSON.stringify(response))
     logs.value = response.data || []
     totalPages.value = response.meta.totalPages || 1
   } catch (error) {
@@ -174,13 +199,23 @@ const fetchLogs = async () => {
   }
 }
 
+const fetchOperators = async () => {
+  try {
+    const response = await $fetch('/api/audit/operators')
+    operators.value = response.data || []
+  } catch (error) {
+    console.error('Failed to fetch operators', error)
+  }
+}
+
 // Watchers
-watch(roleFilter, () => {
+watch(actorFilter, () => {
   page.value = 1
   fetchLogs()
 })
 
 onMounted(() => {
+  fetchOperators()
   fetchLogs()
 })
 
@@ -220,6 +255,10 @@ const formatAction = (action: string) => {
   return action.split('_').map(capitalize).join(' ')
 }
 
+const formatKey = (key: string) => {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+}
+
 const formatDetails = (log: any) => {
   if (!log.details) return 'No additional details'
   
@@ -232,10 +271,13 @@ const formatDetails = (log: any) => {
   if (log.action === 'ADD_ROOM' && log.details.roomNumber) {
     return `Room Number: ${log.details.roomNumber}`
   }
+  if (log.action === 'TAMPER_ATTEMPT' && log.details.message) {
+    return log.details.message
+  }
   
   // Fallback for generic JSON display
   try {
-    const keys = Object.keys(log.details)
+    const keys = Object.keys(log.details).filter(k => k !== 'changes')
     if (keys.length > 0) {
       return keys.map(k => `${k}: ${log.details[k]}`).join(', ')
     }
@@ -243,6 +285,6 @@ const formatDetails = (log: any) => {
     // ignore
   }
   
-  return 'Updated system records'
+  return log.details.changes ? 'Updated record fields' : 'Updated system records'
 }
 </script>

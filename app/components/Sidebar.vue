@@ -16,7 +16,7 @@ const { hasPermission } = usePropertyState()
       <NuxtLink to="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Dashboard</span>
       </NuxtLink>
-      <NuxtLink to="/properties" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
+      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/properties" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">
         <span>Properties</span>
       </NuxtLink>
       <NuxtLink v-if="hasPermission('manage_rooms')" to="/rooms" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors" active-class="bg-blue-50 text-blue-700 font-medium">

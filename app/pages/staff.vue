@@ -4,6 +4,7 @@ import { useAuth } from '#imports'
 
 definePageMeta({
   layout: 'dashboard',
+  middleware: ['owner']
 })
 
 const { activePropertyId } = usePropertyState()
