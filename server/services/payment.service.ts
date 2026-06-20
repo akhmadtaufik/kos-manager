@@ -74,6 +74,14 @@ export async function generateMonthlyInvoices(propertyId: string, billingMonth: 
 }
 
 export async function markPaymentAsPaid(paymentId: string, userId: string) {
+  const before = await db.query.payments.findFirst({
+    where: eq(payments.id, paymentId)
+  })
+
+  if (!before) {
+    throw new Error('Payment not found')
+  }
+
   const [updated] = await db.update(payments)
     .set({ 
       status: 'paid', 
@@ -88,7 +96,8 @@ export async function markPaymentAsPaid(paymentId: string, userId: string) {
       action: 'UPDATE_STATUS',
       entityType: 'payment',
       entityId: paymentId,
-      details: { status: 'paid' },
+      before,
+      after: updated
     })
   }
 
