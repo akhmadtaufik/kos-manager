@@ -3,6 +3,86 @@ import { properties, userProperties, users } from '../../db/schema'
 import { eq, inArray } from 'drizzle-orm'
 import { getServerSession } from '#auth'
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['Audit'],
+    summary: 'Get Operator Activity',
+    description: 'Fetches activity logs specifically filtered for operators/staff, showing their administrative actions within the system.',
+    responses: {
+        "200": {
+            "description": "Successful retrieval of data",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Data retrieved successfully"
+                            },
+                            "data": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "401": {
+            "description": "Unauthorized - Invalid or missing authentication token",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "example": false
+                            },
+                            "statusCode": {
+                                "type": "integer",
+                                "example": 401
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Unauthorized - Invalid or missing authentication token"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "500": {
+            "description": "Internal Server Error",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "example": false
+                            },
+                            "statusCode": {
+                                "type": "integer",
+                                "example": 500
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Internal Server Error"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+  }
+})
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
   if (!session?.user) {
