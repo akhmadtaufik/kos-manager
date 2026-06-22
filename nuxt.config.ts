@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@sidebase/nuxt-auth',
     '@nuxt/test-utils/module',
+    '@scalar/nuxt',
   ],
 
   // Tailwind CSS configuration
@@ -59,13 +60,29 @@ export default defineNuxtConfig({
     },
   },
 
+  routeRules: {
+    '/docs/**': { ssr: false },
+    '/_openapi.json': { ssr: false },
+  },
 
-  // Nitro server configuration
   nitro: {
+    experimental: {
+      openAPI: true
+    },
+    openAPI: {
+      production: 'runtime'
+    },
     // Automatically import server utilities
     imports: {
       dirs: ['server/utils'],
     },
+  },
+
+  scalar: {
+    url: '/_openapi.json',
+    pathRouting: {
+      basePath: '/docs',
+    }
   },
 
   // TypeScript strict mode
