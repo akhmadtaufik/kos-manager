@@ -4,6 +4,9 @@ import { and, eq, inArray, sql, sum, count } from 'drizzle-orm'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess, HttpError } from '../../utils/response'
+import { zodToJsonSchema } from 'zod-to-json-schema'
+import { z } from 'zod'
+
 
 defineRouteMeta({
   openAPI: {
@@ -11,77 +14,12 @@ defineRouteMeta({
     summary: 'Get Recapitulation Report',
     description: 'Fetches a high-level summary report containing key metrics like total income, total expenses, and occupancy rates over a specified period.',
     responses: {
-        "200": {
-            "description": "Successful retrieval of data",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": true
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Data retrieved successfully"
-                            },
-                            "data": {
-                                "type": "object"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 401
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Unauthorized - Invalid or missing authentication token"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "500": {
-            "description": "Internal Server Error",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 500
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Internal Server Error"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+      200: {
+        description: 'Successful retrieval of data',
+        content: { 'application/json': { schema: { type: 'object' } } }
+      },
+      401: { $ref: '#/components/responses/UnauthorizedError' },
+      500: { $ref: '#/components/responses/InternalServerError' }
     }
   }
 })
