@@ -1,47 +1,26 @@
 import { getUserProperties } from '../../services/property.service'
 import { apiSuccess } from '../../utils/response'
+import { zodToJsonSchema } from 'zod-to-json-schema'
+import { z } from 'zod'
+import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/validations'
+
+
 
 defineRouteMeta({
   openAPI: {
+    tags: ['Properties'],
     summary: 'Retrieve all properties',
     description: 'Fetches a list of all properties belonging to the authenticated user.',
-    tags: ['Properties'],
     responses: {
       200: {
-        description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean', example: true },
-                message: { type: 'string', example: 'Properties retrieved successfully' },
-                data: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
-                      name: { type: 'string', example: 'Kost Mawar' },
-                      address: { type: 'string', example: 'Jl. Melati No. 1' },
-                      ownerId: { type: 'string', format: 'uuid', example: 'owner-uuid' },
-                      createdAt: { type: 'string', format: 'date-time' },
-                      updatedAt: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        description: 'Successful retrieval of data',
+        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: createPaginatedSchema(selectPropertySchema) })) } }
       },
-      401: {
-        description: 'Unauthorized'
-      }
+      401: { $ref: '#/components/responses/UnauthorizedError' },
+      500: { $ref: '#/components/responses/InternalServerError' }
     }
   }
 })
-
 export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
@@ -50,5 +29,5 @@ export default defineEventHandler(async (event) => {
 
   const properties = await getUserProperties(user)
   
-  return apiSuccess(properties, 'Properties retrieved successfully')
+  return sendSuccessResponse(event, properties, 200, 'Properties retrieved successfully')
 })

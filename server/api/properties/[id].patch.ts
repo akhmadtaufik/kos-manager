@@ -4,6 +4,10 @@ import { eq } from 'drizzle-orm'
 import { requirePropertyOwnership } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
+import { zodToJsonSchema } from 'zod-to-json-schema'
+import { z } from 'zod'
+import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/validations'
+
 
 defineRouteMeta({
   openAPI: {
@@ -11,125 +15,14 @@ defineRouteMeta({
     summary: 'Update Property Details',
     description: 'Updates information for an existing property, such as name, address, or facilities.',
     responses: {
-        "200": {
-            "description": "Resource successfully updated",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": true
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Updated successfully"
-                            },
-                            "data": {
-                                "type": "object"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "400": {
-            "description": "Bad Request - Validation error or missing fields",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 400
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Bad Request - Validation error or missing fields"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 401
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Unauthorized - Invalid or missing authentication token"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "404": {
-            "description": "Resource not found",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 404
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Resource not found"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "500": {
-            "description": "Internal Server Error",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 500
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Internal Server Error"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+      200: {
+        description: 'Resource successfully updated',
+        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectPropertySchema })) } }
+      },
+      400: { $ref: '#/components/responses/ValidationError' },
+      401: { $ref: '#/components/responses/UnauthorizedError' },
+      404: { $ref: '#/components/responses/NotFoundError' },
+      500: { $ref: '#/components/responses/InternalServerError' }
     }
   }
 })
