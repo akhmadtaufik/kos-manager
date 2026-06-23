@@ -1,3 +1,4 @@
+import { setResponseStatus, createError } from 'h3'
 import type { H3Event } from 'h3'
 
 /**
@@ -5,56 +6,87 @@ import type { H3Event } from 'h3'
  * Ensures consistent response format across all endpoints
  */
 
-interface ApiSuccessResponse<T> {
-  success: true
-  data: T
-  message?: string
-}
-
-interface ApiErrorResponse {
-  success: false
-  error: string
+export interface UniversalResponse<T = null> {
+  status: 'success' | 'error'
   statusCode: number
-  details?: unknown
+  message: string
+  data?: T
+  errors?: unknown
 }
-
-type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse
 
 /**
- * Create a standardized success response
+ * NEW: Strict JSON format for success responses
  */
-export function apiSuccess<T>(data: T, message?: string): ApiSuccessResponse<T> {
+export function sendSuccessResponse<T>(
+  event: H3Event,
+  data: T,
+  statusCode = 200,
+  message = 'Success'
+): UniversalResponse<T> {
+  setResponseStatus(event, statusCode)
   return {
-    success: true,
-    data,
-    ...(message && { message }),
+    status: 'success',
+    statusCode,
+    message,
+    ...(data !== undefined && data !== null && { data })
   }
 }
 
 /**
- * Create a standardized error response and throw an H3 error
+ * NEW: Strict JSON format for error responses
  */
+export function sendErrorResponse(
+  event: H3Event,
+  statusCode: number,
+  message: string,
+  errors: unknown = null
+): UniversalResponse {
+  setResponseStatus(event, statusCode)
+  return {
+    status: 'error',
+    statusCode,
+    message,
+    ...(errors !== undefined && errors !== null && { errors })
+  }
+}
+
+// ==========================================
+// LEGACY COMPATIBILITY LAYER
+// These functions wrap the old arguments into the new strict format
+// ensuring that existing endpoints (50+) do not break.
+// ==========================================
+
+export function apiSuccess<T>(data: T, message?: string) {
+  // Returns the new format so that when returned from an endpoint, H3 automatically uses it.
+  // Note: we can't set status code here easily without the event, but H3 defaults to 200.
+  return {
+    status: 'success',
+    statusCode: 200,
+    message: message || 'Success',
+    ...(data !== undefined && data !== null && { data })
+  }
+}
+
 export function apiError(
   event: H3Event,
   statusCode: number,
   message: string,
   details?: unknown
 ): never {
+  // We throw an H3 error, but we embed our strict Universal format in the data.
+  // The error-handler plugin must intercept this and output the strict JSON.
   throw createError({
     statusCode,
     statusMessage: message,
     data: {
-      success: false,
-      error: message,
+      status: 'error',
       statusCode,
-      ...(details && { details }),
+      message,
+      ...(details !== undefined && details !== null && { errors: details }),
     },
   })
 }
 
-/**
- * Shorthand for common HTTP errors
- */
 export const HttpError = {
   badRequest: (event: H3Event, message = 'Bad Request', details?: unknown) =>
     apiError(event, 400, message, details),
