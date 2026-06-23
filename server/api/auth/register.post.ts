@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { db, users } from '../../db'
 import { registerSchema } from '../../../utils/validations'
+import { zodToJsonSchema } from 'zod-to-json-schema'
+import { z } from 'zod'
 
 defineRouteMeta({
   openAPI: {
@@ -8,101 +10,128 @@ defineRouteMeta({
     summary: 'Register New User',
     description: 'Registers a new user account in the system. Requires valid email, password, and basic user information.',
     responses: {
-        "201": {
-            "description": "Resource successfully created",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": true
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Created successfully"
-                            },
-                            "data": {
-                                "type": "object"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "400": {
-            "description": "Bad Request - Validation error or invalid payload",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 400
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Bad Request - Validation error or invalid payload"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 401
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Unauthorized - Invalid or missing authentication token"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "500": {
-            "description": "Internal Server Error",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 500
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Internal Server Error"
-                            }
-                        }
-                    }
-                }
-            }
+      201: {
+        description: 'Resource successfully created',
+        content: {
+          'application/json': {
+            schema: zodToJsonSchema(z.object({
+              status: z.literal('success'),
+              statusCode: z.literal(201),
+              message: z.string().default('User successfully registered'),
+              data: z.object({
+                id: z.string(),
+                email: z.string(),
+                name: z.string(),
+                role: z.string()
+              })
+            }))
+          }
         }
+      },
+      400: { $ref: '#/components/responses/ValidationError' },
+      401: { $ref: '#/components/responses/UnauthorizedError' },
+      500: { $ref: '#/components/responses/InternalServerError' }
+    },
+    $global: {
+      components: {
+        securitySchemes: {
+          cookieAuth: {
+            type: 'apiKey',
+            in: 'cookie',
+            name: 'next-auth.session-token',
+            description: 'Session cookie from NextAuth/NuxtAuth'
+          }
+        },
+        responses: {
+          SuccessResponse: {
+            description: 'Standard Success Response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'success' },
+                    statusCode: { type: 'integer', example: 200 },
+                    message: { type: 'string', example: 'Success' },
+                    data: { type: 'object', description: 'Response payload' }
+                  }
+                }
+              }
+            }
+          },
+          ValidationError: {
+            description: 'Bad Request - Validation error or invalid payload',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'error' },
+                    statusCode: { type: 'integer', example: 400 },
+                    message: { type: 'string', example: 'Validation failed' },
+                    errors: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          field: { type: 'string', example: 'email' },
+                          message: { type: 'string', example: 'Invalid format' }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          InternalServerError: {
+            description: 'Internal Server Error',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'error' },
+                    statusCode: { type: 'integer', example: 500 },
+                    message: { type: 'string', example: 'An unexpected internal error occurred.' }
+                  }
+                }
+              }
+            }
+          },
+          UnauthorizedError: {
+            description: 'Unauthorized - Missing or invalid token',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'error' },
+                    statusCode: { type: 'integer', example: 401 },
+                    message: { type: 'string', example: 'Unauthorized: Sesi tidak valid atau telah kedaluwarsa.' }
+                  }
+                }
+              }
+            }
+          },
+          NotFoundError: {
+            description: 'Resource Not Found',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'error' },
+                    statusCode: { type: 'integer', example: 404 },
+                    message: { type: 'string', example: 'Page not found' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      security: [{ cookieAuth: [] }]
     }
   }
 })
@@ -116,9 +145,7 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       statusMessage: 'Validasi gagal',
       data: {
-        success: false,
-        error: 'Validasi gagal',
-        details: parsed.error.flatten().fieldErrors,
+        errors: parsed.error.flatten().fieldErrors,
       },
     })
   }
@@ -137,7 +164,6 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 409,
       statusMessage: 'Email sudah terdaftar',
-      data: { success: false, error: 'Email sudah terdaftar' },
     })
   }
 
@@ -161,6 +187,5 @@ export default defineEventHandler(async (event) => {
       createdAt: users.createdAt,
     })
 
-  setResponseStatus(event, 201)
-  return apiSuccess(newUser, 'Akun berhasil dibuat.')
+  return sendSuccessResponse(event, newUser, 201, 'Akun berhasil dibuat.')
 })
