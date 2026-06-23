@@ -70,7 +70,62 @@ export default defineNuxtConfig({
       openAPI: true
     },
     openAPI: {
-      production: 'runtime'
+      production: 'runtime',
+      meta: {
+        components: {
+          securitySchemes: {
+            cookieAuth: {
+              type: 'apiKey',
+              in: 'cookie',
+              name: 'next-auth.session-token',
+              description: 'Session cookie from NextAuth/NuxtAuth'
+            }
+          },
+          responses: {
+            ValidationError: {
+              description: 'Bad Request - Validation error or invalid payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: false },
+                      statusCode: { type: 'integer', example: 400 },
+                      message: { type: 'string', example: 'Validation failed' },
+                      errors: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            field: { type: 'string', example: 'email' },
+                            message: { type: 'string', example: 'Invalid format' }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            InternalServerError: {
+              description: 'Internal Server Error',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: false },
+                      statusCode: { type: 'integer', example: 500 },
+                      message: { type: 'string', example: 'An unexpected internal error occurred.' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        security: [{ cookieAuth: [] }]
+      }
     },
     // Automatically import server utilities
     imports: {
@@ -82,6 +137,11 @@ export default defineNuxtConfig({
     url: '/_openapi.json',
     pathRouting: {
       basePath: '/docs',
+    },
+    configuration: {
+      authentication: {
+        preferredSecurityScheme: 'cookieAuth'
+      }
     }
   },
 
