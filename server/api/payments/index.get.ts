@@ -2,6 +2,10 @@ import { getPaymentsByProperty } from '../../services/payment.service'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
+import { zodToJsonSchema } from 'zod-to-json-schema'
+import { z } from 'zod'
+import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/validations'
+
 
 defineRouteMeta({
   openAPI: {
@@ -9,77 +13,12 @@ defineRouteMeta({
     summary: 'List All Payments',
     description: 'Retrieves a list of all payment transactions, allowing filtering by status, date, and tenant.',
     responses: {
-        "200": {
-            "description": "Successful retrieval of data",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": true
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Data retrieved successfully"
-                            },
-                            "data": {
-                                "type": "object"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 401
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Unauthorized - Invalid or missing authentication token"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "500": {
-            "description": "Internal Server Error",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": false
-                            },
-                            "statusCode": {
-                                "type": "integer",
-                                "example": 500
-                            },
-                            "message": {
-                                "type": "string",
-                                "example": "Internal Server Error"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+      200: {
+        description: 'Successful retrieval of data',
+        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: createPaginatedSchema(selectPaymentSchema) })) } }
+      },
+      401: { $ref: '#/components/responses/UnauthorizedError' },
+      500: { $ref: '#/components/responses/InternalServerError' }
     }
   }
 })
