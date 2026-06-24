@@ -10,6 +10,7 @@ export interface UniversalResponse<T = null> {
   status: 'success' | 'error'
   statusCode: number
   message: string
+  reqId?: string
   data?: T
   errors?: unknown
 }
@@ -28,6 +29,7 @@ export function sendSuccessResponse<T>(
     status: 'success',
     statusCode,
     message,
+    ...(event.context.reqId && { reqId: event.context.reqId as string }),
     ...(data !== undefined && data !== null && { data })
   }
 }
@@ -39,13 +41,15 @@ export function sendErrorResponse(
   event: H3Event,
   statusCode: number,
   message: string,
-  errors: unknown = null
+  errors: unknown = null,
+  reqId?: string
 ): UniversalResponse {
   setResponseStatus(event, statusCode)
   return {
     status: 'error',
     statusCode,
     message,
+    ...(reqId !== undefined ? { reqId } : (event?.context?.reqId && { reqId: event.context.reqId as string })),
     ...(errors !== undefined && errors !== null && { errors })
   }
 }
@@ -75,6 +79,7 @@ export function apiError(
 ): never {
   // We throw an H3 error, but we embed our strict Universal format in the data.
   // The error-handler plugin must intercept this and output the strict JSON.
+  const reqId = event.context.reqId as string | undefined;
   throw createError({
     statusCode,
     statusMessage: message,
@@ -82,6 +87,7 @@ export function apiError(
       status: 'error',
       statusCode,
       message,
+      ...(reqId !== undefined && { reqId }),
       ...(details !== undefined && details !== null && { errors: details }),
     },
   })
