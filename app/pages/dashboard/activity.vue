@@ -182,7 +182,7 @@ const fetchLogs = async () => {
       operatorId = actorFilter.value.split(':')[1]
     }
 
-    const response = await $fetch('/api/audit', {
+    const response = await $fetch<any>('/api/audit', {
       params: {
         role,
         operatorId,
@@ -190,8 +190,8 @@ const fetchLogs = async () => {
         limit: 15
       }
     })
-    logs.value = response.data || []
-    totalPages.value = response.meta.totalPages || 1
+    logs.value = response.data?.data || response.data || []
+    totalPages.value = response.data?.meta?.totalPages || 1
   } catch (error) {
     console.error('Failed to fetch activity logs', error)
   } finally {
@@ -201,8 +201,8 @@ const fetchLogs = async () => {
 
 const fetchOperators = async () => {
   try {
-    const response = await $fetch('/api/audit/operators')
-    operators.value = response.data || []
+    const response = await $fetch<any>('/api/audit/operators')
+    operators.value = response.data?.data || response.data || []
   } catch (error) {
     console.error('Failed to fetch operators', error)
   }

@@ -44,8 +44,8 @@ const fetchRekap = async () => {
     if (selectedMonth.value) query.append('month', selectedMonth.value)
     
     const res = await $fetch<any>(`/api/reports/rekap?${query.toString()}`)
-    if (res.success) {
-      rekap.value = res.data
+    if (res.status === 'success') {
+      rekap.value = res.data?.data || res.data
     }
   } catch (e) {
     console.error('Failed to fetch rekap', e)
@@ -59,8 +59,8 @@ const fetchDemographics = async () => {
   try {
     const query = activePropertyId.value ? `?propertyId=${activePropertyId.value}` : ''
     const res = await $fetch<any>(`/api/analytics/demographics${query}`)
-    if (res.success) {
-      demographics.value = res.data
+    if (res.status === 'success') {
+      demographics.value = res.data?.data || res.data || []
     }
   } catch (e) {
     console.error('Failed to fetch demographics', e)
