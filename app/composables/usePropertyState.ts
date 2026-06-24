@@ -9,11 +9,11 @@ export const usePropertyState = () => {
     isLoading.value = true
     try {
       const res = await $fetch<any>('/api/properties')
-      if (res.success) {
-        properties.value = res.data
+      if (res.status === 'success') {
+        properties.value = res.data?.data || res.data || []
         // Auto-select the first property if none is selected
-        if (!activePropertyId.value && res.data.length > 0) {
-          activePropertyId.value = res.data[0].id
+        if (!activePropertyId.value && properties.value.length > 0) {
+          activePropertyId.value = properties.value[0].id
         }
       }
       isLoaded.value = true
