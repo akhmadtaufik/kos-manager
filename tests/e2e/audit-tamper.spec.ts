@@ -85,12 +85,24 @@ test.describe.serial('Audit Tamper Journey', () => {
     
     // --- PHASE 2: The Rejection ---
     expect(deleteRes.status()).toBe(403);
+    const deleteJson = await deleteRes.json();
+    expect(deleteJson).toMatchObject({
+      status: 'error',
+      statusCode: 403,
+      message: expect.any(String)
+    });
     
     // Send a direct PATCH request
     const patchRes = await opContext.request.patch(`/api/audit/${targetLogId}`, {
       data: { details: '{"name": "Good Tenant"}' }
     });
     expect(patchRes.status()).toBe(403);
+    const patchJson = await patchRes.json();
+    expect(patchJson).toMatchObject({
+      status: 'error',
+      statusCode: 403,
+      message: expect.any(String)
+    });
 
     await opContext.close();
 
