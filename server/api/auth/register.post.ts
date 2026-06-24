@@ -1,37 +1,12 @@
 import { eq } from 'drizzle-orm'
 import { db, users } from '../../db'
 import { registerSchema } from '../../../utils/validations'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 
 defineRouteMeta({
   openAPI: {
     tags: ['Auth'],
     summary: 'Register New User',
     description: 'Registers a new user account in the system. Requires valid email, password, and basic user information.',
-    responses: {
-      201: {
-        description: 'Resource successfully created',
-        content: {
-          'application/json': {
-            schema: zodToJsonSchema(z.object({
-              status: z.literal('success'),
-              statusCode: z.literal(201),
-              message: z.string().default('User successfully registered'),
-              data: z.object({
-                id: z.string(),
-                email: z.string(),
-                name: z.string(),
-                role: z.string()
-              })
-            }))
-          }
-        }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    },
     $global: {
       components: {
         securitySchemes: {
