@@ -70,8 +70,8 @@ const fetchTenants = async () => {
   try {
     const propertyQuery = activePropertyId.value ? `?propertyId=${activePropertyId.value}` : ''
     const res = await $fetch<any>(`/api/tenants${propertyQuery}`)
-    if (res.success) {
-      tenants.value = res.data
+    if (res.status === 'success') {
+      tenants.value = res.data?.data || res.data || []
     }
   } catch (err) {
     console.error('Failed to fetch tenants', err)
@@ -84,8 +84,9 @@ const fetchAvailableRooms = async () => {
   if (!activePropertyId.value) return
   try {
     const res = await $fetch<any>(`/api/rooms?propertyId=${activePropertyId.value}`)
-    if (res.success) {
-      availableRooms.value = res.data.filter((r: any) => r.status === 'available')
+    if (res.status === 'success') {
+      const data = res.data?.data || res.data || []
+      availableRooms.value = data.filter((r: any) => r.status === 'available')
     }
   } catch (err) {
     console.error('Failed to fetch rooms', err)
