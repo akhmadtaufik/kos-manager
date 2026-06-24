@@ -4,23 +4,13 @@ import { and, eq, inArray, sql, count } from 'drizzle-orm'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 
 
 defineRouteMeta({
   openAPI: {
     tags: ['Analytics'],
     summary: 'Retrieve Tenant Demographics',
-    description: 'Fetches analytical data regarding tenant demographics, such as age distribution, gender, and occupation, to help owners understand their market.',
-    responses: {
-      200: {
-        description: 'Successful retrieval of data',
-        content: { 'application/json': { schema: { type: 'object' } } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Fetches analytical data regarding tenant demographics, such as age distribution, gender, and occupation, to help owners understand their market.'
   }
 })
 export default defineEventHandler(async (event) => {
