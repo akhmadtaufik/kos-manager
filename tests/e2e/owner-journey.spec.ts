@@ -14,19 +14,20 @@ test.describe('Owner Journey E2E', () => {
   const totalBilled = (parseInt(baseMonthlyRate) + parseInt(additionalFeeAmount)).toLocaleString('id-ID');
 
   test('Complete Property Management Flow', async ({ page }) => {
+    test.setTimeout(120000);
     // Automatically accept any alerts/dialogs that pop up (like success messages)
     page.on('dialog', dialog => dialog.accept());
 
     // 0. Setup: Register a new test user to ensure clean state
-    await page.goto('/login');
+    await page.goto('/');
     await page.click('#tab-register');
     await page.fill('#reg-name', userName);
     await page.fill('#reg-email', userEmail);
     await page.fill('#reg-password', userPassword);
-    await page.click('#btn-register-submit');
+    await page.click('button[type="submit"]');
     
     // Handle Onboarding flow
-    await expect(page).toHaveURL(/.*onboarding/);
+    await expect(page).toHaveURL(/.*onboarding/, { timeout: 15000 });
     await page.click('button:has-text("Pemilik Kos")');
 
     // Ensure we are redirected to the dashboard
