@@ -7,6 +7,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
+COPY scripts/patch-compiler-sfc.cjs ./scripts/
 
 # Install build tools and dependencies
 RUN apk add --no-cache python3 make g++
