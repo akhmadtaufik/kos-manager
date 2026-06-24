@@ -7,7 +7,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
+    "postinstall": "nuxt prepare && node scripts/patch-compiler-sfc.cjs",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
@@ -44,6 +44,7 @@
     "vitest": "^4.1.9"
   },
   "overrides": {
+    "magic-string": "^0.30.8",
     "vue": "3.5.13",
     "@vue/shared": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
@@ -54,6 +55,7 @@
     "@vue/server-renderer": "3.5.13"
   },
   "resolutions": {
+    "magic-string": "^0.30.8",
     "vue": "3.5.13",
     "@vue/shared": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
