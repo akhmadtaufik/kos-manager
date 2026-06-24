@@ -29,8 +29,8 @@ const fetchRooms = async () => {
   try {
     const propertyQuery = activePropertyId.value ? `?propertyId=${activePropertyId.value}` : ''
     const res = await $fetch<any>(`/api/rooms${propertyQuery}`)
-    if (res.success) {
-      rooms.value = res.data
+    if (res.status === 'success') {
+      rooms.value = res.data?.data || res.data || []
     }
   } catch (err) {
     console.error('Failed to fetch rooms', err)
