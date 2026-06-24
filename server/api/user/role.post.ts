@@ -2,8 +2,6 @@ import { db } from '../../db'
 import { users } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 import { apiSuccess } from '../../utils/response'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectUserSchema, insertUserSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -11,16 +9,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['User'],
     summary: 'Assign User Role',
-    description: 'Updates or assigns specific roles and permissions to a user (e.g., promoting a staff member to manager).',
-    responses: {
-      201: {
-        description: 'Resource successfully created',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectUserSchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Updates or assigns specific roles and permissions to a user (e.g., promoting a staff member to manager).'
   }
 })
 export default defineEventHandler(async (event) => {
