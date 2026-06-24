@@ -2,8 +2,6 @@ import { db } from '../../db'
 import { properties, userProperties, users } from '../../db/schema'
 import { eq, inArray } from 'drizzle-orm'
 import { getServerSession } from '#auth'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectActivityLogSchema, insertActivityLogSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -13,15 +11,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Audit'],
     summary: 'Get Operator Activity',
-    description: 'Fetches activity logs specifically filtered for operators/staff, showing their administrative actions within the system.',
-    responses: {
-      200: {
-        description: 'Successful retrieval of data',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: createPaginatedSchema(selectActivityLogSchema) })) } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Fetches activity logs specifically filtered for operators/staff, showing their administrative actions within the system.'
   }
 })
 export default defineEventHandler(async (event) => {

@@ -2,8 +2,6 @@ import { db } from '../../db'
 import { activityLogs, properties, userProperties } from '../../db/schema'
 import { eq, desc, and, inArray, SQL, count } from 'drizzle-orm'
 import { getServerSession } from '#auth'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectActivityLogSchema, insertActivityLogSchema, createPaginatedSchema } from '../../utils/validations'
 import { sendSuccessResponse } from '../../utils/response'
 
@@ -12,15 +10,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Audit'],
     summary: 'List Audit Logs',
-    description: 'Retrieves a comprehensive list of system audit logs, tracking user actions, data modifications, and security events.',
-    responses: {
-      200: {
-        description: 'Successful retrieval of data',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: createPaginatedSchema(selectActivityLogSchema) })) } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Retrieves a comprehensive list of system audit logs, tracking user actions, data modifications, and security events.'
   }
 })
 export default defineEventHandler(async (event) => {
