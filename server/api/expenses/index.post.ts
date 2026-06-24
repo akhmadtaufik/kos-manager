@@ -1,8 +1,6 @@
 import { createExpense } from '../../services/expense.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectExpenseSchema, insertExpenseSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -10,16 +8,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Expenses'],
     summary: 'Create Expense Record',
-    description: 'Logs a new operational expense, including amount, category, date, and associated property.',
-    responses: {
-      201: {
-        description: 'Resource successfully created',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectExpenseSchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Logs a new operational expense, including amount, category, date, and associated property.'
   }
 })
 export default defineEventHandler(async (event) => {

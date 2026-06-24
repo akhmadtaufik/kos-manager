@@ -4,8 +4,6 @@ import { eq } from 'drizzle-orm'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectExpenseSchema, insertExpenseSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -13,16 +11,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Expenses'],
     summary: 'Delete Expense Record',
-    description: 'Permanently removes a specific expense record identified by its ID.',
-    responses: {
-      200: {
-        description: 'Resource successfully deleted',
-        content: { 'application/json': { schema:  { $ref: '#/components/responses/SuccessResponse/content/application/json/schema' }  } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      404: { $ref: '#/components/responses/NotFoundError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Permanently removes a specific expense record identified by its ID.'
   }
 })
 export default defineEventHandler(async (event) => {
