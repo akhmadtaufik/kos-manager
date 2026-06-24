@@ -2,8 +2,6 @@ import { createRoom } from '../../services/room.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -11,16 +9,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Rooms'],
     summary: 'Create New Room',
-    description: 'Adds a new room to a specific property, defining its base price, capacity, and identifying number/name.',
-    responses: {
-      201: {
-        description: 'Resource successfully created',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectRoomSchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Adds a new room to a specific property, defining its base price, capacity, and identifying number/name.'
   }
 })
 export default defineEventHandler(async (event) => {
