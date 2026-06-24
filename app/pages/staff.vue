@@ -37,8 +37,8 @@ const fetchStaff = async () => {
   isLoading.value = true
   try {
     const res = await $fetch<any>(`/api/staff?propertyId=${activePropertyId.value}`)
-    if (res.success) {
-      staffList.value = res.data
+    if (res.status === 'success') {
+      staffList.value = res.data?.data || res.data || []
     }
   } catch (err) {
     console.error('Failed to fetch staff', err)
@@ -69,7 +69,7 @@ const inviteOperator = async () => {
     emailToInvite.value = ''
     await fetchStaff()
   } catch (err: any) {
-    error.value = err.data?.statusMessage || 'Gagal menambahkan operator'
+    error.value = err.data?.message || err.message || 'Gagal menambahkan operator'
   } finally {
     isSubmitting.value = false
   }
@@ -84,7 +84,7 @@ const removeOperator = async (userId: string) => {
     successMsg.value = res.message
     await fetchStaff()
   } catch (err: any) {
-    error.value = err.data?.statusMessage || 'Gagal mencabut akses.'
+    error.value = err.data?.message || err.message || 'Gagal mencabut akses.'
   }
 }
 
@@ -123,7 +123,7 @@ const savePermissions = async () => {
     closePermissionModal()
     await fetchStaff()
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Gagal menyimpan hak akses')
+    alert(err.data?.message || err.message || 'Gagal menyimpan hak akses')
   } finally {
     isSavingPermissions.value = false
   }
