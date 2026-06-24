@@ -4,8 +4,6 @@ import { eq } from 'drizzle-orm'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectTenantSchema, insertTenantSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -13,17 +11,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Tenants'],
     summary: 'Update Tenant Information',
-    description: 'Updates a tenant\'s personal details, emergency contacts, or contract status.',
-    responses: {
-      200: {
-        description: 'Resource successfully updated',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectTenantSchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      404: { $ref: '#/components/responses/NotFoundError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Updates a tenant\'s personal details, emergency contacts, or contract status.'
   }
 })
 export default defineEventHandler(async (event) => {

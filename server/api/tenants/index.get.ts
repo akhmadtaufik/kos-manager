@@ -2,8 +2,6 @@ import { getTenantsByProperty } from '../../services/tenant.service'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectTenantSchema, insertTenantSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -11,15 +9,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Tenants'],
     summary: 'List All Tenants',
-    description: 'Retrieves a directory of all tenants. Can be filtered by active status, property, or room.',
-    responses: {
-      200: {
-        description: 'Successful retrieval of data',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: createPaginatedSchema(selectTenantSchema) })) } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Retrieves a directory of all tenants. Can be filtered by active status, property, or room.'
   }
 })
 export default defineEventHandler(async (event) => {

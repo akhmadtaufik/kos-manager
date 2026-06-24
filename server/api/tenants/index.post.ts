@@ -2,8 +2,6 @@ import { createTenant } from '../../services/tenant.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectTenantSchema, insertTenantSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -11,16 +9,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Tenants'],
     summary: 'Register New Tenant',
-    description: 'Registers a new tenant, capturing their personal data, identity documents, and assigning them to a specific room.',
-    responses: {
-      201: {
-        description: 'Resource successfully created',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectTenantSchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Registers a new tenant, capturing their personal data, identity documents, and assigning them to a specific room.'
   }
 })
 export default defineEventHandler(async (event) => {
