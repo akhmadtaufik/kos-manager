@@ -70,7 +70,7 @@ async function selectRole(role: 'owner' | 'operator') {
     // Redirect to dashboard
     await navigateTo('/dashboard')
   } catch (e: any) {
-    error.value = e.data?.statusMessage || 'Terjadi kesalahan. Silakan coba lagi.'
+    error.value = e.data?.message || e.message || 'Terjadi kesalahan. Silakan coba lagi.'
   } finally {
     loading.value = false
   }
