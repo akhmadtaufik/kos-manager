@@ -4,8 +4,6 @@ import { apiSuccess } from '../../utils/response'
 import { db } from '../../db'
 import { payments } from '../../db/schema'
 import { eq } from 'drizzle-orm'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -13,17 +11,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Payments'],
     summary: 'Update Payment Status',
-    description: 'Updates the details or status (e.g., pending, paid, overdue) of a specific payment transaction.',
-    responses: {
-      200: {
-        description: 'Resource successfully updated',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectPaymentSchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      404: { $ref: '#/components/responses/NotFoundError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Updates the details or status (e.g., pending, paid, overdue) of a specific payment transaction.'
   }
 })
 export default defineEventHandler(async (event) => {
