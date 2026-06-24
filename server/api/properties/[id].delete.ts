@@ -4,8 +4,6 @@ import { eq } from 'drizzle-orm'
 import { requirePropertyOwnership } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -13,16 +11,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Properties'],
     summary: 'Delete Property',
-    description: 'Removes a property from the system. Note: This may fail if there are active rooms or tenants associated with the property.',
-    responses: {
-      200: {
-        description: 'Resource successfully deleted',
-        content: { 'application/json': { schema:  { $ref: '#/components/responses/SuccessResponse/content/application/json/schema' }  } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      404: { $ref: '#/components/responses/NotFoundError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Removes a property from the system. Note: This may fail if there are active rooms or tenants associated with the property.'
   }
 })
 export default defineEventHandler(async (event) => {

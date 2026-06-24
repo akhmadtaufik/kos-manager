@@ -4,8 +4,6 @@ import { eq } from 'drizzle-orm'
 import { requirePropertyOwnership } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/validations'
 
 
@@ -13,17 +11,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Properties'],
     summary: 'Update Property Details',
-    description: 'Updates information for an existing property, such as name, address, or facilities.',
-    responses: {
-      200: {
-        description: 'Resource successfully updated',
-        content: { 'application/json': { schema: zodToJsonSchema(z.object({ status: z.literal('success'), statusCode: z.literal(200), message: z.string().default('Success'), data: selectPropertySchema })) } }
-      },
-      400: { $ref: '#/components/responses/ValidationError' },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      404: { $ref: '#/components/responses/NotFoundError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Updates information for an existing property, such as name, address, or facilities.'
   }
 })
 export default defineEventHandler(async (event) => {
