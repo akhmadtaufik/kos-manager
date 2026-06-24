@@ -5,11 +5,12 @@ export default defineNitroPlugin((nitroApp) => {
     event.context.startTime = Date.now()
     
     logger.info({
+      reqId: event.context.reqId,
       req: {
         method: event.method,
         url: event.path,
       },
-    }, `Incoming request: ${event.method} ${event.path}`)
+    }, `[${event.context.reqId}] Incoming request: ${event.method} ${event.path}`)
   })
 
   nitroApp.hooks.hook('afterResponse', (event) => {
@@ -17,10 +18,11 @@ export default defineNitroPlugin((nitroApp) => {
     const statusCode = event.node.res.statusCode
     
     logger.info({
+      reqId: event.context.reqId,
       res: {
         statusCode,
         durationMs: duration,
       },
-    }, `Request completed: ${event.method} ${event.path} - ${statusCode} (${duration}ms)`)
+    }, `[${event.context.reqId}] Request completed: ${event.method} ${event.path} - ${statusCode} (${duration}ms)`)
   })
 })
