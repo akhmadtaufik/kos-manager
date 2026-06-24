@@ -145,8 +145,8 @@ const fetchExpenses = async () => {
   try {
     const query = activePropertyId.value ? `?propertyId=${activePropertyId.value}` : ''
     const res = await $fetch<any>(`/api/expenses${query}`)
-    if (res.success) {
-      expenses.value.data = res.data
+    if (res.status === 'success') {
+      expenses.value.data = res.data?.data || res.data || []
     }
   } catch (err) {
     console.error('Failed to fetch expenses', err)
