@@ -4,23 +4,13 @@ import { and, eq, inArray, sql, sum, count } from 'drizzle-orm'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess, HttpError } from '../../utils/response'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { z } from 'zod'
 
 
 defineRouteMeta({
   openAPI: {
     tags: ['Reports'],
     summary: 'Get Recapitulation Report',
-    description: 'Fetches a high-level summary report containing key metrics like total income, total expenses, and occupancy rates over a specified period.',
-    responses: {
-      200: {
-        description: 'Successful retrieval of data',
-        content: { 'application/json': { schema: { type: 'object' } } }
-      },
-      401: { $ref: '#/components/responses/UnauthorizedError' },
-      500: { $ref: '#/components/responses/InternalServerError' }
-    }
+    description: 'Fetches a high-level summary report containing key metrics like total income, total expenses, and occupancy rates over a specified period.'
   }
 })
 export default defineEventHandler(async (event) => {
