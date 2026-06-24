@@ -134,5 +134,17 @@ test.describe('Authentication Journey', () => {
 
     // Verify successful authentication and redirect for operator
     await expect(page).toHaveURL(/\/dashboard/);
+
+    // Explicitly perform Logout from the UI
+    await page.click('button:has-text("Logout")');
+
+    // Verify redirect back to root (login page)
+    await expect(page).toHaveURL('http://localhost:3000/');
+
+    // Assert dashboard elements are gone (session destroyed)
+    await expect(page.locator('#property-switcher')).toBeHidden();
+
+    // Verify the login form is rendered
+    await expect(page.locator('input#login-email')).toBeVisible();
   });
 });
