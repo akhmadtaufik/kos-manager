@@ -6,7 +6,7 @@ const { signOut } = useAuth()
 const { properties, activePropertyId, setActiveProperty } = usePropertyState()
 
 const handleSignOut = async () => {
-  await signOut({ callbackUrl: '/login' })
+  await signOut({ callbackUrl: '/' })
 }
 </script>
 
