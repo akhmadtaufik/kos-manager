@@ -66,6 +66,7 @@
         <!-- Tab Switcher -->
         <div class="flex gap-6 mb-8 border-b border-surface-200 dark:border-surface-800 pb-px">
           <button
+            id="tab-login"
             class="pb-3 text-sm font-medium transition-colors relative font-sans"
             :class="activeTab === 'login' ? 'text-surface-900 dark:text-white' : 'text-surface-500 hover:text-surface-900 dark:hover:text-surface-300'"
             @click="activeTab = 'login'"
@@ -74,6 +75,7 @@
             <div v-if="activeTab === 'login'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-surface-900 dark:bg-white rounded-t-full"></div>
           </button>
           <button
+            id="tab-register"
             class="pb-3 text-sm font-medium transition-colors relative font-sans"
             :class="activeTab === 'register' ? 'text-surface-900 dark:text-white' : 'text-surface-500 hover:text-surface-900 dark:hover:text-surface-300'"
             @click="activeTab = 'register'"
@@ -395,12 +397,14 @@ async function handleRegister() {
 
     await router.push('/dashboard')
   } catch (err: any) {
-    const detail = err?.data?.data?.details
+    // Universal Error Wrapper nests the validation errors under err.data.errors
+    const detail = err?.data?.errors
     if (detail) {
+      // Assuming detail is an object of field -> string[] errors
       const firstError = Object.values(detail)[0] as string[]
       errorMessage.value = firstError?.[0] || 'Validation failed.'
     } else {
-      errorMessage.value = err?.data?.statusMessage || err?.message || 'Registration failed.'
+      errorMessage.value = err?.data?.message || err?.message || 'Registration failed.'
     }
   } finally {
     isLoading.value = false
