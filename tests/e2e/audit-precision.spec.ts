@@ -84,7 +84,16 @@ test.describe.serial('Audit Data Precision Journey', () => {
     const updateRes = await opContext.request.patch(`/api/rooms/${roomId}`, {
       data: { roomNumber: 'P-101', monthlyRate: 1500000 }
     });
-    if (!updateRes.ok()) console.error(await updateRes.text()); expect(updateRes.ok()).toBeTruthy();
+    if (!updateRes.ok()) console.error(await updateRes.text()); 
+    expect(updateRes.ok()).toBeTruthy();
+    
+    const updateJson = await updateRes.json();
+    expect(updateJson).toMatchObject({
+      status: 'success',
+      statusCode: 200,
+      message: expect.any(String),
+      data: expect.any(Object)
+    });
 
     await opContext.close();
 
