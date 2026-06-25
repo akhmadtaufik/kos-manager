@@ -9,6 +9,7 @@ definePageMeta({
 
 const { properties, loadProperties, isLoading } = usePropertyState()
 const { data } = useAuth()
+const { addToast } = useToast()
 const isSuperadmin = computed(() => (data.value?.user as any)?.role === 'superadmin')
 const isOwner = computed(() => (data.value?.user as any)?.role === 'owner')
 const canManage = computed(() => isSuperadmin.value || isOwner.value)
@@ -42,19 +43,19 @@ const submitProperty = async () => {
         method: 'PATCH',
         body: formData
       })
-      alert('Property updated successfully!')
+      addToast('Berhasil', 'Properti berhasil diperbarui!', 'success')
     } else {
       await $fetch('/api/properties', {
         method: 'POST',
         body: formData
       })
-      alert('Property created successfully!')
+      addToast('Berhasil', 'Properti berhasil ditambahkan!', 'success')
     }
     
     cancelEdit()
     await loadProperties(true)
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Failed to save property')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal menyimpan properti.', 'error')
   } finally {
     isCreating.value = false
   }
@@ -67,9 +68,9 @@ const deleteProperty = async (id: string) => {
       method: 'DELETE'
     })
     await loadProperties(true)
-    alert('Property deleted successfully!')
+    addToast('Berhasil', 'Properti berhasil dihapus!', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Failed to delete property')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal menghapus properti.', 'error')
   }
 }
 </script>
