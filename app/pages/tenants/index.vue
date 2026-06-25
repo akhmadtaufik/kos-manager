@@ -6,6 +6,7 @@ definePageMeta({
 })
 
 const { activePropertyId } = usePropertyState()
+const { addToast } = useToast()
 
 const tenants = ref<any[]>([])
 const availableRooms = ref<any[]>([])
@@ -44,7 +45,7 @@ const onProvinceChange = async () => {
   try {
     regencies.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
   } catch (e) {
-    console.error(e)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kabupaten/kota.', 'error')
   } finally {
     isLoadingRegencies.value = false
   }
@@ -59,7 +60,7 @@ const onRegencyChange = async () => {
   try {
     districts.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${formData.regencyId}.json`)
   } catch (e) {
-    console.error(e)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kecamatan.', 'error')
   } finally {
     isLoadingDistricts.value = false
   }
@@ -74,7 +75,7 @@ const fetchTenants = async () => {
       tenants.value = res.data?.data || res.data || []
     }
   } catch (err) {
-    console.error('Failed to fetch tenants', err)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar penghuni.', 'error')
   } finally {
     isLoading.value = false
   }
@@ -89,7 +90,7 @@ const fetchAvailableRooms = async () => {
       availableRooms.value = data.filter((r: any) => r.status === 'available')
     }
   } catch (err) {
-    console.error('Failed to fetch rooms', err)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kamar tersedia.', 'error')
   }
 }
 
@@ -172,8 +173,9 @@ const submitTenant = async () => {
     cancelEdit()
     await fetchTenants()
     await fetchAvailableRooms() // Refresh available rooms list
+    addToast('Berhasil', editingId.value ? 'Data penghuni diperbarui.' : 'Penghuni berhasil didaftarkan.', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Failed to save tenant')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal menyimpan data penghuni.', 'error')
   } finally {
     isCreating.value = false
   }
@@ -188,8 +190,9 @@ const checkoutTenant = async (id: string) => {
     })
     await fetchTenants()
     await fetchAvailableRooms()
+    addToast('Berhasil', 'Checkout penghuni berhasil.', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Gagal melakukan checkout.')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal melakukan checkout.', 'error')
   }
 }
 
@@ -200,8 +203,9 @@ const deleteTenant = async (id: string) => {
       method: 'DELETE'
     })
     await fetchTenants()
+    addToast('Berhasil', 'Data historis penghuni dihapus.', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Gagal menghapus data.')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal menghapus data.', 'error')
   }
 }
 </script>
