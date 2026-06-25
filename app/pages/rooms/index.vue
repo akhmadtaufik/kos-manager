@@ -6,6 +6,7 @@ definePageMeta({
 })
 
 const { activePropertyId } = usePropertyState()
+const { addToast } = useToast()
 
 const rooms = ref<any[]>([])
 const isLoading = ref(false)
@@ -33,7 +34,7 @@ const fetchRooms = async () => {
       rooms.value = res.data?.data || res.data || []
     }
   } catch (err) {
-    console.error('Failed to fetch rooms', err)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kamar.', 'error')
   } finally {
     isLoading.value = false
   }
@@ -84,8 +85,9 @@ const submitCreateRoom = async () => {
     createFormData.roomNumber = ''
     createFormData.monthlyRate = ''
     await fetchRooms()
+    addToast('Berhasil', 'Kamar berhasil ditambahkan.', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Failed to create room')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal membuat kamar.', 'error')
   } finally {
     isCreating.value = false
   }
@@ -104,8 +106,9 @@ const submitEditRoom = async () => {
     })
     cancelEdit()
     await fetchRooms()
+    addToast('Berhasil', 'Kamar berhasil diperbarui.', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Failed to update room')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal memperbarui kamar.', 'error')
   }
 }
 
@@ -116,8 +119,9 @@ const deleteRoom = async (id: string) => {
       method: 'DELETE'
     })
     await fetchRooms()
+    addToast('Berhasil', 'Kamar berhasil dihapus.', 'success')
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Gagal menghapus kamar.')
+    addToast('Gagal', err.data?.statusMessage || 'Gagal menghapus kamar.', 'error')
   }
 }
 
