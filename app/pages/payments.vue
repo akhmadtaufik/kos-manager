@@ -17,14 +17,6 @@
       </div>
     </div>
 
-    <div v-if="error" class="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
-      {{ error }}
-    </div>
-
-    <div v-if="successMsg" class="mb-4 p-4 bg-emerald-50 text-emerald-600 rounded-lg">
-      {{ successMsg }}
-    </div>
-
     <phantom-ui :loading="pending">
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table class="w-full text-left border-collapse">
@@ -100,10 +92,9 @@ definePageMeta({
 })
 
 const { activePropertyId, activeProperty } = usePropertyState()
+const { addToast } = useToast()
 const selectedMonth = ref(new Date().toISOString().slice(0, 7)) // YYYY-MM
 const generating = ref(false)
-const error = ref('')
-const successMsg = ref('')
 
 const payments = ref<{ data: any[] }>({ data: [] })
 const pending = ref(false)
@@ -117,7 +108,7 @@ const fetchPayments = async () => {
       payments.value.data = res.data?.data || res.data || []
     }
   } catch (err) {
-    console.error('Failed to fetch payments', err)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar pembayaran.', 'error')
   } finally {
     pending.value = false
   }
@@ -131,8 +122,6 @@ async function generateInvoices() {
   if (!activeProperty.value) return
   try {
     generating.value = true
-    error.value = ''
-    successMsg.value = ''
 
     const res: any = await $fetch('/api/payments/generate', {
       method: 'POST',
@@ -142,10 +131,10 @@ async function generateInvoices() {
       }
     })
 
-    successMsg.value = res.message
+    addToast('Berhasil', res.message, 'success')
     await fetchPayments()
   } catch (e: any) {
-    error.value = e.data?.statusMessage || 'Gagal membuat tagihan.'
+    addToast('Gagal', e.data?.statusMessage || 'Gagal membuat tagihan.', 'error')
   } finally {
     generating.value = false
   }
@@ -154,13 +143,13 @@ async function generateInvoices() {
 async function markAsPaid(id: string) {
   if (!confirm('Tandai tagihan ini sebagai lunas?')) return
   try {
-    error.value = ''
     await $fetch(`/api/payments/${id}`, {
       method: 'PATCH'
     })
     await fetchPayments()
+    addToast('Berhasil', 'Tagihan ditandai lunas.', 'success')
   } catch (e: any) {
-    error.value = e.data?.statusMessage || 'Gagal mengubah status tagihan.'
+    addToast('Gagal', e.data?.statusMessage || 'Gagal mengubah status tagihan.', 'error')
   }
 }
 </script>
