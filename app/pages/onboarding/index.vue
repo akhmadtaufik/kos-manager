@@ -37,10 +37,6 @@
           <p class="text-slate-600">Saya adalah penjaga atau pengelola harian kos. Saya bekerja untuk pemilik properti.</p>
         </button>
       </div>
-
-      <div v-if="error" class="mt-6 p-4 bg-red-50 text-red-600 rounded-lg text-center font-medium">
-        {{ error }}
-      </div>
     </div>
   </div>
 </template>
@@ -51,13 +47,12 @@ definePageMeta({
 })
 
 const { getSession } = useAuth()
+const { addToast } = useToast()
 const loading = ref(false)
-const error = ref('')
 
 async function selectRole(role: 'owner' | 'operator') {
   try {
     loading.value = true
-    error.value = ''
 
     await $fetch('/api/user/role', {
       method: 'POST',
@@ -70,7 +65,7 @@ async function selectRole(role: 'owner' | 'operator') {
     // Redirect to dashboard
     await navigateTo('/dashboard')
   } catch (e: any) {
-    error.value = e.data?.message || e.message || 'Terjadi kesalahan. Silakan coba lagi.'
+    addToast('Gagal', e.data?.message || e.message || 'Terjadi kesalahan. Silakan coba lagi.', 'error')
   } finally {
     loading.value = false
   }
