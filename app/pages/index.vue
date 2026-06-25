@@ -92,15 +92,7 @@
           {{ activeTab === 'login' ? 'Enter your details to access your dashboard.' : 'Sign up to modernize your property management.' }}
         </p>
 
-        <!-- Error Alert -->
-        <Transition name="fade">
-          <div v-if="errorMessage" class="flex items-start gap-3 mb-6 p-3.5 rounded-lg bg-danger-50 dark:bg-danger-500/10 text-danger-600 dark:text-danger-400 text-sm">
-            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-            <span class="font-sans">{{ errorMessage }}</span>
-          </div>
-        </Transition>
+        <!-- Error Alert removed, using Toast instead -->
 
         <!-- LOGIN FORM -->
         <form v-if="activeTab === 'login'" class="space-y-5" novalidate @submit.prevent="handleLogin">
@@ -280,11 +272,11 @@ useHead({
 const { signIn } = useAuth()
 const router = useRouter()
 const route = useRoute()
+const { addToast } = useToast()
 
 // ─── State ────────────────────────────────────────────────
 const activeTab = ref<'login' | 'register'>('login')
 const isLoading = ref(false)
-const errorMessage = ref('')
 const showPassword = ref(false)
 
 const loginForm = reactive({ email: '', password: '' })
@@ -294,10 +286,7 @@ const loginFieldErrors = ref<Record<string, string>>({})
 const registerFieldErrors = ref<Record<string, string>>({})
 
 // Clear error when switching tabs or editing fields
-watch(activeTab, () => { errorMessage.value = '' })
-
 watch(loginForm, (newVal) => {
-  errorMessage.value = ''
   const result = loginSchema.safeParse(newVal)
   if (!result.success) {
     const errs: Record<string, string> = {}
@@ -312,7 +301,6 @@ watch(loginForm, (newVal) => {
 }, { deep: true })
 
 watch(registerForm, (newVal) => {
-  errorMessage.value = ''
   const result = registerSchema.safeParse(newVal)
   if (!result.success) {
     const errs: Record<string, string> = {}
@@ -330,12 +318,11 @@ watch(registerForm, (newVal) => {
 async function handleLogin() {
   const parsed = loginSchema.safeParse(loginForm)
   if (!parsed.success) {
-    errorMessage.value = 'Please correct the highlighted fields before continuing.'
+    addToast('Validasi Gagal', 'Please correct the highlighted fields before continuing.', 'error')
     return
   }
 
   isLoading.value = true
-  errorMessage.value = ''
 
   try {
     const result = await signIn('credentials', {
@@ -345,17 +332,18 @@ async function handleLogin() {
     })
 
     if (result?.error) {
-      errorMessage.value = result.error === 'CredentialsSignin'
+      const msg = result.error === 'CredentialsSignin'
         ? 'Invalid email or password.'
         : result.error
+      addToast('Gagal', msg, 'error')
       return
     }
 
     // Redirect to intended page or dashboard
     const callbackUrl = route.query.callbackUrl as string || '/dashboard'
-    await router.push(callbackUrl)
+    addToast('Berhasil Login', 'Selamat datang kembali.', 'success')
   } catch (err: any) {
-    errorMessage.value = err?.message || 'An error occurred. Please try again.'
+    addToast('Gagal', err?.message || 'An error occurred. Please try again.', 'error')
   } finally {
     isLoading.value = false
   }
@@ -363,11 +351,10 @@ async function handleLogin() {
 
 async function handleGoogleLogin() {
   isLoading.value = true
-  errorMessage.value = ''
   try {
     await signIn('google', { callbackUrl: '/dashboard' })
   } catch (err: any) {
-    errorMessage.value = 'Failed to sign in with Google. Please try again.'
+    addToast('Gagal', 'Failed to sign in with Google. Please try again.', 'error')
     isLoading.value = false
   }
 }
@@ -375,12 +362,11 @@ async function handleGoogleLogin() {
 async function handleRegister() {
   const parsed = registerSchema.safeParse(registerForm)
   if (!parsed.success) {
-    errorMessage.value = 'Please correct the highlighted fields before continuing.'
+    addToast('Validasi Gagal', 'Please correct the highlighted fields before continuing.', 'error')
     return
   }
 
   isLoading.value = true
-  errorMessage.value = ''
 
   try {
     await $fetch('/api/auth/register', {
@@ -396,15 +382,16 @@ async function handleRegister() {
     })
 
     await router.push('/dashboard')
+    addToast('Pendaftaran Berhasil', 'Akun Anda telah dibuat.', 'success')
   } catch (err: any) {
     // Universal Error Wrapper nests the validation errors under err.data.errors
     const detail = err?.data?.errors
     if (detail) {
       // Assuming detail is an object of field -> string[] errors
       const firstError = Object.values(detail)[0] as string[]
-      errorMessage.value = firstError?.[0] || 'Validation failed.'
+      addToast('Pendaftaran Gagal', firstError?.[0] || 'Validation failed.', 'error')
     } else {
-      errorMessage.value = err?.data?.message || err?.message || 'Registration failed.'
+      addToast('Pendaftaran Gagal', err?.data?.message || err?.message || 'Registration failed.', 'error')
     }
   } finally {
     isLoading.value = false
