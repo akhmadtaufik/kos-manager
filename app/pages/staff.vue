@@ -9,6 +9,7 @@ definePageMeta({
 
 const { activePropertyId } = usePropertyState()
 const { data: authData } = useAuth()
+const { addToast } = useToast()
 const isOwner = computed(() => ['superadmin', 'owner'].includes((authData.value?.user as any)?.role))
 
 const staffList = ref<any[]>([])
@@ -16,8 +17,6 @@ const isLoading = ref(false)
 const isSubmitting = ref(false)
 
 const emailToInvite = ref('')
-const error = ref('')
-const successMsg = ref('')
 
 const AVAILABLE_PERMISSIONS = [
   { id: 'manage_rooms', label: 'Kelola Kamar' },
@@ -41,7 +40,7 @@ const fetchStaff = async () => {
       staffList.value = res.data?.data || res.data || []
     }
   } catch (err) {
-    console.error('Failed to fetch staff', err)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar staf.', 'error')
   } finally {
     isLoading.value = false
   }
@@ -54,8 +53,6 @@ watch(activePropertyId, () => {
 const inviteOperator = async () => {
   if (!activePropertyId.value || !emailToInvite.value) return
   isSubmitting.value = true
-  error.value = ''
-  successMsg.value = ''
   
   try {
     const res: any = await $fetch('/api/staff', {
@@ -65,11 +62,11 @@ const inviteOperator = async () => {
         email: emailToInvite.value
       }
     })
-    successMsg.value = res.message
+    addToast('Berhasil', res.message, 'success')
     emailToInvite.value = ''
     await fetchStaff()
   } catch (err: any) {
-    error.value = err.data?.message || err.message || 'Gagal menambahkan operator'
+    addToast('Gagal', err.data?.message || err.message || 'Gagal menambahkan operator', 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -81,10 +78,10 @@ const removeOperator = async (userId: string) => {
     const res: any = await $fetch(`/api/staff/${userId}?propertyId=${activePropertyId.value}`, {
       method: 'DELETE'
     })
-    successMsg.value = res.message
+    addToast('Berhasil', res.message, 'success')
     await fetchStaff()
   } catch (err: any) {
-    error.value = err.data?.message || err.message || 'Gagal mencabut akses.'
+    addToast('Gagal', err.data?.message || err.message || 'Gagal mencabut akses.', 'error')
   }
 }
 
@@ -119,11 +116,11 @@ const savePermissions = async () => {
         permissions: selectedPermissions.value
       }
     })
-    successMsg.value = res.message
+    addToast('Berhasil', res.message, 'success')
     closePermissionModal()
     await fetchStaff()
   } catch (err: any) {
-    alert(err.data?.message || err.message || 'Gagal menyimpan hak akses')
+    addToast('Gagal', err.data?.message || err.message || 'Gagal menyimpan hak akses', 'error')
   } finally {
     isSavingPermissions.value = false
   }
@@ -146,13 +143,6 @@ const savePermissions = async () => {
     </div>
 
     <template v-else>
-      <div v-if="error" class="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
-        {{ error }}
-      </div>
-      <div v-if="successMsg" class="mb-4 p-4 bg-emerald-50 text-emerald-600 rounded-lg">
-        {{ successMsg }}
-      </div>
-
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
         <h2 class="text-lg font-bold mb-4 font-outfit">Hire Operator Baru</h2>
         <p class="text-sm text-slate-500 mb-4">Pastikan calon operator telah mendaftar (Sign Up) di aplikasi KosManager menggunakan email mereka sebelum Anda menambahkannya di sini.</p>
