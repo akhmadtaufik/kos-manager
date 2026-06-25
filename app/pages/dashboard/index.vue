@@ -6,6 +6,7 @@ definePageMeta({
 })
 
 const { activePropertyId, activeProperty } = usePropertyState()
+const { addToast } = useToast()
 const selectedMonth = ref(new Date().toISOString().slice(0, 7)) // YYYY-MM
 
 const rekap = ref({
@@ -48,7 +49,7 @@ const fetchRekap = async () => {
       rekap.value = res.data?.data || res.data
     }
   } catch (e) {
-    console.error('Failed to fetch rekap', e)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil rekap dashboard.', 'error')
   } finally {
     loadingRekap.value = false
   }
@@ -63,7 +64,7 @@ const fetchDemographics = async () => {
       demographics.value = res.data?.data || res.data || []
     }
   } catch (e) {
-    console.error('Failed to fetch demographics', e)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil demografi.', 'error')
   } finally {
     loadingDemo.value = false
   }

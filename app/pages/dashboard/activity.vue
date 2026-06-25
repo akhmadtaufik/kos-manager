@@ -168,6 +168,7 @@ const isLoading = ref(true)
 const actorFilter = ref('all')
 const page = ref(1)
 const totalPages = ref(1)
+const { addToast } = useToast()
 
 // Fetch Data
 const fetchLogs = async () => {
@@ -193,7 +194,7 @@ const fetchLogs = async () => {
     logs.value = response.data?.data || response.data || []
     totalPages.value = response.data?.meta?.totalPages || 1
   } catch (error) {
-    console.error('Failed to fetch activity logs', error)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil log aktivitas.', 'error')
   } finally {
     isLoading.value = false
   }
@@ -204,7 +205,7 @@ const fetchOperators = async () => {
     const response = await $fetch<any>('/api/audit/operators')
     operators.value = response.data?.data || response.data || []
   } catch (error) {
-    console.error('Failed to fetch operators', error)
+    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar operator.', 'error')
   }
 }
 
