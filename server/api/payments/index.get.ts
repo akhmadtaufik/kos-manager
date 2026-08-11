@@ -1,6 +1,6 @@
 import { getPaymentsByProperty } from '../../services/payment.service'
 import { getUserProperties } from '../../services/property.service'
-import { requirePropertyPermission } from '../../utils/rbac'
+import { requirePropertyAccess } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
@@ -20,14 +20,14 @@ export default defineEventHandler(async (event) => {
   let targetPropertyIds: string[] = []
 
   if (propertyId && propertyId !== 'null' && propertyId !== 'undefined') {
-    await requirePropertyPermission(user, propertyId)
+    await requirePropertyAccess(user, propertyId)
     targetPropertyIds = [propertyId]
   } else {
     const props = await getUserProperties(user)
     targetPropertyIds = props.map(p => p.id)
   }
 
-  const payments = await getPaymentsByProperty(targetPropertyIds)
+  const records = await getPaymentsByProperty(targetPropertyIds)
   
-  return apiSuccess(payments, 'Payments retrieved successfully')
+  return apiSuccess(records, 'Payments retrieved successfully')
 })
