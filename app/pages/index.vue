@@ -247,7 +247,6 @@
 </template>
 
 <script setup lang="ts">
-import { loginSchema, registerSchema } from '../../utils/validations'
 
 definePageMeta({
   auth: false,
@@ -342,6 +341,7 @@ async function handleLogin() {
     // Redirect to intended page or dashboard
     const callbackUrl = route.query.callbackUrl as string || '/dashboard'
     addToast('Berhasil Login', 'Selamat datang kembali.', 'success')
+    await router.push(callbackUrl)
   } catch (err: any) {
     addToast('Gagal', err?.message || 'An error occurred. Please try again.', 'error')
   } finally {
