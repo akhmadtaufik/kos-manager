@@ -1,6 +1,6 @@
 import { getRooms } from '../../services/room.service'
 import { getUserProperties } from '../../services/property.service'
-import { requirePropertyPermission } from '../../utils/rbac'
+import { requirePropertyAccess } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   let targetPropertyIds: string[] = []
 
   if (propertyId && propertyId !== 'null' && propertyId !== 'undefined') {
-    await requirePropertyPermission(user, propertyId)
+    await requirePropertyAccess(user, propertyId)
     targetPropertyIds = [propertyId]
   } else {
     const props = await getUserProperties(user)

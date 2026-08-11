@@ -1,5 +1,5 @@
 import { createRoom } from '../../services/room.service'
-import { requirePropertyPermission } from '../../utils/rbac'
+import { requirePropertyAccess } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
 import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/schemaValidations'
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId, roomNumber, and monthlyRate are required' })
   }
 
-  await requirePropertyPermission(event.context.user, propertyId)
+  await requirePropertyAccess(event.context.user, body.propertyId)
 
   const newRoom = await createRoom(event.context.user, propertyId, {
     roomNumber: body.roomNumber,
