@@ -25,7 +25,7 @@ export async function createRoom(user: AuthUser, propertyId: string, payload: { 
     roomNumber: payload.roomNumber,
     monthlyRate: String(payload.monthlyRate),
     additionalFees: payload.additionalFees || [],
-  }).returning()
+  }).returning() as any[]
 
   await logActivity({
     userId: user.id,
@@ -35,5 +35,5 @@ export async function createRoom(user: AuthUser, propertyId: string, payload: { 
     details: { propertyId, roomNumber: payload.roomNumber },
   })
 
-  return newRoom
+  return newRoom!
 }

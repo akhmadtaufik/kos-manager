@@ -61,7 +61,7 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
       districtId: payload.districtId || null,
       checkIn: new Date(payload.checkIn),
       isActive: 1,
-    }).returning()
+    }).returning() as any[]
 
     await tx.update(rooms)
       .set({ status: 'occupied', updatedAt: new Date() })
@@ -78,5 +78,5 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
     details: { propertyId, roomId: payload.roomId, name: payload.name },
   })
 
-  return newTenant
+  return newTenant!
 }

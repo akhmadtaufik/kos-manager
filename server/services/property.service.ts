@@ -47,15 +47,15 @@ export async function createProperty(user: AuthUser, payload: { name: string; ad
     userId: user.id,
     action: 'CREATE',
     entityType: 'property',
-    entityId: newProperty.id,
+    entityId: newProperty!.id,
     details: { name: payload.name, address: payload.address },
   })
 
   // Automatically assign the creator to the property in userProperties
   await db.insert(userProperties).values({
     userId: user.id,
-    propertyId: newProperty.id,
+    propertyId: newProperty!.id,
   })
 
-  return newProperty
+  return newProperty!
 }

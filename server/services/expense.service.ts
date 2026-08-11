@@ -21,7 +21,7 @@ export async function createExpense(propertyId: string, payload: { category: str
     amount: String(payload.amount),
     description: payload.description || null,
     date: new Date(payload.date),
-  }).returning()
+  }).returning() as any[]
 
   await logActivity({
     userId,
@@ -31,5 +31,5 @@ export async function createExpense(propertyId: string, payload: { category: str
     details: payload,
   })
 
-  return newExpense
+  return newExpense!
 }
