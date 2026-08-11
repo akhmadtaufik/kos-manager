@@ -82,17 +82,18 @@ export default defineEventHandler(async (event) => {
   })
 
   // Count total for pagination (True Database Count)
-  const [{ total }] = await db.select({ total: count() })
+  const countResult = await db.select({ total: count() })
     .from(activityLogs)
     .where(whereClause)
+  const total = countResult[0]?.total || 0
 
   return sendSuccessResponse(event, {
     data: logs,
     meta: {
       page,
       limit,
-      total,
-      totalPages: Math.ceil(total / limit)
+      total: total || 0,
+      totalPages: Math.ceil((total || 0) / limit)
     }
   }, 200, 'Audit logs retrieved successfully')
 })
