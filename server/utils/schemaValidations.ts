@@ -11,7 +11,7 @@ import {
 } from '../db/schema'
 
 // Base generic wrapper for pagination
-export const createPaginatedSchema = (dataSchema: z.ZodTypeAny) => {
+export const createPaginatedSchema = (dataSchema: any) => {
   return z.object({
     data: z.array(dataSchema),
     meta: z.object({

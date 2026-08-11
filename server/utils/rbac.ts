@@ -94,7 +94,7 @@ export async function requirePropertyAccess(user: AuthUser | undefined, property
   if (!hasAccess) {
     await logActivity({
       userId: user.id,
-      actorName: user.name,
+      actorName: user.name ?? undefined,
       actorRole: user.role,
       action: 'UNAUTHORIZED_ATTEMPT',
       entityType: 'property',
@@ -120,7 +120,7 @@ export async function requirePropertyPermission(user: AuthUser | undefined, prop
   if (!hasPermission) {
     await logActivity({
       userId: user.id,
-      actorName: user.name,
+      actorName: user.name ?? undefined,
       actorRole: user.role,
       action: 'UNAUTHORIZED_ATTEMPT',
       entityType: 'property',
@@ -146,7 +146,7 @@ export async function requirePropertyOwnership(user: AuthUser | undefined, prope
   if (user.role === 'operator') {
     await logActivity({
       userId: user.id,
-      actorName: user.name,
+      actorName: user.name ?? undefined,
       actorRole: user.role,
       action: 'UNAUTHORIZED_ATTEMPT',
       entityType: 'property',
@@ -164,7 +164,7 @@ export async function requirePropertyOwnership(user: AuthUser | undefined, prope
   if (!hasAccess) {
     await logActivity({
       userId: user.id,
-      actorName: user.name,
+      actorName: user.name ?? undefined,
       actorRole: user.role,
       action: 'UNAUTHORIZED_ATTEMPT',
       entityType: 'property',
