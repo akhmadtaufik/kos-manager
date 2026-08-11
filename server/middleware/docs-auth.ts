@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     const session = await getServerSession(event)
     const user = session?.user
     
-    if (!user || user.role !== 'owner') {
+    if (!user || user.role !== ('owner' as any)) {
       throw createError({ statusCode: 403, statusMessage: 'Forbidden: Docs access restricted to owners in production.' })
     }
   }
