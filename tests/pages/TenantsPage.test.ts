@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+// @ts-ignore
 import TenantsPage from '../../app/pages/tenants/index.vue'
 import { flushPromises } from '@vue/test-utils'
 
@@ -29,7 +30,7 @@ describe('TenantsPage.vue - Cascading Demographics', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     
-    ;(global.$fetch as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
+    ;(global.$fetch as unknown as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
       // Mock internal APIs
       if (url.includes('/api/tenants')) return Promise.resolve({ success: true, data: [] })
       if (url.includes('/api/rooms')) return Promise.resolve({ success: true, data: [] })
@@ -60,8 +61,8 @@ describe('TenantsPage.vue - Cascading Demographics', () => {
     expect(provinceSelect.text()).toContain('DKI Jakarta')
     
     // Regency and district should be disabled initially
-    expect(regencySelect.element.disabled).toBe(true)
-    expect(districtSelect.element.disabled).toBe(true)
+    expect((regencySelect.element as HTMLSelectElement).disabled).toBe(true)
+    expect((districtSelect.element as HTMLSelectElement).disabled).toBe(true)
   })
 
   it('2. Cascading Interaction: Province -> Regency', async () => {
@@ -79,7 +80,7 @@ describe('TenantsPage.vue - Cascading Demographics', () => {
     const regencySelect = wrapper.find('#regency-select')
     
     // Regency should now be enabled and populated
-    expect(regencySelect.element.disabled).toBe(false)
+    expect((regencySelect.element as HTMLSelectElement).disabled).toBe(false)
     expect(regencySelect.text()).toContain('KOTA JAKARTA PUSAT')
     expect(global.$fetch).toHaveBeenCalledWith(expect.stringContaining('regencies/31.json'))
   })
@@ -100,7 +101,7 @@ describe('TenantsPage.vue - Cascading Demographics', () => {
     const districtSelect = wrapper.find('#district-select')
     
     // District should now be enabled and populated
-    expect(districtSelect.element.disabled).toBe(false)
+    expect((districtSelect.element as HTMLSelectElement).disabled).toBe(false)
     expect(districtSelect.text()).toContain('GAMBIR')
     expect(global.$fetch).toHaveBeenCalledWith(expect.stringContaining('districts/3171.json'))
   })
@@ -137,7 +138,7 @@ describe('TenantsPage.vue - Cascading Demographics', () => {
     expect(regencySelect.element.value).toBe('3171')
     expect(districtSelect.element.value).toBe('3171010')
 
-    expect(regencySelect.element.disabled).toBe(false)
-    expect(districtSelect.element.disabled).toBe(false)
+    expect((regencySelect.element as HTMLSelectElement).disabled).toBe(false)
+    expect((districtSelect.element as HTMLSelectElement).disabled).toBe(false)
   })
 })

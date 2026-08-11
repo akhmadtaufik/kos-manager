@@ -1,0 +1,12 @@
+FROM mcr.microsoft.com/playwright:v1.61.0-jammy
+
+WORKDIR /app
+
+# Copy source code (using .dockerignore to skip node_modules and .nuxt)
+COPY . .
+
+# Install dependencies
+RUN npm install
+
+# Run Unit tests, Build Nuxt, Start Server, and Run E2E
+CMD ["sh", "-c", "npm run build && PORT=3000 node .output/server/index.mjs > server.log 2>&1 & while ! curl -s http://localhost:3000 > /dev/null; do sleep 1; done; npx playwright test; exit_code=$?; echo '=== SERVER LOG ==='; cat server.log; exit $exit_code"]

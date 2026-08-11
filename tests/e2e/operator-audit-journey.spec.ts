@@ -29,10 +29,10 @@ test.describe.serial('Operator Audit Security Journey', () => {
 
     // 3. Fetch IDs from DB to set up RBAC manually
     const ownerRows = await sql`SELECT id FROM users WHERE email = ${ownerEmail}`;
-    ownerId = ownerRows[0].id;
+    ownerId = ownerRows[0]!.id;
     
     const opRows = await sql`SELECT id FROM users WHERE email = ${operatorEmail}`;
-    operatorId = opRows[0].id;
+    operatorId = opRows[0]!.id;
 
     // Set roles explicitly just in case registration didn't apply them fully (e.g. pending state)
     await sql`UPDATE users SET role = 'owner' WHERE id = ${ownerId}`;
@@ -45,7 +45,7 @@ test.describe.serial('Operator Audit Security Journey', () => {
       VALUES (${ownerId}, 'Audit Test Property', '123 Secure Lane') 
       RETURNING id
     `;
-    propertyId = propRes[0].id;
+    propertyId = propRes[0]!.id;
 
     // 5. Create Room
     const roomRes = await sql`
@@ -53,7 +53,7 @@ test.describe.serial('Operator Audit Security Journey', () => {
       VALUES (${propertyId}, 'A1', 1500000) 
       RETURNING id
     `;
-    roomId = roomRes[0].id;
+    roomId = roomRes[0]!.id;
 
     // 6. Bind Operator to Property
     await sql`

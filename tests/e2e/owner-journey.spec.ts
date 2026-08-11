@@ -84,7 +84,7 @@ test.describe('Owner Journey E2E', () => {
     await page.locator('input[type="text"]').nth(1).fill('081234567890');
     // Check-in date (set to today)
     const today = new Date().toISOString().split('T')[0];
-    await page.locator('input[type="date"]').fill(today);
+    await page.locator('input[type="date"]').fill(today as string);
     
     // Cascading Dropdowns
     await page.locator('#province-select').selectOption({ label: 'Jawa Barat' });
@@ -109,7 +109,7 @@ test.describe('Owner Journey E2E', () => {
     await page.locator('nav').locator('text=Payments').click();
     await page.click('button:has-text("Buat Tagihan Bulan Ini")');
     // Look for success message
-    await expect(page.locator('.bg-emerald-50')).toBeVisible();
+    await expect(page.getByText(/invoices generated successfully/i)).toBeVisible();
     
     // Assert the Aggregation: Verify total billed amount
     const paymentRow = page.locator('tr', { hasText: tenantName });
@@ -121,9 +121,9 @@ test.describe('Owner Journey E2E', () => {
     await page.click('button:has-text("Catat Pengeluaran")');
     
     // In the form modal
-    await expect(page.locator('h2:has-text("Catat Pengeluaran Baru")')).toBeVisible();
-    await page.locator('.fixed input[type="date"]').fill(today);
-    await page.locator('.fixed select').selectOption({ label: 'Perbaikan & Pemeliharaan' });
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
+    await page.locator('.fixed input[type="date"]').fill(today as string);
+    await page.click('button:has-text("Perbaikan")');
     await page.locator('.fixed input[type="number"]').fill('200000');
     await page.locator('textarea').fill(expenseDesc);
     

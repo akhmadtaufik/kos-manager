@@ -29,10 +29,10 @@ test.describe.serial('Audit Data Precision Journey', () => {
 
     // Get DB IDs
     const ownerRows = await sql`SELECT id FROM users WHERE email = ${ownerEmail}`;
-    ownerId = ownerRows[0].id;
+    ownerId = ownerRows[0]!.id;
 
     const opRows = await sql`SELECT id FROM users WHERE email = ${operatorEmail}`;
-    operatorId = opRows[0].id;
+    operatorId = opRows[0]!.id;
 
     await sql`UPDATE users SET role = 'owner' WHERE id = ${ownerId}`;
     await sql`UPDATE users SET role = 'operator' WHERE id = ${operatorId}`;
@@ -43,7 +43,7 @@ test.describe.serial('Audit Data Precision Journey', () => {
       VALUES (${ownerId}, 'Precision Property', 'Data Lane') 
       RETURNING id
     `;
-    propertyId = propRes[0].id;
+    propertyId = propRes[0]!.id;
 
     await sql`
       INSERT INTO user_properties (user_id, property_id, permissions) 
@@ -56,7 +56,7 @@ test.describe.serial('Audit Data Precision Journey', () => {
       VALUES (${propertyId}, 'P-101', 1000000, 'available')
       RETURNING id
     `;
-    roomId = roomRes[0].id;
+    roomId = roomRes[0]!.id;
   });
 
   test.afterAll(async () => {

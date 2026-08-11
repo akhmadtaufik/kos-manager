@@ -7,6 +7,7 @@ vi.stubGlobal('readBody', vi.fn(() => Promise.resolve(mockBody)))
 let mockParam = 'tenant-123'
 vi.stubGlobal('getRouterParam', vi.fn(() => mockParam))
 vi.stubGlobal('createError', vi.fn((err) => err))
+vi.stubGlobal('defineRouteMeta', vi.fn(() => {}))
 
 // Mock Drizzle DB
 const mockUpdateChain = {
@@ -31,10 +32,7 @@ vi.mock('../../server/db', () => ({
   }
 }))
 
-vi.mock('../../server/db/schema', () => ({
-  tenants: { id: 'tenantIdCol' },
-  rooms: { id: 'roomIdCol' }
-}))
+
 
 // Mock Services
 vi.mock('../../server/services/tenant.service', () => ({
@@ -79,7 +77,7 @@ describe('Tenants API Endpoints', () => {
       const handlerModule = await import('../../server/api/tenants/index.post')
       const response = await handlerModule.default(mockEvent as any)
       
-      expect(response.success).toBe(true)
+      expect((response as any).success).toBe(true)
       expect(createTenant).toHaveBeenCalledWith(
         mockEvent.context.user,
         'prop-1',
@@ -110,7 +108,7 @@ describe('Tenants API Endpoints', () => {
       const handlerModule = await import('../../server/api/tenants/[id].patch')
       const response = await handlerModule.default(mockEvent as any)
       
-      expect(response.success).toBe(true)
+      expect((response as any).success).toBe(true)
       
       // Verify Drizzle ORM update was called with the correct demographic fields
       expect(mockUpdateChain.set).toHaveBeenCalledWith(

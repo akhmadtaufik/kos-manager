@@ -52,7 +52,7 @@ test.describe('Authentication Journey', () => {
     await page.locator('form').filter({ has: page.locator('input#login-email') }).locator('button[type="submit"]').click();
 
     // Assert generic error
-    await expect(page.locator('.bg-danger-50')).toContainText('Invalid email or password');
+    await expect(page.getByText('Invalid email or password')).toBeVisible();
     let duration = Date.now() - startTime;
     // Verify the brute-force delay occurred (expecting ~1500ms delay from the backend)
     expect(duration).toBeGreaterThanOrEqual(1400);
@@ -74,7 +74,7 @@ test.describe('Authentication Journey', () => {
     
     // Clear any previous error by ensuring it's hidden before we click again
     // Vue's reactivity clears the error on input change, we just wait for it to be removed from the DOM
-    await expect(page.locator('.bg-danger-50')).toBeHidden();
+    await expect(page.getByText('Invalid email or password')).toBeHidden();
 
     startTime = Date.now();
     
@@ -85,7 +85,7 @@ test.describe('Authentication Journey', () => {
     await responsePromise;
 
     // Assert exact same generic error to prevent user enumeration
-    await expect(page.locator('.bg-danger-50')).toContainText('Invalid email or password');
+    await expect(page.getByText('Invalid email or password')).toBeVisible();
 
     // Verify brute force delay applies here too
     duration = Date.now() - startTime;

@@ -35,13 +35,13 @@ test.describe.serial('Audit Isolation Journey', () => {
     expect(res.ok()).toBeTruthy();
 
     const ownerRows = await sql`SELECT id FROM users WHERE email = ${ownerEmail}`;
-    ownerId = ownerRows[0].id;
+    ownerId = ownerRows[0]!.id;
 
     const opRows = await sql`SELECT id FROM users WHERE email = ${operatorEmail}`;
-    operatorId = opRows[0].id;
+    operatorId = opRows[0]!.id;
 
     const testUserRows = await sql`SELECT id FROM users WHERE email = ${testUserEmail}`;
-    testUserId = testUserRows[0].id;
+    testUserId = testUserRows[0]!.id;
 
     await sql`UPDATE users SET role = 'owner' WHERE id = ${ownerId}`;
     await sql`UPDATE users SET role = 'operator' WHERE id = ${operatorId}`;
@@ -53,7 +53,7 @@ test.describe.serial('Audit Isolation Journey', () => {
       VALUES (${ownerId}, 'Isolation Property', '123 Secure Lane') 
       RETURNING id
     `;
-    propertyId = propRes[0].id;
+    propertyId = propRes[0]!.id;
 
     // Bind Operator A to Property
     await sql`

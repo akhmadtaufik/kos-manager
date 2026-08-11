@@ -29,10 +29,10 @@ test.describe.serial('Audit Tamper Journey', () => {
 
     // Get DB IDs
     const ownerRows = await sql`SELECT id FROM users WHERE email = ${ownerEmail}`;
-    ownerId = ownerRows[0].id;
+    ownerId = ownerRows[0]!.id;
 
     const opRows = await sql`SELECT id FROM users WHERE email = ${operatorEmail}`;
-    operatorId = opRows[0].id;
+    operatorId = opRows[0]!.id;
 
     await sql`UPDATE users SET role = 'owner' WHERE id = ${ownerId}`;
     await sql`UPDATE users SET role = 'operator' WHERE id = ${operatorId}`;
@@ -43,7 +43,7 @@ test.describe.serial('Audit Tamper Journey', () => {
       VALUES (${ownerId}, 'Tamper Test Property', '123 Secure Lane') 
       RETURNING id
     `;
-    propertyId = propRes[0].id;
+    propertyId = propRes[0]!.id;
 
     await sql`
       INSERT INTO user_properties (user_id, property_id, permissions) 
@@ -56,7 +56,7 @@ test.describe.serial('Audit Tamper Journey', () => {
       VALUES (${operatorId}, 'Rogue Operator', 'operator', 'CREATE_TENANT', 'tenant', '{"name": "Sneaky Tenant"}'::jsonb)
       RETURNING id
     `;
-    targetLogId = logRes[0].id;
+    targetLogId = logRes[0]!.id;
   });
 
   test.afterAll(async () => {

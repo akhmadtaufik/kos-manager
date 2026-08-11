@@ -35,11 +35,11 @@ test.describe.serial('Data Overload & Filtering Journey', () => {
 
     // 3. Get IDs and force roles
     const ownerRows = await sql`SELECT id FROM users WHERE email = ${ownerEmail}`;
-    ownerId = ownerRows[0].id;
+    ownerId = ownerRows[0]!.id;
     const opARows = await sql`SELECT id FROM users WHERE email = ${opAEmail}`;
-    opAId = opARows[0].id;
+    opAId = opARows[0]!.id;
     const opBRows = await sql`SELECT id FROM users WHERE email = ${opBEmail}`;
-    opBId = opBRows[0].id;
+    opBId = opBRows[0]!.id;
 
     await sql`UPDATE users SET role = 'owner' WHERE id = ${ownerId}`;
     await sql`UPDATE users SET role = 'operator' WHERE id IN (${opAId}, ${opBId})`;
@@ -50,7 +50,7 @@ test.describe.serial('Data Overload & Filtering Journey', () => {
       VALUES (${ownerId}, 'Overload Mansion', 'Data St.') 
       RETURNING id
     `;
-    propertyId = propRes[0].id;
+    propertyId = propRes[0]!.id;
 
     await sql`
       INSERT INTO user_properties (user_id, property_id, permissions) 

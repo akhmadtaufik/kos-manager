@@ -48,7 +48,7 @@ test.describe('Expenses Module UI/UX Journey', () => {
     
     // Fill form
     const today = new Date().toISOString().split('T')[0];
-    await page.fill('input[type="date"]', today);
+    await page.fill('input[type="date"]', today as string);
     // Click 'Air' category
     await page.click('button:has-text("Air")');
     await page.fill('input[type="number"]', '50000');
@@ -70,7 +70,7 @@ test.describe('Expenses Module UI/UX Journey', () => {
     await page.click('button:has-text("Catat Pengeluaran")');
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
     
-    await page.fill('input[type="date"]', today);
+    await page.fill('input[type="date"]', today as string);
     // Click 'Lainnya'
     await page.click('button:has-text("Lainnya")');
     
