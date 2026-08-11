@@ -8,32 +8,32 @@ import {
 } from '../utils/schemaValidations'
 
 export default defineNitroPlugin((nitroApp) => {
-  nitroApp.hooks.hook('openapi:generate', (config) => {
+  nitroApp.hooks.hook('openapi:generate' as any, (config: any) => {
     config.components = config.components || {}
     config.components.schemas = config.components.schemas || {}
 
-    const wrapSuccess = (dataSchema: z.ZodTypeAny) => z.object({
+    const wrapSuccess = (dataSchema: any) => z.object({
       status: z.literal('success'),
       statusCode: z.number().default(200),
       message: z.string().default('Success'),
-      data: dataSchema
+      data: dataSchema as z.ZodTypeAny
     })
 
     // 1. REGISTER GLOBAL SCHEMAS (Strictly with { target: 'openApi3' })
     const schemas = {
-      PropertyListResponse: wrapSuccess(createPaginatedSchema(selectPropertySchema)),
+      PropertyListResponse: wrapSuccess(createPaginatedSchema(selectPropertySchema as any)),
       PropertyResponse: wrapSuccess(selectPropertySchema),
-      RoomListResponse: wrapSuccess(createPaginatedSchema(selectRoomSchema)),
+      RoomListResponse: wrapSuccess(createPaginatedSchema(selectRoomSchema as any)),
       RoomResponse: wrapSuccess(selectRoomSchema),
-      TenantListResponse: wrapSuccess(createPaginatedSchema(selectTenantSchema)),
+      TenantListResponse: wrapSuccess(createPaginatedSchema(selectTenantSchema as any)),
       TenantResponse: wrapSuccess(selectTenantSchema),
-      PaymentListResponse: wrapSuccess(createPaginatedSchema(selectPaymentSchema)),
+      PaymentListResponse: wrapSuccess(createPaginatedSchema(selectPaymentSchema as any)),
       PaymentResponse: wrapSuccess(selectPaymentSchema),
-      ExpenseListResponse: wrapSuccess(createPaginatedSchema(selectExpenseSchema)),
+      ExpenseListResponse: wrapSuccess(createPaginatedSchema(selectExpenseSchema as any)),
       ExpenseResponse: wrapSuccess(selectExpenseSchema),
-      StaffListResponse: wrapSuccess(createPaginatedSchema(selectUserSchema)),
+      StaffListResponse: wrapSuccess(createPaginatedSchema(selectUserSchema as any)),
       StaffResponse: wrapSuccess(selectUserSchema),
-      AuditLogListResponse: wrapSuccess(createPaginatedSchema(selectActivityLogSchema)),
+      AuditLogListResponse: wrapSuccess(createPaginatedSchema(selectActivityLogSchema as any)),
       AuditLogResponse: wrapSuccess(selectActivityLogSchema),
       ReportRekapResponse: wrapSuccess(z.object({
         totalRooms: z.number(),
