@@ -9,7 +9,7 @@ const config = useRuntimeConfig()
 
 export default NuxtAuthHandler({
   secret: config.authSecret,
-  trustHost: true,
+  // trustHost: true,
   useSecureCookies: config.public.authOrigin ? config.public.authOrigin.startsWith('https://') : false,
 
   // Drizzle Adapter — persists sessions/accounts to PostgreSQL
@@ -24,10 +24,10 @@ export default NuxtAuthHandler({
     // ===========================
     // Google OAuth Provider
     // ===========================
-    GoogleProvider.default({
+    (GoogleProvider as any).default({
       clientId: config.googleClientId,
       clientSecret: config.googleClientSecret,
-      profile(profile) {
+      profile(profile: any) {
         return {
           id: profile.sub,
           name: profile.name,
@@ -41,7 +41,7 @@ export default NuxtAuthHandler({
     // ===========================
     // Credentials Provider (Email + Password)
     // ===========================
-    CredentialsProvider.default({
+    (CredentialsProvider as any).default({
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },

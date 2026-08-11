@@ -104,8 +104,7 @@ defineRouteMeta({
             }
           }
         }
-      },
-      security: [{ cookieAuth: [] }]
+      }
     }
   }
 })
