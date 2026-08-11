@@ -5,7 +5,7 @@ import {
   selectPropertySchema, selectRoomSchema, selectTenantSchema, 
   selectPaymentSchema, selectExpenseSchema, selectUserSchema, 
   selectActivityLogSchema, createPaginatedSchema 
-} from '../utils/validations'
+} from '../utils/schemaValidations'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('openapi:generate', (config) => {

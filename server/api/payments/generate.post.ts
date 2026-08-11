@@ -1,7 +1,7 @@
 import { generateMonthlyInvoices } from '../../services/payment.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

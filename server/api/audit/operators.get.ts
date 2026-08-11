@@ -2,7 +2,7 @@ import { db } from '../../db'
 import { properties, userProperties, users } from '../../db/schema'
 import { eq, inArray } from 'drizzle-orm'
 import { getServerSession } from '#auth'
-import { selectActivityLogSchema, insertActivityLogSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectActivityLogSchema, insertActivityLogSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 import { sendSuccessResponse } from '../../utils/response'

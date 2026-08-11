@@ -1,6 +1,5 @@
 import { eq } from 'drizzle-orm'
 import { db, users } from '../../db'
-import { registerSchema } from '../../../utils/validations'
 
 defineRouteMeta({
   openAPI: {

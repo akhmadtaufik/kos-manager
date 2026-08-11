@@ -4,7 +4,7 @@ import { apiSuccess } from '../../utils/response'
 import { db } from '../../db'
 import { payments } from '../../db/schema'
 import { eq } from 'drizzle-orm'
-import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

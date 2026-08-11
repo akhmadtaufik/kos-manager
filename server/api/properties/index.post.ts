@@ -1,7 +1,7 @@
 import { createProperty } from '../../services/property.service'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/validations'
+import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

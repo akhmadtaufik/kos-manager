@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

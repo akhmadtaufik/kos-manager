@@ -4,7 +4,7 @@ import { eq, and } from 'drizzle-orm'
 import { requirePropertyOwnership } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
-import { selectUserSchema, insertUserSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectUserSchema, insertUserSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

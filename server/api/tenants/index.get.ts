@@ -2,7 +2,7 @@ import { getTenantsByProperty } from '../../services/tenant.service'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { selectTenantSchema, insertTenantSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectTenantSchema, insertTenantSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

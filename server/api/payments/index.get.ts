@@ -2,7 +2,7 @@ import { getPaymentsByProperty } from '../../services/payment.service'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

@@ -1,6 +1,6 @@
 import { getUserProperties } from '../../services/property.service'
 import { apiSuccess } from '../../utils/response'
-import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/validations'
+import { selectPropertySchema, insertPropertySchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 

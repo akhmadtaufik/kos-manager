@@ -1,7 +1,7 @@
 import { createExpense } from '../../services/expense.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { selectExpenseSchema, insertExpenseSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectExpenseSchema, insertExpenseSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({

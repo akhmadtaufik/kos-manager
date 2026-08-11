@@ -2,7 +2,7 @@ import { getRooms } from '../../services/room.service'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyPermission } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/validations'
+import { selectRoomSchema, insertRoomSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 
 
 defineRouteMeta({
