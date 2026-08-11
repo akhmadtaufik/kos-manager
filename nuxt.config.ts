@@ -18,7 +18,23 @@ export default defineNuxtConfig({
     '@sidebase/nuxt-auth',
     '@nuxt/test-utils/module',
     '@scalar/nuxt',
+    'nuxt-security',
   ],
+
+  // Security Configuration
+  security: {
+    headers: {
+      contentSecurityPolicy: {
+        'img-src': ["'self'", 'data:', 'https:'],
+        'script-src': ["'self'", "'unsafe-inline'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
+      },
+      crossOriginEmbedderPolicy: process.env.NODE_ENV === 'development' ? 'unsafe-none' : 'require-corp',
+    },
+    rateLimiter: {
+      tokensPerInterval: 150,
+      interval: 300000, // 5 minutes
+    },
+  },
 
   // Tailwind CSS configuration
   tailwindcss: {
@@ -50,10 +66,7 @@ export default defineNuxtConfig({
     provider: {
       type: 'authjs',
       defaultProvider: 'credentials',
-      addDefaultCallbackUrl: true,
-      pages: {
-        signIn: '/'
-      }
+      addDefaultCallbackUrl: true
     },
     globalAppMiddleware: {
       isEnabled: true,
@@ -63,6 +76,14 @@ export default defineNuxtConfig({
   routeRules: {
     '/docs/**': { ssr: false },
     '/_openapi.json': { ssr: false },
+    '/api/auth/**': {
+      security: {
+        rateLimiter: {
+          tokensPerInterval: 10,
+          interval: 900000, // 15 minutes (strict limit for auth)
+        }
+      }
+    }
   },
 
   nitro: {
@@ -71,61 +92,7 @@ export default defineNuxtConfig({
     },
     openAPI: {
       production: 'runtime',
-      meta: {
-        components: {
-          securitySchemes: {
-            cookieAuth: {
-              type: 'apiKey',
-              in: 'cookie',
-              name: 'next-auth.session-token',
-              description: 'Session cookie from NextAuth/NuxtAuth'
-            }
-          },
-          responses: {
-            ValidationError: {
-              description: 'Bad Request - Validation error or invalid payload',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      success: { type: 'boolean', example: false },
-                      statusCode: { type: 'integer', example: 400 },
-                      message: { type: 'string', example: 'Validation failed' },
-                      errors: {
-                        type: 'array',
-                        items: {
-                          type: 'object',
-                          properties: {
-                            field: { type: 'string', example: 'email' },
-                            message: { type: 'string', example: 'Invalid format' }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            InternalServerError: {
-              description: 'Internal Server Error',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      success: { type: 'boolean', example: false },
-                      statusCode: { type: 'integer', example: 500 },
-                      message: { type: 'string', example: 'An unexpected internal error occurred.' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        security: [{ cookieAuth: [] }]
-      }
+      meta: {}
     },
     // Automatically import server utilities
     imports: {
@@ -138,11 +105,6 @@ export default defineNuxtConfig({
     pathRouting: {
       basePath: '/docs',
     },
-    configuration: {
-      authentication: {
-        preferredSecurityScheme: 'cookieAuth'
-      }
-    }
   },
 
   // TypeScript strict mode
