@@ -11,21 +11,26 @@ const handleSignOut = async () => {
 </script>
 
 <template>
-  <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
+  <header class="h-16 bg-white/70 backdrop-blur-xl border-b border-surface-200/50 flex items-center justify-between px-6 sticky top-0 z-20">
     <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
-        <label for="property-switcher" class="text-sm font-medium text-slate-500">Property:</label>
-        <select 
-          id="property-switcher"
-          v-model="activePropertyId"
-          @change="setActiveProperty(activePropertyId)"
-          class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer"
-        >
-          <option :value="null">Global View (Semua Properti)</option>
-          <option v-for="property in properties" :key="property.id" :value="property.id">
-            {{ property.name }}
-          </option>
-        </select>
+      <div class="flex items-center gap-2.5">
+        <label for="property-switcher" class="text-[13px] font-medium text-surface-500 tracking-wide uppercase">Property</label>
+        <div class="relative">
+          <select 
+            id="property-switcher"
+            v-model="activePropertyId"
+            @change="setActiveProperty(activePropertyId)"
+            class="appearance-none bg-surface-50/50 hover:bg-surface-100 border border-surface-200 text-surface-900 text-sm font-medium rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 block pl-3 pr-8 py-1.5 outline-none cursor-pointer transition-colors duration-200 shadow-sm"
+          >
+            <option :value="null">Global View</option>
+            <option v-for="property in properties" :key="property.id" :value="property.id">
+              {{ property.name }}
+            </option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-2.5 pointer-events-none text-surface-400">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
       </div>
     </div>
     
