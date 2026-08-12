@@ -4,47 +4,50 @@
     <!-- LEFT: Brand Showcase -->
     <div class="relative hidden md:flex md:w-1/2 lg:w-[55%] flex-col justify-between p-8 lg:p-12 xl:p-16 bg-surface-950 overflow-hidden text-white">
       <!-- Subtle Background Pattern / Noise -->
-      <div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 24px 24px;"></div>
+      <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-noise"></div>
+      <div class="absolute -top-1/4 -right-1/4 w-full h-[150%] bg-gradient-to-bl from-brand-600/20 via-surface-950/0 to-surface-950/0 pointer-events-none rounded-full blur-[120px]"></div>
       
       <!-- Brand Top -->
-      <div class="relative z-10 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+      <div class="relative z-10 flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-subtle">
+          <PhBuildings weight="duotone" class="w-5 h-5 text-white" />
         </div>
-        <span class="font-bold text-xl tracking-tight font-sans">KosManager</span>
+        <span class="font-semibold text-xl tracking-tight">KosManager</span>
       </div>
 
       <!-- Hero Message -->
-      <div class="relative z-10 max-w-lg mt-auto mb-auto">
-        <h1 class="text-4xl lg:text-5xl font-sans tracking-tighter leading-[1.1] mb-6">
-          Property management, <span class="text-surface-400">automated and refined.</span>
+      <div class="relative z-10 max-w-xl mt-auto mb-16">
+        <h1 class="text-[2.75rem] lg:text-[3.5rem] font-semibold tracking-tighter leading-[1.05] mb-6">
+          Property management, <br/><span class="text-surface-400">automated and refined.</span>
         </h1>
         <p class="text-surface-400 text-lg leading-relaxed max-w-[45ch]">
-          A modern platform to streamline billing, track rooms, and elevate the tenant experience across all your properties.
+          A modern platform to streamline billing, track occupancy, and elevate the tenant experience across all your properties.
         </p>
       </div>
 
-      <!-- Bento Grid Minimal (Bottom left) -->
-      <div class="relative z-10 grid grid-cols-2 gap-4 max-w-lg mt-auto">
-        <div class="p-5 rounded-2xl bg-surface-900 border border-surface-800">
-          <div class="text-brand-400 mb-2">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
+      <!-- Asymmetric Bento Grid (Bottom left) -->
+      <div class="relative z-10 grid grid-cols-1 md:grid-cols-5 gap-4 max-w-xl mt-auto">
+        <div class="md:col-span-3 p-6 rounded-[1.25rem] bg-surface-900/50 backdrop-blur-sm group hover:bg-surface-900 transition-colors duration-300">
+          <div class="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-400 mb-4 group-hover:scale-110 transition-transform duration-300">
+            <PhLightning :size="20" weight="duotone" />
           </div>
-          <h3 class="font-medium text-white mb-1 font-sans">Automated Billing</h3>
-          <p class="text-sm text-surface-500">Zero-touch invoicing and payment collection.</p>
+          <h3 class="font-medium text-white mb-1.5 text-lg">Automated Billing</h3>
+          <p class="text-[15px] text-surface-400 leading-relaxed">Zero-touch invoicing and automated payment collection workflows.</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-900 border border-surface-800">
-          <div class="text-brand-400 mb-2">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
+        
+        <div class="md:col-span-2 grid gap-4">
+          <div class="p-5 rounded-[1.25rem] bg-surface-900/30 backdrop-blur-sm hover:bg-surface-900/60 transition-colors duration-300 flex flex-col justify-center">
+            <div class="flex items-center gap-3 mb-1">
+              <PhShieldCheck :size="20" weight="duotone" class="text-brand-400" />
+              <h3 class="font-medium text-white">RBAC Security</h3>
+            </div>
           </div>
-          <h3 class="font-medium text-white mb-1 font-sans">Room Tracking</h3>
-          <p class="text-sm text-surface-500">Real-time occupancy and maintenance status.</p>
+          <div class="p-5 rounded-[1.25rem] bg-surface-900/30 backdrop-blur-sm hover:bg-surface-900/60 transition-colors duration-300 flex flex-col justify-center">
+             <div class="flex items-center gap-3 mb-1">
+              <PhTrendUp :size="20" weight="duotone" class="text-brand-400" />
+              <h3 class="font-medium text-white">Live Occupancy</h3>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -53,13 +56,11 @@
     <div class="w-full md:w-1/2 lg:w-[45%] flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24 bg-white dark:bg-surface-950 relative">
       
       <!-- Mobile Logo (Hidden on desktop) -->
-      <div class="md:hidden flex items-center justify-center gap-3 mb-10">
-        <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+      <div class="md:hidden flex items-center justify-center gap-2.5 mb-10">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-subtle">
+          <PhBuildings weight="duotone" class="w-5 h-5 text-white" />
         </div>
-        <span class="font-bold text-xl tracking-tight text-surface-900 dark:text-white font-sans">KosManager</span>
+        <span class="font-semibold text-xl tracking-tight text-surface-900 dark:text-white">KosManager</span>
       </div>
 
       <div class="w-full max-w-[400px] mx-auto">
@@ -166,7 +167,7 @@
               v-model="registerForm.name"
               type="text"
               autocomplete="name"
-              placeholder="Jane Doe"
+              placeholder="Amelia Tan"
               required
               class="w-full px-3.5 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-surface-900 dark:text-white placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-shadow font-sans"
               :class="{ 'border-danger-500 focus:ring-danger-500/20': registerFieldErrors.name && registerForm.name }"
@@ -247,6 +248,7 @@
 </template>
 
 <script setup lang="ts">
+import { PhBuildings, PhLightning, PhShieldCheck, PhTrendUp } from '@phosphor-icons/vue'
 
 definePageMeta({
   auth: false,
