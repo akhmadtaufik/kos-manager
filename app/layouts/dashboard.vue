@@ -10,11 +10,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-900 font-inter">
+  <div class="min-h-[100dvh] bg-surface-50 text-surface-900 font-sans selection:bg-brand-500/30">
     <Sidebar />
-    <div class="ml-64 flex flex-col min-h-screen">
+    <div class="ml-64 flex flex-col min-h-[100dvh]">
       <Header />
-      <main class="flex-1 p-8">
+      <main class="flex-1 p-8 max-w-[1600px] w-full mx-auto">
         <slot />
       </main>
     </div>
