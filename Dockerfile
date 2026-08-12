@@ -1,7 +1,7 @@
 # ===========================
-# Stage 1: Dependencies
+# Stage 1: Builder
 # ===========================
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -11,17 +11,8 @@ COPY scripts/patch-compiler-sfc.cjs ./scripts/
 
 # Install build tools and dependencies
 RUN apk add --no-cache python3 make g++
-RUN npm ci --legacy-peer-deps --prefer-offline
+RUN npm install --legacy-peer-deps && npm cache clean --force
 
-# ===========================
-# Stage 2: Builder
-# ===========================
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build the Nuxt application
