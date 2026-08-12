@@ -28,6 +28,13 @@ export default defineNuxtConfig({
         'img-src': ["'self'", 'data:', 'https:'],
         'script-src': ["'self'", "'unsafe-inline'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
       },
+      strictTransportSecurity: {
+        maxAge: 31536000,
+        includeSubdomains: true,
+        preload: true,
+      },
+      xFrameOptions: 'DENY',
+      xContentTypeOptions: 'nosniff',
       crossOriginEmbedderPolicy: process.env.NODE_ENV === 'development' ? 'unsafe-none' : 'require-corp',
     },
     rateLimiter: {
