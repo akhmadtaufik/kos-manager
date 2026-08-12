@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
 import { useAuth } from '#imports'
+import { PhBuildings } from '@phosphor-icons/vue'
 
 definePageMeta({
   layout: 'dashboard',
@@ -92,10 +93,10 @@ const deleteProperty = async (id: string) => {
           <label class="block text-sm font-medium text-slate-700 mb-1">Address (Optional)</label>
           <input v-model="formData.address" type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" placeholder="e.g., Jl. Jendral Sudirman No.1" />
         </div>
-        <button v-if="editingId" type="button" @click="cancelEdit" class="text-slate-600 hover:bg-slate-100 font-medium rounded-lg px-5 py-2.5 transition-colors">
+        <button v-if="editingId" type="button" @click="cancelEdit" class="text-surface-600 hover:bg-surface-100 font-medium rounded-lg px-5 py-2.5 transition-colors active:scale-[0.98]">
           Cancel
         </button>
-        <button type="submit" :disabled="isCreating" class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5 transition-colors">
+        <button type="submit" :disabled="isCreating" class="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5 transition-all duration-200 active:scale-[0.98] shadow-subtle">
           {{ isCreating ? 'Saving...' : (editingId ? 'Update' : 'Create') }}
         </button>
       </form>
@@ -104,33 +105,39 @@ const deleteProperty = async (id: string) => {
     <phantom-ui :loading="isLoading">
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <table class="w-full text-sm text-left text-slate-500">
-          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+          <thead class="text-[11px] text-surface-500 font-mono tracking-wider uppercase bg-surface-50 border-b border-surface-200">
             <tr>
-              <th scope="col" class="px-6 py-3">Property Name</th>
-              <th scope="col" class="px-6 py-3">Address</th>
-              <th scope="col" class="px-6 py-3">Created</th>
-              <th scope="col" class="px-6 py-3">Aksi</th>
+              <th scope="col" class="px-6 py-3 font-medium">Property Name</th>
+              <th scope="col" class="px-6 py-3 font-medium">Address</th>
+              <th scope="col" class="px-6 py-3 font-medium">Created</th>
+              <th scope="col" class="px-6 py-3 font-medium">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <template v-if="isLoading">
-              <tr v-for="i in 3" :key="'skel-'+i" class="bg-white border-b border-slate-100">
-                <td class="px-6 py-4 font-medium text-slate-900">Mock Property Name</td>
-                <td class="px-6 py-4">Jl. Mock Address No. 123</td>
-                <td class="px-6 py-4">01/01/2026</td>
-                <td class="px-6 py-4"><span class="text-blue-600 font-medium">Edit</span></td>
+              <tr v-for="i in 3" :key="'skel-'+i" class="bg-white border-b border-surface-100">
+                <td class="px-6 py-4"><div class="skeleton h-4 w-3/4 rounded"></div></td>
+                <td class="px-6 py-4"><div class="skeleton h-4 w-1/2 rounded"></div></td>
+                <td class="px-6 py-4"><div class="skeleton h-4 w-1/3 rounded"></div></td>
+                <td class="px-6 py-4"><div class="skeleton h-8 w-16 rounded-md"></div></td>
               </tr>
             </template>
             <tr v-else-if="properties.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-slate-500">
-                No properties found.
+              <td colspan="4" class="px-6 py-16">
+                <div class="flex flex-col items-center justify-center text-center">
+                  <div class="w-12 h-12 bg-surface-100 rounded-full flex items-center justify-center mb-3">
+                    <PhBuildings :size="24" class="text-surface-400" />
+                  </div>
+                  <h3 class="text-sm font-medium text-surface-900 mb-1">No Properties Found</h3>
+                  <p class="text-xs text-surface-500">You haven't added any properties yet.</p>
+                </div>
               </td>
             </tr>
             <template v-else>
-              <tr v-for="prop in properties" :key="prop.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td class="px-6 py-4 font-medium text-slate-900">{{ prop.name }}</td>
-                <td class="px-6 py-4">{{ prop.address || '-' }}</td>
-                <td class="px-6 py-4">{{ new Date(prop.createdAt).toLocaleDateString() }}</td>
+              <tr v-for="prop in properties" :key="prop.id" class="bg-white border-b border-surface-100 hover:bg-surface-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-surface-900">{{ prop.name }}</td>
+                <td class="px-6 py-4 text-surface-600">{{ prop.address || '-' }}</td>
+                <td class="px-6 py-4 text-surface-600">{{ new Date(prop.createdAt).toLocaleDateString() }}</td>
                 <td class="px-6 py-4">
                   <div v-if="canManage" class="flex gap-3">
                     <button @click="startEdit(prop)" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
