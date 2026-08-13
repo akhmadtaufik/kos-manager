@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
 import { useAuth } from '#imports'
-import { PhBuildings } from '@phosphor-icons/vue'
+import { PhBuildings, PhPencilSimple, PhTrash } from '@phosphor-icons/vue'
 
 definePageMeta({
   layout: 'dashboard',
@@ -107,23 +107,23 @@ const deleteProperty = async (id: string) => {
         <table class="w-full text-sm text-left text-slate-500">
           <thead class="text-[11px] text-surface-500 font-mono tracking-wider uppercase bg-surface-50 border-b border-surface-200">
             <tr>
-              <th scope="col" class="px-6 py-3 font-medium">Property Name</th>
-              <th scope="col" class="px-6 py-3 font-medium">Address</th>
-              <th scope="col" class="px-6 py-3 font-medium">Created</th>
-              <th scope="col" class="px-6 py-3 font-medium">Aksi</th>
+              <th scope="col" class="px-8 py-5 font-medium">Property Name</th>
+              <th scope="col" class="px-8 py-5 font-medium">Address</th>
+              <th scope="col" class="px-8 py-5 font-medium">Created</th>
+              <th scope="col" class="px-8 py-5 font-medium">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <template v-if="isLoading">
               <tr v-for="i in 3" :key="'skel-'+i" class="bg-white border-b border-surface-100">
-                <td class="px-6 py-4"><div class="skeleton h-4 w-3/4 rounded"></div></td>
-                <td class="px-6 py-4"><div class="skeleton h-4 w-1/2 rounded"></div></td>
-                <td class="px-6 py-4"><div class="skeleton h-4 w-1/3 rounded"></div></td>
-                <td class="px-6 py-4"><div class="skeleton h-8 w-16 rounded-md"></div></td>
+                <td class="px-8 py-6"><div class="skeleton h-4 w-3/4 rounded"></div></td>
+                <td class="px-8 py-6"><div class="skeleton h-4 w-1/2 rounded"></div></td>
+                <td class="px-8 py-6"><div class="skeleton h-4 w-1/3 rounded"></div></td>
+                <td class="px-8 py-6"><div class="skeleton h-8 w-16 rounded-md"></div></td>
               </tr>
             </template>
             <tr v-else-if="properties.length === 0">
-              <td colspan="4" class="px-6 py-16">
+              <td colspan="4" class="px-8 py-16">
                 <div class="flex flex-col items-center justify-center text-center">
                   <div class="w-12 h-12 bg-surface-100 rounded-full flex items-center justify-center mb-3">
                     <PhBuildings :size="24" class="text-surface-400" />
@@ -135,13 +135,17 @@ const deleteProperty = async (id: string) => {
             </tr>
             <template v-else>
               <tr v-for="prop in properties" :key="prop.id" class="bg-white border-b border-surface-100 hover:bg-surface-50 transition-colors">
-                <td class="px-6 py-4 font-medium text-surface-900">{{ prop.name }}</td>
-                <td class="px-6 py-4 text-surface-600">{{ prop.address || '-' }}</td>
-                <td class="px-6 py-4 text-surface-600">{{ new Date(prop.createdAt).toLocaleDateString() }}</td>
-                <td class="px-6 py-4">
-                  <div v-if="canManage" class="flex gap-3">
-                    <button @click="startEdit(prop)" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
-                    <button @click="deleteProperty(prop.id)" class="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
+                <td class="px-8 py-6 font-medium text-surface-900">{{ prop.name }}</td>
+                <td class="px-8 py-6 text-surface-600">{{ prop.address || '-' }}</td>
+                <td class="px-8 py-6 text-surface-600 tabular-nums">{{ new Date(prop.createdAt).toLocaleDateString() }}</td>
+                <td class="px-8 py-6">
+                  <div v-if="canManage" class="flex gap-2 items-center">
+                    <button @click="startEdit(prop)" class="p-2 rounded-lg text-surface-400 hover:text-brand-600 hover:bg-surface-100 transition-all duration-200 group" title="Edit">
+                      <PhPencilSimple :size="18" weight="duotone" class="group-hover:scale-110 transition-transform" />
+                    </button>
+                    <button @click="deleteProperty(prop.id)" class="p-2 rounded-lg text-surface-400 hover:text-danger-600 hover:bg-danger-50 transition-all duration-200 group" title="Hapus">
+                      <PhTrash :size="18" weight="duotone" class="group-hover:scale-110 transition-transform" />
+                    </button>
                   </div>
                   <span v-else class="text-slate-400">-</span>
                 </td>
