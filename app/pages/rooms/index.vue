@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
-import { PhPencilSimple, PhTrash } from '@phosphor-icons/vue'
+import { PhPencilSimple, PhTrash, PhDoor } from '@phosphor-icons/vue'
 
 definePageMeta({
   layout: 'dashboard',
@@ -164,8 +164,8 @@ const calculateTotalRent = (room: any) => {
     </div>
       
     <phantom-ui :loading="isLoading">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <table class="w-full text-sm text-left text-slate-500">
+      <div v-if="isLoading || rooms.length > 0" class="bg-white rounded-[1.5rem] border border-surface-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm text-left text-surface-500">
           <thead class="text-[11px] text-surface-500 font-mono tracking-wider uppercase bg-surface-50 border-b border-surface-200">
             <tr>
               <th v-if="!activePropertyId" scope="col" class="px-8 py-5">Property</th>
@@ -194,9 +194,6 @@ const calculateTotalRent = (room: any) => {
                 </td>
               </tr>
             </template>
-            <tr v-else-if="rooms.length === 0">
-              <td colspan="6" class="px-8 py-16 text-center text-surface-500">No rooms found. Add one above.</td>
-            </tr>
             <template v-else>
               <tr v-for="room in rooms" :key="room.id" class="bg-white border-b border-surface-100 hover:bg-surface-50 transition-colors">
                 <td v-if="!activePropertyId" class="px-8 py-6 text-surface-700 font-medium">{{ room.property?.name || '-' }}</td>
@@ -235,6 +232,21 @@ const calculateTotalRent = (room: any) => {
             </template>
           </tbody>
         </table>
+      </div>
+      
+      <!-- Premium Empty State -->
+      <div v-else class="bg-white rounded-[1.5rem] border border-surface-200 shadow-sm overflow-hidden p-16 relative flex flex-col items-center justify-center text-center">
+        <!-- Grid Background Pattern -->
+        <div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background-image: radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0); background-size: 24px 24px;"></div>
+        
+        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mb-5 relative z-10 ring-8 ring-brand-50/50">
+          <PhDoor :size="32" weight="duotone" class="text-brand-600" />
+        </div>
+        <h3 class="text-xl font-bold text-surface-900 mb-2 relative z-10 font-outfit">No Rooms Yet</h3>
+        <p class="text-[15px] text-surface-500 max-w-sm mb-8 relative z-10 leading-relaxed">You haven't added any rooms to this property. Get started by creating your first room to manage occupancy.</p>
+        <button @click="() => document?.querySelector('input[type=text]')?.focus()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl px-6 py-3 transition-all duration-300 active:scale-[0.98] shadow-subtle relative z-10">
+          Add New Room
+        </button>
       </div>
     </phantom-ui>
 

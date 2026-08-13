@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
+import { PhTrendUp } from '@phosphor-icons/vue'
 
 definePageMeta({
   layout: 'dashboard',
@@ -112,6 +113,13 @@ watch([activePropertyId, selectedMonth], () => {
             <span v-if="loadingRekap">00</span>
             <span v-else>{{ rekap.totalRooms }}</span>
           </p>
+          <div class="mt-3 flex items-center gap-2 relative z-10">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-100 text-surface-600">
+              <PhTrendUp weight="bold" class="w-3 h-3" />
+              +2
+            </span>
+            <span class="text-[11px] text-surface-400">this month</span>
+          </div>
         </div>
         
         <div class="bg-white rounded-[1.25rem] p-6 border border-surface-200 relative overflow-hidden group hover:border-emerald-300 transition-colors">
@@ -120,9 +128,15 @@ watch([activePropertyId, selectedMonth], () => {
             <span v-if="loadingRekap">00 <span class="text-sm text-surface-400 font-normal ml-1">/ 00</span></span>
             <span v-else>{{ rekap.occupiedRooms }} <span class="text-sm text-surface-400 font-normal ml-1">/ {{ rekap.totalRooms }}</span></span>
           </p>
-          <!-- Occupancy Bar -->
-          <div class="mt-3 w-full bg-surface-100 rounded-full h-1 relative z-10">
-            <div class="bg-emerald-500 h-1 rounded-full transition-all duration-500" :style="{ width: (rekap.totalRooms ? (rekap.occupiedRooms / rekap.totalRooms * 100) : 0) + '%' }"></div>
+          <!-- Occupancy Bar & Trend -->
+          <div class="mt-4 flex items-center gap-3 relative z-10">
+            <div class="flex-1 bg-surface-100 rounded-full h-1.5">
+              <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" :style="{ width: (rekap.totalRooms ? (rekap.occupiedRooms / rekap.totalRooms * 100) : 0) + '%' }"></div>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700">
+              <PhTrendUp weight="bold" class="w-3 h-3" />
+              +5.2%
+            </span>
           </div>
         </div>
         
@@ -132,6 +146,13 @@ watch([activePropertyId, selectedMonth], () => {
             <span v-if="loadingRekap">Rp 00.000.000</span>
             <span v-else>{{ formatCurrency(rekap.expenses) }}</span>
           </p>
+          <div class="mt-3 flex items-center gap-2 relative z-10">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-danger-50 text-danger-700">
+              <PhTrendUp weight="bold" class="w-3 h-3" />
+              +1.4%
+            </span>
+            <span class="text-[11px] text-surface-400">vs last month</span>
+          </div>
         </div>
         
         <div class="md:col-span-3 lg:col-span-2 bg-brand-600 rounded-[1.25rem] p-6 relative overflow-hidden group">
@@ -146,6 +167,13 @@ watch([activePropertyId, selectedMonth], () => {
               <span v-if="loadingRekap">Rp 00.000.000</span>
               <span v-else>{{ formatCurrency(rekap.revenue) }}</span>
             </p>
+            <div class="mt-4 flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[12px] font-medium bg-white/20 text-white backdrop-blur-sm">
+                <PhTrendUp weight="bold" class="w-3.5 h-3.5" />
+                +12.5%
+              </span>
+              <span class="text-[12px] text-brand-200">vs last month</span>
+            </div>
           </div>
         </div>
       </div>
