@@ -32,8 +32,8 @@ export default <Config>{
           950: '#172554',
         },
         surface: {
-          50: '#fafafa',
-          100: '#f4f4f5',
+          50: '#fcfbf9', // Premium warm off-white
+          100: '#f4f2ef',
           200: '#e4e4e7',
           300: '#d4d4d8',
           400: '#a1a1aa',
