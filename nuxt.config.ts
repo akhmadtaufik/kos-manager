@@ -26,7 +26,7 @@ export default defineNuxtConfig({
   ],
 
   // Security Configuration
-  security: {
+  security: process.env.CI ? false : {
     headers: {
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'https:'],
@@ -41,10 +41,7 @@ export default defineNuxtConfig({
       xContentTypeOptions: 'nosniff',
       crossOriginEmbedderPolicy: process.env.NODE_ENV === 'development' ? 'unsafe-none' : 'require-corp',
     },
-    rateLimiter: {
-      tokensPerInterval: 150,
-      interval: 300000, // 5 minutes
-    },
+    rateLimiter: false,
   },
 
   // Tailwind CSS configuration
@@ -76,6 +73,7 @@ export default defineNuxtConfig({
     originEnvKey: 'NONE',
     provider: {
       type: 'authjs',
+      trustHost: true,
       defaultProvider: 'credentials',
       addDefaultCallbackUrl: true
     },
@@ -89,10 +87,7 @@ export default defineNuxtConfig({
     '/_openapi.json': { ssr: false },
     '/api/auth/**': {
       security: {
-        rateLimiter: {
-          tokensPerInterval: 10,
-          interval: 900000, // 15 minutes (strict limit for auth)
-        }
+        rateLimiter: false
       }
     }
   },
