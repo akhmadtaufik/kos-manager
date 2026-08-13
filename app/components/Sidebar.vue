@@ -18,38 +18,38 @@ const { hasPermission } = usePropertyState()
       </div>
     </div>
     
-    <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto scrollbar-thin">
-      <NuxtLink to="/dashboard" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhHouse :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Dashboard</span>
+    <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto scrollbar-thin relative" id="sidebar-nav">
+      <NuxtLink to="/dashboard" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhHouse :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Dashboard</span>
       </NuxtLink>
-      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/properties" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhBuildings :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Properties</span>
+      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/properties" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhBuildings :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Properties</span>
       </NuxtLink>
-      <NuxtLink v-if="hasPermission('manage_rooms')" to="/rooms" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhDoor :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Rooms</span>
+      <NuxtLink v-if="hasPermission('manage_rooms')" to="/rooms" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhDoor :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Rooms</span>
       </NuxtLink>
-      <NuxtLink v-if="hasPermission('manage_tenants')" to="/tenants" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhUsers :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Tenants</span>
+      <NuxtLink v-if="hasPermission('manage_tenants')" to="/tenants" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhUsers :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Tenants</span>
       </NuxtLink>
-      <NuxtLink v-if="hasPermission('manage_payments')" to="/payments" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhCreditCard :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Payments</span>
+      <NuxtLink v-if="hasPermission('manage_payments')" to="/payments" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhCreditCard :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Payments</span>
       </NuxtLink>
-      <NuxtLink v-if="hasPermission('manage_expenses')" to="/expenses" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhReceipt :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Expenses</span>
+      <NuxtLink v-if="hasPermission('manage_expenses')" to="/expenses" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhReceipt :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Expenses</span>
       </NuxtLink>
-      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/staff" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhUserCircle :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Staf & Operator</span>
+      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/staff" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhUserCircle :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Staf & Operator</span>
       </NuxtLink>
-      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/dashboard/activity" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-surface-600 hover:bg-white hover:text-brand-700 hover:shadow-subtle transition-all duration-200 active:scale-[0.98]" active-class="bg-white shadow-subtle text-brand-700 font-medium">
-        <PhChartLine :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors" />
-        <span>Activity Logs</span>
+      <NuxtLink v-if="['superadmin', 'owner'].includes((data?.user as any)?.role)" to="/dashboard/activity" class="group relative flex items-center gap-3 px-3 py-2.5 rounded-[0.85rem] text-surface-600 hover:text-brand-700 transition-all duration-300 z-10" active-class="text-brand-700 font-medium before:absolute before:inset-0 before:bg-white before:shadow-subtle before:rounded-[0.85rem] before:-z-10 before:transition-all before:duration-300">
+        <PhChartLine :size="20" weight="duotone" class="text-surface-400 group-hover:text-brand-500 transition-colors z-10" />
+        <span class="z-10">Activity Logs</span>
       </NuxtLink>
     </nav>
     
