@@ -5,6 +5,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ARG CI
+ENV CI=${CI}
+
 # Copy package files
 COPY package.json package-lock.json* ./
 COPY scripts/patch-compiler-sfc.cjs ./scripts/
