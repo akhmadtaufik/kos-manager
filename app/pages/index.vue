@@ -287,7 +287,7 @@ const loginFieldErrors = ref<Record<string, string>>({})
 const registerFieldErrors = ref<Record<string, string>>({})
 
 // Clear error when switching tabs or editing fields
-watch(loginForm, (newVal) => {
+watch(loginForm, (newVal: any) => {
   const result = loginSchema.safeParse(newVal)
   if (!result.success) {
     const errs: Record<string, string> = {}
@@ -301,7 +301,7 @@ watch(loginForm, (newVal) => {
   }
 }, { deep: true })
 
-watch(registerForm, (newVal) => {
+watch(registerForm, (newVal: any) => {
   const result = registerSchema.safeParse(newVal)
   if (!result.success) {
     const errs: Record<string, string> = {}
