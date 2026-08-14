@@ -10,7 +10,7 @@ const statusCode = props.error?.statusCode || 500
 const message = statusCode === 404 ? 'Halaman tidak ditemukan' : 'Terjadi gangguan pada sistem kami'
 
 // Extract reqId from the NuxtError data property (often populated from API responses)
-const reqId = props.error?.data?.reqId || props.error?.reqId || null
+const reqId = (props.error?.data as any)?.reqId || (props.error as any)?.reqId || null
 
 const handleError = () => clearError({ redirect: '/dashboard' })
 </script>
