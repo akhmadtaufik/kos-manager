@@ -178,9 +178,9 @@ const fetchLogs = async () => {
     let operatorId = ''
     
     if (actorFilter.value.startsWith('role:')) {
-      role = actorFilter.value.split(':')[1]
+      role = actorFilter.value.split(':')[1] || ''
     } else if (actorFilter.value.startsWith('user:')) {
-      operatorId = actorFilter.value.split(':')[1]
+      operatorId = actorFilter.value.split(':')[1] || ''
     }
 
     const response = await $fetch<any>('/api/audit', {
@@ -256,8 +256,8 @@ const formatAction = (action: string) => {
   return action.split('_').map(capitalize).join(' ')
 }
 
-const formatKey = (key: string) => {
-  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+const formatKey = (key: string | number) => {
+  return String(key).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 }
 
 const formatDetails = (log: any) => {
