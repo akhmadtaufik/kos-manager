@@ -61,6 +61,12 @@ const cancelEdit = () => {
   editFormData.additionalFees = []
 }
 
+const focusInput = () => {
+  if (typeof document !== 'undefined') {
+    (document.querySelector('input[type=text]') as HTMLElement)?.focus()
+  }
+}
+
 const addEditFee = () => {
   editFormData.additionalFees.push({ name: '', amount: 0 })
 }
@@ -244,7 +250,7 @@ const calculateTotalRent = (room: any) => {
         </div>
         <h3 class="text-xl font-bold text-surface-900 mb-2 relative z-10 font-outfit">No Rooms Yet</h3>
         <p class="text-[15px] text-surface-500 max-w-sm mb-8 relative z-10 leading-relaxed">You haven't added any rooms to this property. Get started by creating your first room to manage occupancy.</p>
-        <button @click="() => document?.querySelector('input[type=text]')?.focus()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl px-6 py-3 transition-all duration-300 active:scale-[0.98] shadow-subtle relative z-10">
+        <button @click="focusInput" class="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl px-6 py-3 transition-all duration-300 active:scale-[0.98] shadow-subtle relative z-10">
           Add New Room
         </button>
       </div>
