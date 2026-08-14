@@ -34,6 +34,12 @@ const cancelEdit = () => {
   formData.address = ''
 }
 
+const focusInput = () => {
+  if (typeof document !== 'undefined') {
+    (document.querySelector('input') as HTMLElement)?.focus()
+  }
+}
+
 const submitProperty = async () => {
   if (!formData.name) return
   isCreating.value = true
@@ -154,7 +160,7 @@ const deleteProperty = async (id: string) => {
         </div>
         <h3 class="text-xl font-bold text-surface-900 mb-2 relative z-10 font-outfit">No Properties Yet</h3>
         <p class="text-[15px] text-surface-500 max-w-sm mb-8 relative z-10 leading-relaxed">You haven't added any properties to your portfolio. Get started by creating your first property to manage rooms and tenants.</p>
-        <button v-if="canManage" @click="() => document?.querySelector('input')?.focus()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl px-6 py-3 transition-all duration-300 active:scale-[0.98] shadow-subtle relative z-10">
+        <button v-if="canManage" @click="focusInput" class="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl px-6 py-3 transition-all duration-300 active:scale-[0.98] shadow-subtle relative z-10">
           Add New Property
         </button>
       </div>
