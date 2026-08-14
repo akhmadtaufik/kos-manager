@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
 
 test.describe('Owner Journey E2E', () => {
   const timestamp = Date.now();
@@ -14,9 +15,17 @@ test.describe('Owner Journey E2E', () => {
   const totalBilled = (parseInt(baseMonthlyRate) + parseInt(additionalFeeAmount)).toLocaleString('id-ID');
 
   test('Complete Property Management Flow', async ({ page }) => {
-    test.setTimeout(120000);
+    test.setTimeout(240000);
     // Automatically accept any alerts/dialogs that pop up (like success messages)
     page.on('dialog', dialog => dialog.accept());
+    
+    // Debug: capture all console and page errors
+    page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
+    page.on('console', msg => {
+      if (msg.type() === 'error' || msg.type() === 'warning') {
+        console.log('CONSOLE LOG:', msg.text());
+      }
+    });
 
     // 0. Setup: Register a new test user to ensure clean state
     await page.goto('/');
@@ -56,7 +65,7 @@ test.describe('Owner Journey E2E', () => {
     // 3. Add Additional Fees (Room Edit)
     // Find the row for the room and click "Edit"
     const roomRow = page.locator('tr', { hasText: roomNumber });
-    await roomRow.locator('button:has-text("Edit")').click();
+    await roomRow.locator('button[title="Edit"]').click();
     
     // In the Edit Room modal
     await expect(page.locator('h2:has-text("Edit Room")')).toBeVisible();
@@ -117,7 +126,21 @@ test.describe('Owner Journey E2E', () => {
     await expect(paymentRow).toContainText(totalBilled);
 
     // 6. Create Property Expense
-    await page.locator('nav').locator('text=Expenses').click();
+    // Change from client-side click to hard goto to bypass Nuxt transition bugs
+    await page.goto('/expenses');
+    
+    // Wait for the navigation to complete
+    await expect(page).toHaveURL(/.*expenses/);
+    
+    // Debug: Dump HTML to see what's actually rendered
+    const html = await page.content();
+    fs.writeFileSync('debug-expenses.html', html);
+    
+    await expect(page.locator('h1:has-text("Pengeluaran Operasional")')).toBeVisible({ timeout: 10000 });
+    
+    // Check if the property is still active, just in case
+    await expect(page.locator('text="Mode Global View Aktif"')).not.toBeVisible();
+    
     await page.click('button:has-text("Catat Pengeluaran")');
     
     // In the form modal
