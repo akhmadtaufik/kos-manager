@@ -99,7 +99,7 @@ const closePermissionModal = () => {
 
 const togglePermission = (id: string) => {
   if (selectedPermissions.value.includes(id)) {
-    selectedPermissions.value = selectedPermissions.value.filter(p => p !== id)
+    selectedPermissions.value = selectedPermissions.value.filter((p: string) => p !== id)
   } else {
     selectedPermissions.value.push(id)
   }
