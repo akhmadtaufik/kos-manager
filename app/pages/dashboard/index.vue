@@ -81,27 +81,27 @@ watch([activePropertyId, selectedMonth], () => {
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-slate-900 font-outfit">Dashboard Overview</h1>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <h1 class="text-xl md:text-2xl font-bold text-slate-900 font-outfit">Dashboard Overview</h1>
       <div class="flex items-center gap-3">
         <label class="text-sm font-medium text-slate-600">Bulan Laporan:</label>
-        <input type="month" v-model="selectedMonth" class="px-3 py-2 border rounded-lg border-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
+        <input type="month" v-model="selectedMonth" class="px-3 py-2 border rounded-lg border-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white min-h-[44px]">
       </div>
     </div>
     
-    <div v-if="!activeProperty" class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-6 flex items-center gap-3">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+    <div v-if="!activeProperty" class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
       </svg>
       <div>
         <h2 class="font-bold text-sm">Mode Global View Aktif</h2>
-        <p class="text-xs">Menampilkan agregasi P&L dan demografi dari seluruh properti yang Anda miliki.</p>
+        <p class="text-xs mt-0.5 sm:mt-0">Menampilkan agregasi P&L dan demografi dari seluruh properti yang Anda miliki.</p>
       </div>
     </div>
 
     <!-- Summary Cards -->
     <phantom-ui :loading="loadingRekap">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
         <div class="bg-white rounded-[1.25rem] p-6 border border-surface-200 relative overflow-hidden group hover:border-brand-300 transition-colors">
           <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,7 +155,7 @@ watch([activePropertyId, selectedMonth], () => {
           </div>
         </div>
         
-        <div class="md:col-span-3 lg:col-span-2 bg-brand-600 rounded-[1.25rem] p-6 relative overflow-hidden group">
+        <div class="md:col-span-2 lg:col-span-2 bg-brand-600 rounded-[1.25rem] p-6 relative overflow-hidden group">
           <div class="absolute -right-6 -bottom-6 opacity-[0.08]">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-40 w-40 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -163,7 +163,7 @@ watch([activePropertyId, selectedMonth], () => {
           </div>
           <div class="flex flex-col h-full justify-between relative z-10">
             <h3 class="text-sm font-medium text-brand-100 mb-1">Total Pemasukan (Paid)</h3>
-            <p class="text-4xl font-semibold text-white tabular-nums tracking-tight mt-1">
+            <p class="text-3xl md:text-4xl font-semibold text-white tabular-nums tracking-tight mt-1">
               <span v-if="loadingRekap">Rp 00.000.000</span>
               <span v-else>{{ formatCurrency(rekap.revenue) }}</span>
             </p>
@@ -191,7 +191,7 @@ watch([activePropertyId, selectedMonth], () => {
             <!-- Big Net Profit -->
             <div class="text-center mb-8">
               <p class="text-sm text-slate-500 font-medium mb-1">Laba Bersih (Net Profit)</p>
-              <h3 class="text-4xl font-bold text-emerald-600">Rp 00.000.000</h3>
+              <h3 class="text-3xl md:text-4xl font-bold text-emerald-600">Rp 00.000.000</h3>
             </div>
             
             <!-- Visual Bar -->
@@ -222,7 +222,7 @@ watch([activePropertyId, selectedMonth], () => {
             <!-- Big Net Profit -->
             <div class="text-center mb-8">
               <p class="text-sm text-slate-500 font-medium mb-1">Laba Bersih (Net Profit)</p>
-              <h3 class="text-4xl font-bold" :class="rekap.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'">
+              <h3 class="text-3xl md:text-4xl font-bold" :class="rekap.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'">
                 {{ formatCurrency(rekap.netProfit) }}
               </h3>
             </div>
