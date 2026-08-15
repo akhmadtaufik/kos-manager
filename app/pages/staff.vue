@@ -183,9 +183,9 @@ const savePermissions = async () => {
                   <td class="px-6 py-4">{{ staff.email }}</td>
                   <td class="px-6 py-4">{{ new Date(staff.assignedAt).toLocaleDateString() }}</td>
                   <td class="px-6 py-4">
-                    <div class="flex gap-3">
-                      <button @click="openPermissionModal(staff)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Atur Akses</button>
-                      <button @click="removeOperator(staff.id)" class="text-rose-600 hover:text-rose-800 font-medium transition-colors">Cabut Akses</button>
+                    <div class="flex gap-2">
+                      <button @click="openPermissionModal(staff)" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] flex items-center">Atur Akses</button>
+                      <button @click="removeOperator(staff.id)" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] flex items-center">Cabut Akses</button>
                     </div>
                   </td>
                 </tr>
@@ -197,12 +197,17 @@ const savePermissions = async () => {
     </template>
   </div>
 
-  <!-- Permission Modal -->
-  <div v-if="isPermissionModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+  <!-- Permission Modal / Bottom Sheet -->
+  <div v-if="isPermissionModalOpen" class="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 md:p-4">
+    <div class="bg-white rounded-t-[1.5rem] md:rounded-2xl shadow-xl w-full max-w-md overflow-hidden mt-auto md:mt-0">
+      <!-- Mobile Handle -->
+      <div class="w-full flex justify-center pt-3 pb-1 md:hidden bg-slate-50">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+      </div>
+      
+      <div class="px-4 md:px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
         <h3 class="text-lg font-bold text-slate-900 font-outfit">Hak Akses Operator</h3>
-        <button @click="closePermissionModal" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <button @click="closePermissionModal" class="text-slate-400 hover:text-slate-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white shadow-sm hover:bg-slate-100">
           <Icon name="lucide:x" class="w-5 h-5" />
         </button>
       </div>
@@ -210,9 +215,9 @@ const savePermissions = async () => {
         <p class="text-sm text-slate-500 mb-4">Atur hak akses untuk <strong>{{ selectedStaff?.name || selectedStaff?.email }}</strong> pada properti ini.</p>
         
         <div class="space-y-3">
-          <label v-for="perm in AVAILABLE_PERMISSIONS" :key="perm.id" class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50 border-blue-200': selectedPermissions.includes(perm.id)}">
-            <div class="flex items-center h-5">
-              <input type="checkbox" :checked="selectedPermissions.includes(perm.id)" @change="togglePermission(perm.id)" class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 cursor-pointer" />
+          <label v-for="perm in AVAILABLE_PERMISSIONS" :key="perm.id" class="flex items-center gap-3 p-3 min-h-[56px] border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50 border-blue-200': selectedPermissions.includes(perm.id)}">
+            <div class="flex items-center">
+              <input type="checkbox" :checked="selectedPermissions.includes(perm.id)" @change="togglePermission(perm.id)" class="w-5 h-5 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 cursor-pointer" />
             </div>
             <div class="flex flex-col">
               <span class="text-sm font-medium text-slate-900">{{ perm.label }}</span>
@@ -220,9 +225,9 @@ const savePermissions = async () => {
           </label>
         </div>
       </div>
-      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-        <button @click="closePermissionModal" type="button" class="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 rounded-lg transition-colors">Batal</button>
-        <button @click="savePermissions" :disabled="isSavingPermissions" type="button" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg transition-colors">
+      <div class="px-4 md:px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50 pb-safe">
+        <button @click="closePermissionModal" type="button" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-sm font-medium text-slate-700 hover:bg-slate-200 rounded-lg transition-colors bg-white border border-slate-200 sm:border-transparent sm:bg-transparent">Batal</button>
+        <button @click="savePermissions" :disabled="isSavingPermissions" type="button" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg transition-colors flex items-center justify-center">
           {{ isSavingPermissions ? 'Menyimpan...' : 'Simpan Perubahan' }}
         </button>
       </div>
