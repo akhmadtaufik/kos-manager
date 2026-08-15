@@ -31,19 +31,23 @@
         </div>
       </div>
 
-      <!-- Form Modal -->
+      <!-- Form Modal / Bottom Sheet -->
       <Transition name="modal">
         <!-- Overlay Backdrop -->
-        <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/50 backdrop-blur-sm">
+        <div v-if="showForm" class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 bg-slate-900/50 backdrop-blur-sm">
           
           <!-- Modal Card -->
-          <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
+          <div class="bg-white rounded-t-[1.5rem] md:rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden transform transition-all mt-auto md:mt-0">
+            <!-- Mobile Handle -->
+            <div class="w-full flex justify-center pt-3 pb-1 md:hidden bg-white">
+              <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+            </div>
             
             <!-- 1. STICKY HEADER -->
-            <div class="flex-shrink-0 px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+            <div class="flex-shrink-0 px-4 md:px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
               <h3 class="text-lg font-bold text-slate-900">Catat Pengeluaran Baru</h3>
-              <button @click="showForm = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button @click="showForm = false" class="text-slate-400 hover:text-slate-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -123,11 +127,11 @@
               </div>
 
               <!-- 3. STICKY FOOTER -->
-              <div class="flex-shrink-0 px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-                <button type="button" @click="showForm = false" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+              <div class="flex-shrink-0 px-4 md:px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50/50">
+                <button type="button" @click="showForm = false" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
                   Batal
                 </button>
-                <button type="submit" :disabled="loading" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+                <button type="submit" :disabled="loading" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center">
                   <span v-if="loading" class="flex items-center gap-2">
                     <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     Menyimpan...
