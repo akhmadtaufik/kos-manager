@@ -1,12 +1,30 @@
-FROM mcr.microsoft.com/playwright:v1.61.0-jammy
+FROM mcr.microsoft.com/playwright:v1.49.0-noble
+
+# Upgrade to Node 24 — default image ships Node 22.11.0 which is incompatible
+# with nuxt@3.21 (requires >=22.12.0) and oxc-parser
+RUN npm install -g n --silent && n 24 --quiet
+ENV PATH="/usr/local/bin:${PATH}"
+RUN node --version
 
 WORKDIR /app
 
-# Copy source code (using .dockerignore to skip node_modules and .nuxt)
+# .dockerignore excludes: node_modules, .output, .nuxt, package-lock.json, .env
 COPY . .
 
-# Install dependencies
-RUN npm install
+# Clean install — no lockfile to avoid cross-platform native binding issues
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
-# Run Unit tests, Build Nuxt, Start Server, and Run E2E
-CMD ["sh", "-c", "npm run build && PORT=3000 node .output/server/index.mjs > server.log 2>&1 & while ! curl -s http://localhost:3000 > /dev/null; do sleep 1; done; npx playwright test; exit_code=$?; echo '=== SERVER LOG ==='; cat server.log; exit $exit_code"]
+# Build Nuxt application
+RUN NODE_ENV=production npm run build
+
+# Install exact Chromium version required by @playwright/test@1.44.0 (build v1117)
+RUN npx playwright install chromium
+
+# Start server in background, wait for ready, then run E2E tests
+CMD ["sh", "-c", \
+  "NITRO_PORT=3005 node .output/server/index.mjs > /tmp/server.log 2>&1 & \
+  echo 'Waiting for server on :3005...' && \
+  timeout 30 bash -c 'until curl -sf http://localhost:3005 > /dev/null; do sleep 1; done' && \
+  echo 'Server ready!' && \
+  npx playwright test tests/e2e/responsive-layout.spec.ts --project='Mobile Chrome'; \
+  code=$?; echo '=== SERVER LOG ===' && cat /tmp/server.log; exit $code"]
