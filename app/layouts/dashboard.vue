@@ -12,9 +12,9 @@ onMounted(async () => {
 <template>
   <div class="min-h-[100dvh] bg-surface-50 text-surface-900 font-sans selection:bg-brand-500/30">
     <Sidebar />
-    <div class="ml-64 flex flex-col min-h-[100dvh]">
+    <div class="flex flex-col min-h-[100dvh] transition-all duration-300 md:ml-20 lg:ml-64">
       <Header />
-      <main class="flex-1 p-8 max-w-[1600px] w-full mx-auto">
+      <main class="flex-1 p-4 md:p-8 max-w-[1600px] w-full mx-auto">
         <slot />
       </main>
     </div>
