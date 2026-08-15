@@ -25,7 +25,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    baseURL: 'http://localhost:3005',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -40,6 +40,21 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // We can add Firefox/Webkit here, but for Docker E2E, Chromium is usually sufficient
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
+    },
   ],
+
+  /* Run your local dev server before starting the tests */
+  webServer: {
+    command: 'NITRO_PORT=3005 node .output/server/index.mjs',
+    url: 'http://localhost:3005',
+    reuseExistingServer: false,
+    timeout: 30 * 1000,
+  },
 });
