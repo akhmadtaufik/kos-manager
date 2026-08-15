@@ -1,14 +1,41 @@
 services:
-  playwright:
-    image: mcr.microsoft.com/playwright:v1.61.0-jammy
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.49.0-noble
     container_name: kosmanager-e2e
-    # Use host network to allow the container to access http://localhost:3000 where Nuxt is running
+    # Host network: allows container to reach Postgres on localhost:5432
     network_mode: "host"
     volumes:
-      - .:/app
-    working_dir: /app
+      - .:/source:ro
+      - kosmanager-e2e-cache:/workspace
     environment:
-      - CI=true
-    # Install npm dependencies then run Playwright
+      CI: "true"
+      NUXT_TELEMETRY_DISABLED: "1"
     command: >
-      bash -c "npm install --ignore-scripts && npx playwright test"
+      bash -c "
+        set -e
+        echo '--- Sync source to workspace ---'
+        cd /source
+        for item in $$(ls -A | grep -v '^node_modules$$' | grep -v '^\.git$$' | grep -v '^\.output$$' | grep -v '^\.nuxt$$'); do
+          cp -a \"/source/$$item\" /workspace/
+        done
+        cd /workspace
+        echo '--- Upgrade to Node 24 ---'
+        npm install -g n --silent 2>/dev/null
+        n 24 2>/dev/null || true
+        export PATH=/usr/local/bin:$$PATH
+        echo \"Node: $$(node --version)\"
+        echo '--- Patch DB URL for host networking ---'
+        sed -i 's/host.docker.internal/localhost/g' .env
+        echo '--- Install dependencies ---'
+        rm -f package-lock.json pnpm-lock.yaml
+        npm install --legacy-peer-deps --no-audit --no-fund
+        echo '--- Build Nuxt ---'
+        NODE_ENV=production npm run build
+        echo '--- Install Chromium v1117 (matches @playwright/test@1.44.0) ---'
+        npx playwright install chromium
+        echo '--- Run E2E Tests ---'
+        npx playwright test tests/e2e/responsive-layout.spec.ts --project='Mobile Chrome'
+      "
+
+volumes:
+  kosmanager-e2e-cache:
