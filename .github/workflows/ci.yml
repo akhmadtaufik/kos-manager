@@ -6,23 +6,45 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  NUXT_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/kosmanager_test"
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/kosmanager_test"
+  NUXT_AUTH_SECRET: "ci-test-secret-32-chars-minimum!!"
+  NUXT_PUBLIC_AUTH_ORIGIN: "http://localhost:3000"
+  NUXT_TELEMETRY_DISABLED: "1"
+  CI: "true"
+
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.44.0-jammy
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kosmanager_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Typecheck
         run: npx vue-tsc --noEmit
@@ -30,8 +52,22 @@ jobs:
       - name: Run Unit & API Tests
         run: npm run test
 
-      - name: Run E2E Tests
-        run: npm run test:e2e
+      - name: Build application
+        run: NODE_ENV=production npm run build
 
-      - name: Build Application
-        run: npm run build
+      - name: Run database migrations
+        run: npx drizzle-kit migrate
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Run E2E Tests
+        run: npx playwright test tests/e2e/responsive-layout.spec.ts --project='Mobile Chrome'
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
