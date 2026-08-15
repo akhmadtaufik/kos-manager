@@ -9,6 +9,7 @@ on:
 env:
   NUXT_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/kosmanager_test"
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/kosmanager_test"
+  DATABASE_MIGRATE_URL: "postgresql://postgres:postgres@localhost:5432/kosmanager_test" 
   NUXT_AUTH_SECRET: "ci-test-secret-32-chars-minimum!!"
   NUXT_PUBLIC_AUTH_ORIGIN: "http://localhost:3000"
   NUXT_TELEMETRY_DISABLED: "1"
