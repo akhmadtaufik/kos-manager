@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useAuth } from '#imports'
 import { usePropertyState } from '~/composables/usePropertyState'
+import { PhList } from '@phosphor-icons/vue'
 
 const { signOut } = useAuth()
 const { properties, activePropertyId, setActiveProperty } = usePropertyState()
+const isMobileMenuOpen = useState('isMobileMenuOpen', () => false)
 
 const handleSignOut = async () => {
   await signOut({ callbackUrl: '/' })
@@ -11,9 +13,16 @@ const handleSignOut = async () => {
 </script>
 
 <template>
-  <header class="h-16 bg-white/70 backdrop-blur-xl border-b border-surface-200/50 flex items-center justify-between px-6 sticky top-0 z-20">
-    <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2.5">
+  <header class="h-16 bg-white/70 backdrop-blur-xl border-b border-surface-200/50 flex items-center justify-between px-4 md:px-6 sticky top-0 z-20">
+    <div class="flex items-center gap-2 md:gap-4">
+      <button 
+        @click="isMobileMenuOpen = true" 
+        class="md:hidden p-2 -ml-2 text-surface-600 hover:text-brand-600 hover:bg-surface-100 rounded-lg transition-colors flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+        aria-label="Open sidebar"
+      >
+        <PhList :size="24" weight="bold" />
+      </button>
+      <div class="flex items-center gap-2 md:gap-2.5">
         <label for="property-switcher" class="text-[13px] font-medium text-surface-500 tracking-wide uppercase">Property</label>
         <div class="relative">
           <select 
