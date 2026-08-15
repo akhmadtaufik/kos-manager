@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_NAME:-kosmanager}
+      POSTGRES_DB: ${DB_NAME:-kosmanager_db}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -22,8 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - CI=true
     container_name: kosmanager-app
     restart: unless-stopped
     depends_on:
@@ -31,19 +29,17 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
-    env_file:
-      - .env
     environment:
-      - NODE_ENV=production
-      - CI=true
-      - NODE_OPTIONS=--dns-result-order=ipv4first
-      - NUXT_DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-kosmanager}
-      - NUXT_AUTH_SECRET=${AUTH_SECRET}
-      - NUXT_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - NUXT_GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - NUXT_PUBLIC_AUTH_ORIGIN=${AUTH_ORIGIN:-http://kosmanager-app:3000}
-      - AUTH_ORIGIN=${AUTH_ORIGIN:-http://kosmanager-app:3000}
-      - NEXTAUTH_URL=${AUTH_ORIGIN:-http://kosmanager-app:3000}
+      NODE_ENV: production
+      NITRO_HOST: "0.0.0.0"
+      NITRO_PORT: "3000"
+      # DB: service name 'db' resolves inside Docker bridge network
+      NUXT_DATABASE_URL: "postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-kosmanager_db}"
+      # AUTH_ORIGIN must be the URL the browser uses (not the container name)
+      NUXT_PUBLIC_AUTH_ORIGIN: "${AUTH_ORIGIN:-http://localhost:3000}"
+      NUXT_AUTH_SECRET: "${AUTH_SECRET}"
+      NUXT_GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      NUXT_GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
     networks:
       - kosmanager-network
 
