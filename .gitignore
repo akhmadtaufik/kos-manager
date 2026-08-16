@@ -45,3 +45,8 @@ README.md
 # Playwright
 test-results/
 playwright-report/
+
+# Database Backups
+backups/
+*.sql
+*.sql.gz
