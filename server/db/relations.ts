@@ -9,6 +9,7 @@ import {
   tenants,
   payments,
   expenses,
+  expenseCategories,
   activityLogs,
 } from './schema'
 
@@ -21,6 +22,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   ownedProperties: many(properties),
   userProperties: many(userProperties),
+  expenseCategories: many(expenseCategories),
   activityLogs: many(activityLogs),
 }))
 
@@ -101,6 +103,13 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   user: one(users, {
     fields: [activityLogs.userId],
+    references: [users.id],
+  }),
+}))
+
+export const expenseCategoriesRelations = relations(expenseCategories, ({ one }) => ({
+  user: one(users, {
+    fields: [expenseCategories.userId],
     references: [users.id],
   }),
 }))
