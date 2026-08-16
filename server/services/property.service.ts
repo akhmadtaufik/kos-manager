@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
-import { properties, userProperties } from '../db/schema'
+import { properties, userProperties, users } from '../db/schema'
 import type { AuthUser } from '../utils/rbac'
 import { logActivity } from '../utils/audit'
 
@@ -34,6 +34,17 @@ export async function createProperty(user: AuthUser, payload: { name: string; ad
     throw createError({ 
       statusCode: 403, 
       statusMessage: 'Forbidden: Only owners and superadmins can create properties' 
+    })
+  }
+
+  // Ensure the user exists in database to prevent foreign key violations on invalid sessions
+  const userExists = await db.query.users.findFirst({
+    where: eq(users.id, user.id),
+  })
+  if (!userExists) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Sesi pengguna tidak valid. Silakan login kembali.',
     })
   }
 
