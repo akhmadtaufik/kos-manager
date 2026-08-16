@@ -20,11 +20,15 @@ RUN NODE_ENV=production npm run build
 # Install exact Chromium version required by @playwright/test@1.44.0 (build v1117)
 RUN npx playwright install chromium
 
-# Start server in background, wait for ready, then run E2E tests
+# Start server in background, wait for ready, then run tests
 CMD ["sh", "-c", \
-  "NITRO_PORT=3005 node .output/server/index.mjs > /tmp/server.log 2>&1 & \
+  "echo '=== RUNNING VITEST API & UNIT TESTS ===' && \
+  npm test -- --run && \
+  echo '=== STARTING SERVER FOR E2E TESTS ===' && \
+  NITRO_PORT=3005 node .output/server/index.mjs > /tmp/server.log 2>&1 & \
   echo 'Waiting for server on :3005...' && \
   timeout 30 bash -c 'until curl -sf http://localhost:3005 > /dev/null; do sleep 1; done' && \
   echo 'Server ready!' && \
-  npx playwright test tests/e2e/responsive-layout.spec.ts --project='Mobile Chrome'; \
+  echo '=== RUNNING PLAYWRIGHT E2E JOURNEY TESTS ===' && \
+  npx playwright test tests/e2e/expenses-journey.spec.ts tests/e2e/responsive-layout.spec.ts; \
   code=$?; echo '=== SERVER LOG ===' && cat /tmp/server.log; exit $code"]
