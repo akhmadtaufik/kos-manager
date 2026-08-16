@@ -201,6 +201,22 @@ export const expenses = pgTable('expenses', {
 ])
 
 /**
+ * Expense Categories — System defaults + User-defined custom categories with icons
+ */
+export const expenseCategories = pgTable('expense_categories', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }), // Null for system defaults
+  name: varchar('name', { length: 100 }).notNull(),
+  icon: varchar('icon', { length: 50 }).notNull().default('PhTag'),
+  color: varchar('color', { length: 50 }).notNull().default('bg-slate-700'),
+  isSystem: integer('is_system').notNull().default(0), // 1 = system default, 0 = custom
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => [
+  index('expense_categories_user_id_idx').on(table.userId),
+])
+
+/**
  * Activity Logs — Audit trail for all CRUD operations
  * details column uses JSONB for flexible metadata storage
  */
