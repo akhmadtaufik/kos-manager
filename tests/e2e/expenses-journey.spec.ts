@@ -14,7 +14,13 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
 
     // 0. Register new test user & complete onboarding
     await page.goto('/');
-    await page.click('#tab-register');
+    
+    // Fix hydration race condition by retrying the click until the input appears
+    await expect(async () => {
+      await page.click('#tab-register');
+      await expect(page.locator('#reg-name')).toBeVisible({ timeout: 1000 });
+    }).toPass({ timeout: 15000 });
+    
     await page.fill('#reg-name', userName);
     await page.fill('#reg-email', userEmail);
     await page.fill('#reg-password', userPassword);
@@ -77,19 +83,22 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await expect(page.locator('table')).toContainText('Pembayaran PDAM Bulan Ini');
 
     // ----------------------------------------------------
-    // Scenario 2: Create Custom Category via Icon Picker Dialog & Live Preview
+    // Scenario 2: Create Custom Category via Icon Picker Dialog (Modal Swapping)
     // ----------------------------------------------------
     await page.click('button:has-text("Catat Pengeluaran")');
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
     
     // Click "+ Kategori Baru" to open Icon Picker dialog
     await page.click('button:has-text("+ Kategori Baru")');
+    
+    // VERIFY ELEGANT SWAPPING: Main form must disappear, Category form must appear
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
     await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).toBeVisible();
 
-    // Fill category name
+    // Fill category name & icon
     const customCategoryTitle = 'Langganan CCTV Cloud';
     await page.fill('input[placeholder="Contoh: Langganan CCTV, Servis Pompa..."]', customCategoryTitle);
-
+    
     // Pick CCTV icon
     await page.locator('button[title="CCTV"]').click();
 
@@ -100,8 +109,13 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     // Submit custom category creation
     await page.click('button:has-text("Simpan Kategori")');
 
-    // Assert custom category is created and auto-selected
+    // VERIFY ELEGANT RETURN: Category form must disappear, Main form must RETURN automatically
+    await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).not.toBeVisible();
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
+
+    // Assert custom category is auto-selected
     await expect(page.locator('text="Kategori custom baru berhasil dibuat."').first()).toBeVisible({ timeout: 5000 });
+    // Verify the new category button is active/rendered in the grid
     await expect(page.locator(`button:has-text("${customCategoryTitle}")`)).toBeVisible();
 
     // Fill amount & description for this custom category expense
@@ -119,7 +133,26 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await expect(page.locator('table')).toContainText('Langganan cloud recording CCTV 8 channel');
 
     // ----------------------------------------------------
-    // Scenario 3: Delete Custom Category
+    // Scenario 3: Verify Standalone Shortcut & Cancel State
+    // ----------------------------------------------------
+    // Klik tombol shortcut "Kategori Baru" dari tabel dashboard
+    const shortcutButton = page.locator('button', { hasText: 'Kategori Baru' }).first();
+    await shortcutButton.click();
+
+    // Pastikan modal kategori terbuka
+    await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).toBeVisible();
+    // Pastikan form pengeluaran tidak ikut terbuka
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
+
+    // Klik Batal
+    await page.click('button:has-text("Batal")');
+
+    // Pastikan modal kategori tertutup dan form pengeluaran TETAP tidak terbuka
+    await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).not.toBeVisible();
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
+
+    // ----------------------------------------------------
+    // Scenario 4: Delete Custom Category
     // ----------------------------------------------------
     await page.click('button:has-text("Catat Pengeluaran")');
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
@@ -130,7 +163,7 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await customCatCard.locator('button[title="Hapus kategori custom ini"]').click();
 
     // Toast category deleted
-    await expect(page.locator('text="telah dihapus."').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=telah dihapus').first()).toBeVisible({ timeout: 5000 });
     // Verify it is removed from grid
     await expect(page.locator(`button:has-text("${customCategoryTitle}")`)).not.toBeVisible();
 
@@ -138,7 +171,7 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await page.click('button:has-text("Batal")');
 
     // ----------------------------------------------------
-    // Scenario 4: Delete Expense Transaction
+    // Scenario 5: Delete Expense Transaction
     // ----------------------------------------------------
     const rowToDelete = page.locator('tr', { hasText: 'Langganan cloud recording CCTV 8 channel' });
     await rowToDelete.locator('button[title="Hapus Pengeluaran"]').click();
