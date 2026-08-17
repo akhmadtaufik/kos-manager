@@ -16,23 +16,29 @@
           <p class="text-sm text-slate-500 mt-1">Kelola dan pantau seluruh pengeluaran operasional properti Anda.</p>
         </div>
         
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
           <!-- Quick Stats -->
-          <div class="bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+          <div class="bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm flex-col justify-center hidden sm:flex">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Bulan Ini</span>
             <span class="text-lg font-bold text-rose-600">Rp {{ totalExpenses.toLocaleString('id-ID') }}</span>
           </div>
           
+          <button v-if="activeProperty" @click="openCategoryCreatorStandalone" class="bg-white border border-slate-200 text-slate-700 px-4 py-3.5 rounded-xl font-medium hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center gap-2">
+            <PhTag :size="18" weight="bold" />
+            <span class="hidden sm:inline">Kategori Baru</span>
+          </button>
+          
           <button v-if="activeProperty" @click="openExpenseModal" class="bg-slate-900 text-white px-5 py-3.5 rounded-xl font-medium hover:bg-slate-800 transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2">
             <PhPlus :size="18" weight="bold" />
-            Catat Pengeluaran
+            <span>Catat <span class="hidden sm:inline">Pengeluaran</span></span>
           </button>
         </div>
       </div>
 
       <!-- Main Expense Modal -->
-      <Transition name="modal">
-        <div v-if="showForm" class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 bg-slate-900/50 backdrop-blur-sm">
+      <Teleport to="body">
+        <Transition name="modal">
+          <div v-if="showForm" class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 bg-slate-900/50 backdrop-blur-sm">
           <div class="bg-white rounded-t-[1.5rem] md:rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all mt-auto md:mt-0">
             
             <!-- Mobile Handle -->
@@ -106,7 +112,7 @@
                     <!-- Add Custom Category Button -->
                     <button 
                       type="button"
-                      @click="showAddCategoryModal = true"
+                      @click="openCategoryCreatorFromForm"
                       class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-blue-300 bg-blue-50/50 text-blue-700 hover:bg-blue-100/70 hover:border-blue-400 transition-all text-center group min-h-[82px]"
                     >
                       <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
@@ -150,14 +156,16 @@
           </div>
         </div>
       </Transition>
+    </Teleport>
 
       <!-- Custom Category Creator Dialog (Icon Picker) -->
-      <Transition name="modal">
-        <div v-if="showAddCategoryModal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <Teleport to="body">
+        <Transition name="modal">
+          <div v-if="showAddCategoryModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h4 class="font-bold text-slate-900">Buat Kategori Pengeluaran Baru</h4>
-              <button @click="showAddCategoryModal = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+              <button @click="closeCategoryCreator" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
                 <PhX :size="18" weight="bold" />
               </button>
             </div>
@@ -232,7 +240,7 @@
               </div>
 
               <div class="pt-2 flex justify-end gap-2">
-                <button type="button" @click="showAddCategoryModal = false" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                <button type="button" @click="closeCategoryCreator" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                   Batal
                 </button>
                 <button type="submit" :disabled="savingCategory" class="px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs disabled:opacity-50">
@@ -244,6 +252,7 @@
           </div>
         </div>
       </Transition>
+    </Teleport>
 
       <!-- Expenses History Table -->
       <phantom-ui :loading="pending">
@@ -370,6 +379,7 @@ const { addToast } = useToast()
 
 const showForm = ref(false)
 const showAddCategoryModal = ref(false)
+const returnToExpenseForm = ref(false)
 const loading = ref(false)
 const savingCategory = ref(false)
 
@@ -519,6 +529,33 @@ async function fetchCategories() {
   }
 }
 
+// Handle standalone category creator opening
+function openCategoryCreatorStandalone() {
+  returnToExpenseForm.value = false
+  showAddCategoryModal.value = true
+}
+
+// Handle category creator opening from within the expense form (swapping)
+function openCategoryCreatorFromForm() {
+  showForm.value = false
+  returnToExpenseForm.value = true
+  // Let the closing animation start before opening the new modal
+  setTimeout(() => {
+    showAddCategoryModal.value = true
+  }, 300)
+}
+
+// Handle category creator closing (return to form if needed)
+function closeCategoryCreator() {
+  showAddCategoryModal.value = false
+  if (returnToExpenseForm.value) {
+    setTimeout(() => {
+      showForm.value = true
+      returnToExpenseForm.value = false
+    }, 300)
+  }
+}
+
 // Submit a new custom category
 async function submitNewCategory() {
   if (!newCategoryForm.value.name.trim()) return
@@ -545,7 +582,7 @@ async function submitNewCategory() {
       icon: 'PhTag',
       color: 'bg-indigo-500'
     }
-    showAddCategoryModal.value = false
+    closeCategoryCreator()
   } catch (e: any) {
     addToast('Gagal', e.data?.statusMessage || 'Gagal membuat kategori baru.', 'error')
   } finally {
