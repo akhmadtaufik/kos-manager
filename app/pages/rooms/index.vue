@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
+import { useConfirm } from '~/composables/useConfirm'
 import { PhPencilSimple, PhTrash, PhDoor } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -8,6 +9,7 @@ definePageMeta({
 
 const { activePropertyId } = usePropertyState()
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 
 const rooms = ref<any[]>([])
 const isLoading = ref(false)
@@ -120,7 +122,16 @@ const submitEditRoom = async () => {
 }
 
 const deleteRoom = async (id: string) => {
-  if (!confirm('Hapus kamar ini?')) return
+  const isConfirmed = await confirm({
+    title: 'Hapus Kamar',
+    message: 'Apakah Anda yakin ingin menghapus kamar ini? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    type: 'danger'
+  })
+
+  if (!isConfirmed) return
+
   try {
     await $fetch(`/api/rooms/${id}`, {
       method: 'DELETE'
