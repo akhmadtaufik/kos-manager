@@ -8,9 +8,12 @@ definePageMeta({
   middleware: ['owner']
 })
 
+import { useConfirm } from '~/composables/useConfirm'
+
 const { properties, loadProperties, isLoading } = usePropertyState()
 const { data } = useAuth()
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 const isSuperadmin = computed(() => (data.value?.user as any)?.role === 'superadmin')
 const isOwner = computed(() => (data.value?.user as any)?.role === 'owner')
 const canManage = computed(() => isSuperadmin.value || isOwner.value)
@@ -69,7 +72,16 @@ const submitProperty = async () => {
 }
 
 const deleteProperty = async (id: string) => {
-  if (!confirm('Hapus properti ini? Data tidak dapat dikembalikan.')) return
+  const isConfirmed = await confirm({
+    title: 'Hapus Properti',
+    message: 'Apakah Anda yakin ingin menghapus properti ini? Semua kamar, data tagihan, dan pengeluaran terkait akan dihapus secara permanen.',
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    type: 'danger'
+  })
+
+  if (!isConfirmed) return
+
   try {
     await $fetch(`/api/properties/${id}`, {
       method: 'DELETE'
