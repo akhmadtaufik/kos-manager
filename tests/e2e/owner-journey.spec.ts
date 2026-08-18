@@ -146,7 +146,7 @@ test.describe('Owner Journey E2E', () => {
     // In the form modal
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
     await page.locator('.fixed input[type="date"]').fill(today as string);
-    await page.click('button:has-text("Perbaikan")');
+    await page.click('button:has-text("Pemeliharaan")');
     await page.locator('.fixed input[type="number"]').fill('200000');
     await page.locator('textarea').fill(expenseDesc);
     

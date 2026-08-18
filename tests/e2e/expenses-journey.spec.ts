@@ -7,10 +7,8 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
   const userPassword = 'Password123!';
   const propertyName = `Property Exp ${timestamp}`;
 
-  test('Comprehensive Expenses Flow: 9 Defaults, Icon Picker Dialog, Custom Categories, & Deletion', async ({ page }) => {
+  test('Comprehensive Expenses Flow: 9 Defaults, Custom Categories, Edit Mode, Filters & Confirm Modal Deletion', async ({ page }) => {
     test.setTimeout(120000);
-    // Automatically accept any alerts/dialogs (like confirmation dialog for deletion)
-    page.on('dialog', dialog => dialog.accept());
 
     // 0. Register new test user & complete onboarding
     await page.goto('/');
@@ -110,15 +108,15 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await page.click('button:has-text("Simpan Kategori")');
 
     // VERIFY ELEGANT RETURN: Category form must disappear, Main form must RETURN automatically
-    await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).not.toBeVisible();
-    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
+    await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).not.toBeVisible({ timeout: 10000 });
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible({ timeout: 10000 });
 
-    // Assert custom category is auto-selected
+    // Assert custom category created toast & rendered in grid
     await expect(page.locator('text="Kategori custom baru berhasil dibuat."').first()).toBeVisible({ timeout: 5000 });
-    // Verify the new category button is active/rendered in the grid
     await expect(page.locator(`button:has-text("${customCategoryTitle}")`)).toBeVisible();
 
-    // Fill amount & description for this custom category expense
+    // Select the new category and fill amount & description
+    await page.click(`button:has-text("${customCategoryTitle}")`);
     await page.fill('input[type="date"]', today as string);
     await page.fill('input[type="number"]', '250000');
     await page.fill('textarea', 'Langganan cloud recording CCTV 8 channel');
@@ -135,47 +133,81 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     // ----------------------------------------------------
     // Scenario 3: Verify Standalone Shortcut & Cancel State
     // ----------------------------------------------------
-    // Klik tombol shortcut "Kategori Baru" dari tabel dashboard
     const shortcutButton = page.locator('button', { hasText: 'Kategori Baru' }).first();
     await shortcutButton.click();
 
-    // Pastikan modal kategori terbuka
     await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).toBeVisible();
-    // Pastikan form pengeluaran tidak ikut terbuka
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
 
-    // Klik Batal
     await page.click('button:has-text("Batal")');
 
-    // Pastikan modal kategori tertutup dan form pengeluaran TETAP tidak terbuka
     await expect(page.locator('h4:has-text("Buat Kategori Pengeluaran Baru")')).not.toBeVisible();
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
 
     // ----------------------------------------------------
-    // Scenario 4: Delete Custom Category
+    // Scenario 4: Delete Custom Category with Custom Confirm Modal
     // ----------------------------------------------------
     await page.click('button:has-text("Catat Pengeluaran")');
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
 
-    // Custom category card should have a delete button
     const customCatCard = page.locator('div.relative.group', { hasText: customCategoryTitle });
     await expect(customCatCard).toBeVisible();
     await customCatCard.locator('button[title="Hapus kategori custom ini"]').click();
 
+    // Confirm modal appears
+    await expect(page.locator('div[role="dialog"] h3:has-text("Hapus Kategori")')).toBeVisible();
+    await page.locator('div[role="dialog"] button:has-text("Ya, Hapus")').click();
+
     // Toast category deleted
     await expect(page.locator('text=telah dihapus').first()).toBeVisible({ timeout: 5000 });
-    // Verify it is removed from grid
     await expect(page.locator(`button:has-text("${customCategoryTitle}")`)).not.toBeVisible();
 
-    // Close modal
+    // Close expense modal
     await page.click('button:has-text("Batal")');
 
     // ----------------------------------------------------
-    // Scenario 5: Delete Expense Transaction
+    // Scenario 5: Edit Expense Flow
+    // ----------------------------------------------------
+    const rowToEdit = page.locator('tr', { hasText: 'Air Bersih & Sanitasi (PDAM)' });
+    await rowToEdit.locator('button[title="Edit Pengeluaran"]').click();
+
+    // Verify Edit Modal appears with prefilled data
+    await expect(page.locator('h3:has-text("Edit Pengeluaran")')).toBeVisible();
+    await expect(page.locator('input[type="number"]')).toHaveValue('75000');
+
+    // Update amount and note
+    await page.fill('input[type="number"]', '95000');
+    await page.fill('textarea', 'Pembayaran PDAM Bulan Ini (Updated)');
+    await page.click('button:has-text("Simpan Perubahan")');
+
+    // Assert update toast and updated row in table
+    await expect(page.locator('text="Data pengeluaran berhasil diperbarui."').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('table')).toContainText('95.000');
+    await expect(page.locator('table')).toContainText('Pembayaran PDAM Bulan Ini (Updated)');
+
+    // ----------------------------------------------------
+    // Scenario 6: Month / Year Period Filtering
+    // ----------------------------------------------------
+    // Navigate to previous month
+    await page.locator('button[title="Bulan Sebelumnya"]').click();
+    // In previous month, no expense should exist
+    await expect(page.locator('text="Belum ada pengeluaran di periode ini"')).toBeVisible();
+
+    // Reset to current month using shortcut
+    await page.click('button:has-text("Bulan Ini")');
+    await expect(page.locator('table')).toContainText('Air Bersih & Sanitasi (PDAM)');
+    await expect(page.locator('table')).toContainText('95.000');
+
+    // ----------------------------------------------------
+    // Scenario 7: Delete Expense Transaction with Custom Confirm Modal
     // ----------------------------------------------------
     const rowToDelete = page.locator('tr', { hasText: 'Langganan cloud recording CCTV 8 channel' });
     await rowToDelete.locator('button[title="Hapus Pengeluaran"]').click();
     
+    // Confirm modal appears
+    await expect(page.locator('div[role="dialog"] h3:has-text("Hapus Pengeluaran")')).toBeVisible();
+    await page.locator('div[role="dialog"] button:has-text("Ya, Hapus")').click();
+
     // Wait for the deletion success toast.
     await expect(page.locator('text="Dihapus"').first()).toBeVisible({ timeout: 5000 });
     await expect(page.locator('table')).not.toContainText('Langganan cloud recording CCTV 8 channel');
