@@ -4,316 +4,298 @@
     <div v-if="!activeProperty" class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-8 flex items-center gap-3">
       <div class="flex-1">
         <h2 class="font-bold text-sm">Mode Global View Aktif</h2>
-        <p class="text-xs">Menampilkan seluruh pengeluaran dari semua properti. Pilih properti spesifik di menu atas untuk mencatat pengeluaran baru.</p>
+        <p class="text-xs">Menampilkan seluruh pengeluaran dari semua properti. Pilih properti spesifik di menu atas untuk mencatat atau mengedit pengeluaran.</p>
       </div>
     </div>
 
     <div>
       <!-- Header & Quick Stats -->
-      <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900 tracking-tight font-outfit">Pengeluaran Operasional</h1>
-          <p class="text-sm text-slate-500 mt-1">Kelola dan pantau seluruh pengeluaran operasional properti Anda.</p>
+          <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-50 tracking-tight font-sans">Pengeluaran Operasional</h1>
+          <p class="text-sm text-surface-500 mt-1">Kelola dan pantau seluruh pengeluaran operasional properti Anda secara berkala.</p>
         </div>
         
         <div class="flex items-center gap-3">
           <!-- Quick Stats -->
-          <div class="bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm flex-col justify-center hidden sm:flex">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Bulan Ini</span>
-            <span class="text-lg font-bold text-rose-600">Rp {{ totalExpenses.toLocaleString('id-ID') }}</span>
+          <div class="bg-white dark:bg-surface-800 px-5 py-3 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm flex-col justify-center hidden sm:flex">
+            <span class="text-[11px] font-bold text-surface-500 uppercase tracking-wider">
+              Total {{ getMonthName(selectedMonth) }} {{ selectedYear }}
+            </span>
+            <span class="text-lg font-bold text-rose-600 dark:text-rose-400">Rp {{ totalExpenses.toLocaleString('id-ID') }}</span>
           </div>
           
-          <button v-if="activeProperty" @click="openCategoryCreatorStandalone" class="bg-white border border-slate-200 text-slate-700 px-4 py-3.5 rounded-xl font-medium hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center gap-2">
+          <button 
+            v-if="activeProperty" 
+            @click="openCategoryCreatorStandalone" 
+            class="bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-700 dark:text-surface-200 px-4 py-3 rounded-xl font-medium hover:bg-surface-50 dark:hover:bg-surface-700 transition-all shadow-sm active:scale-95 flex items-center gap-2 text-sm"
+          >
             <PhTag :size="18" weight="bold" />
             <span class="hidden sm:inline">Kategori Baru</span>
           </button>
           
-          <button v-if="activeProperty" @click="openExpenseModal" class="bg-slate-900 text-white px-5 py-3.5 rounded-xl font-medium hover:bg-slate-800 transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2">
+          <button 
+            v-if="activeProperty" 
+            @click="openCreateModal" 
+            class="bg-slate-900 dark:bg-brand-600 text-white px-5 py-3 rounded-xl font-medium hover:bg-slate-800 dark:hover:bg-brand-700 transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2 text-sm"
+          >
             <PhPlus :size="18" weight="bold" />
             <span>Catat <span class="hidden sm:inline">Pengeluaran</span></span>
           </button>
         </div>
       </div>
 
-      <!-- Main Expense Modal -->
-      <Teleport to="body">
-        <Transition name="modal">
-          <div v-if="showForm" class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 bg-slate-900/50 backdrop-blur-sm">
-          <div class="bg-white rounded-t-[1.5rem] md:rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all mt-auto md:mt-0">
-            
-            <!-- Mobile Handle -->
-            <div class="w-full flex justify-center pt-3 pb-1 md:hidden bg-white">
-              <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
-            </div>
-            
-            <!-- Modal Header -->
-            <div class="flex-shrink-0 px-4 md:px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-              <div>
-                <h3 class="text-lg font-bold text-slate-900">Catat Pengeluaran Baru</h3>
-                <p class="text-xs text-slate-500">Properti: <span class="font-semibold text-slate-700">{{ activeProperty?.name }}</span></p>
-              </div>
-              <button @click="showForm = false" class="text-slate-400 hover:text-slate-600 transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100">
-                <PhX :size="20" weight="bold" />
-              </button>
-            </div>
-            
-            <form @submit.prevent="submitForm" class="flex flex-col min-h-0 flex-1">
-              <!-- Scrollable Body -->
-              <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-                <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tanggal</label>
-                  <input type="date" v-model="form.date" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all text-sm">
-                </div>
-
-                <div>
-                  <div class="flex justify-between items-center mb-2">
-                    <label class="block text-sm font-semibold text-slate-700">Kategori Pengeluaran</label>
-                    <span class="text-xs text-slate-400">Pilih salah satu atau buat baru</span>
-                  </div>
-                  
-                  <!-- Category Grid -->
-                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1 p-0.5">
-                    <div 
-                      v-for="cat in categories" 
-                      :key="cat.id || cat.name"
-                      class="relative group"
-                    >
-                      <button 
-                        type="button"
-                        @click="selectCategory(cat.name)"
-                        class="w-full h-full flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all text-center relative overflow-hidden"
-                        :class="[
-                          form.category === cat.name 
-                            ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10' 
-                            : 'border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
-                        ]"
-                      >
-                        <div 
-                          class="w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-colors"
-                          :class="form.category === cat.name ? 'bg-white/20 text-white' : `${cat.color} text-white shadow-xs`"
-                        >
-                          <component :is="getIconComponent(cat.icon)" :size="18" weight="fill" />
-                        </div>
-                        <span class="text-xs font-semibold line-clamp-2 leading-snug">{{ cat.name }}</span>
-                      </button>
-
-                      <!-- Delete Custom Category Button -->
-                      <button 
-                        v-if="cat.isSystem === 0" 
-                        type="button"
-                        @click.stop="confirmDeleteCategory(cat)"
-                        title="Hapus kategori custom ini"
-                        class="absolute -top-1.5 -right-1.5 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-rose-600 transition-transform active:scale-90 opacity-80 hover:opacity-100 z-10"
-                      >
-                        <PhX :size="12" weight="bold" />
-                      </button>
-                    </div>
-
-                    <!-- Add Custom Category Button -->
-                    <button 
-                      type="button"
-                      @click="openCategoryCreatorFromForm"
-                      class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-blue-300 bg-blue-50/50 text-blue-700 hover:bg-blue-100/70 hover:border-blue-400 transition-all text-center group min-h-[82px]"
-                    >
-                      <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-                        <PhPlus :size="18" weight="bold" />
-                      </div>
-                      <span class="text-xs font-bold">+ Kategori Baru</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nominal (Rp)</label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <span class="text-slate-500 font-medium">Rp</span>
-                    </div>
-                    <input type="number" v-model="form.amount" required min="0" placeholder="0" class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all font-semibold text-slate-900">
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Deskripsi</label>
-                  <textarea v-model="form.description" rows="2" placeholder="Catatan tambahan seperti nama toko, nomor struk, dsb. (opsional)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all resize-none text-sm"></textarea>
-                </div>
-              </div>
-
-              <!-- Modal Footer -->
-              <div class="flex-shrink-0 px-4 md:px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50/50">
-                <button type="button" @click="showForm = false" class="w-full sm:w-auto px-5 py-2.5 min-h-[44px] text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">
-                  Batal
-                </button>
-                <button type="submit" :disabled="loading" class="w-full sm:w-auto px-6 py-2.5 min-h-[44px] text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center shadow-sm hover:shadow">
-                  <span v-if="loading" class="flex items-center gap-2">
-                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Menyimpan...
-                  </span>
-                  <span v-else>Simpan Pengeluaran</span>
-                </button>
-              </div>
-            </form>
+      <!-- Month & Year Filter Bar -->
+      <div class="bg-white dark:bg-surface-800 p-3.5 sm:p-4 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-surface-100 dark:bg-surface-700 flex items-center justify-center text-surface-600 dark:text-surface-300 flex-shrink-0">
+            <PhCalendar :size="18" weight="bold" />
+          </div>
+          <div>
+            <span class="text-xs font-bold text-surface-500 uppercase tracking-wider block">Filter Periode</span>
+            <span class="text-sm font-semibold text-surface-900 dark:text-surface-100">
+              {{ getMonthName(selectedMonth) }} {{ selectedYear }}
+            </span>
           </div>
         </div>
-      </Transition>
-    </Teleport>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Month Navigation Step Arrows -->
+          <div class="inline-flex items-center bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl p-1 shadow-xs">
+            <button 
+              type="button"
+              @click="prevMonth"
+              class="w-7 h-7 rounded-lg flex items-center justify-center text-surface-600 dark:text-surface-300 hover:bg-white dark:hover:bg-surface-800 hover:text-surface-900 transition-colors"
+              title="Bulan Sebelumnya"
+            >
+              <PhCaretLeft :size="14" weight="bold" />
+            </button>
+            <button 
+              type="button"
+              @click="nextMonth"
+              class="w-7 h-7 rounded-lg flex items-center justify-center text-surface-600 dark:text-surface-300 hover:bg-white dark:hover:bg-surface-800 hover:text-surface-900 transition-colors"
+              title="Bulan Berikutnya"
+            >
+              <PhCaretRight :size="14" weight="bold" />
+            </button>
+          </div>
+
+          <!-- Month Selector -->
+          <select 
+            v-model="selectedMonth" 
+            class="px-3 py-2 bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl text-xs font-semibold text-surface-800 dark:text-surface-200 outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-brand-500 transition-all cursor-pointer"
+          >
+            <option v-for="m in MONTH_LIST" :key="m.value" :value="m.value">
+              {{ m.label }}
+            </option>
+          </select>
+
+          <!-- Year Selector -->
+          <select 
+            v-model="selectedYear" 
+            class="px-3 py-2 bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl text-xs font-semibold text-surface-800 dark:text-surface-200 outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-brand-500 transition-all cursor-pointer"
+          >
+            <option v-for="y in YEAR_LIST" :key="y" :value="y">
+              {{ y }}
+            </option>
+          </select>
+
+          <!-- Reset to Current Month Shortcut -->
+          <button 
+            v-if="isNotCurrentMonth"
+            @click="resetToCurrentMonth"
+            class="px-2.5 py-1.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/40 rounded-lg transition-colors flex items-center gap-1"
+          >
+            <PhArrowCounterClockwise :size="12" weight="bold" />
+            <span>Bulan Ini</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Expense Form Modal (Create & Edit) -->
+      <ExpenseFormModal 
+        v-model="showExpenseModal"
+        :mode="modalMode"
+        :expense-data="currentExpenseData"
+        :property-name="activeProperty?.name"
+        :categories="categories"
+        :loading="submittingExpense"
+        @save="handleSaveExpense"
+        @open-category-creator="openCategoryCreatorFromForm"
+        @delete-category="confirmDeleteCategory"
+      />
 
       <!-- Custom Category Creator Dialog (Icon Picker) -->
       <Teleport to="body">
         <Transition name="modal">
-          <div v-if="showAddCategoryModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h4 class="font-bold text-slate-900">Buat Kategori Pengeluaran Baru</h4>
-              <button @click="closeCategoryCreator" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                <PhX :size="18" weight="bold" />
-              </button>
+          <div v-if="showAddCategoryModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+            <div class="bg-white dark:bg-surface-900 rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-800 w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div class="px-5 py-4 border-b border-surface-100 dark:border-surface-800 flex justify-between items-center bg-surface-50/50 dark:bg-surface-900">
+                <h4 class="font-bold text-surface-900 dark:text-surface-50">Buat Kategori Pengeluaran Baru</h4>
+                <button @click="closeCategoryCreator" class="text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 p-1 rounded-lg">
+                  <PhX :size="18" weight="bold" />
+                </button>
+              </div>
+
+              <form @submit.prevent="submitNewCategory" class="p-5 space-y-4 overflow-y-auto">
+                <!-- Name Input -->
+                <div>
+                  <label class="block text-xs font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider mb-1.5">Nama Kategori</label>
+                  <input 
+                    type="text" 
+                    v-model="newCategoryForm.name" 
+                    placeholder="Contoh: Langganan CCTV, Servis Pompa..." 
+                    required 
+                    class="w-full px-3.5 py-2.5 bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl text-sm focus:bg-white dark:focus:bg-surface-800 focus:ring-2 focus:ring-slate-900 dark:focus:ring-brand-500 focus:border-slate-900 outline-none transition-all font-medium text-surface-900 dark:text-surface-100"
+                  />
+                </div>
+
+                <!-- Color Palette -->
+                <div>
+                  <label class="block text-xs font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider mb-1.5">Pilih Warna Tag</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button 
+                      v-for="color in AVAILABLE_COLORS" 
+                      :key="color.class"
+                      type="button"
+                      @click="newCategoryForm.color = color.class"
+                      class="w-7 h-7 rounded-full transition-all flex items-center justify-center"
+                      :class="[
+                        color.class,
+                        newCategoryForm.color === color.class ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'opacity-80 hover:opacity-100'
+                      ]"
+                    >
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Icon Picker Grid -->
+                <div>
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="block text-xs font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">Pilih Icon Tematik</label>
+                    <span class="text-[11px] text-surface-500 font-medium">Pratinjau:</span>
+                  </div>
+
+                  <div class="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl scrollbar-thin">
+                    <button 
+                      v-for="iconItem in AVAILABLE_ICONS" 
+                      :key="iconItem.key"
+                      type="button"
+                      @click="newCategoryForm.icon = iconItem.key"
+                      :title="iconItem.label"
+                      class="aspect-square flex flex-col items-center justify-center rounded-lg border transition-all text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-50"
+                      :class="[
+                        newCategoryForm.icon === iconItem.key 
+                          ? 'border-slate-900 dark:border-brand-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-surface-50 shadow-xs ring-2 ring-slate-900/10' 
+                          : 'border-transparent hover:bg-white dark:hover:bg-surface-700'
+                      ]"
+                    >
+                      <component :is="getIconComponent(iconItem.key)" :size="20" weight="fill" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Live Preview Card -->
+                <div class="p-3 bg-surface-100/70 dark:bg-surface-800/60 rounded-xl flex items-center gap-3">
+                  <div :class="newCategoryForm.color" class="w-9 h-9 rounded-lg text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                    <component :is="getIconComponent(newCategoryForm.icon)" :size="20" weight="fill" />
+                  </div>
+                  <div class="overflow-hidden">
+                    <p class="text-xs text-surface-500 font-medium">Tampilan Kategori</p>
+                    <p class="text-sm font-bold text-surface-900 dark:text-surface-50 truncate">{{ newCategoryForm.name || 'Nama Kategori Baru' }}</p>
+                  </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                  <button type="button" @click="closeCategoryCreator" class="px-4 py-2 text-xs font-semibold text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-lg transition-colors">
+                    Batal
+                  </button>
+                  <button type="submit" :disabled="savingCategory" class="px-5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-brand-600 hover:bg-slate-800 dark:hover:bg-brand-700 rounded-lg transition-colors shadow-xs disabled:opacity-50">
+                    <span v-if="savingCategory">Menyimpan...</span>
+                    <span v-else>Simpan Kategori</span>
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <form @submit.prevent="submitNewCategory" class="p-5 space-y-4 overflow-y-auto">
-              <!-- Name Input -->
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Kategori</label>
-                <input 
-                  type="text" 
-                  v-model="newCategoryForm.name" 
-                  placeholder="Contoh: Langganan CCTV, Servis Pompa..." 
-                  required 
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all font-medium"
-                />
-              </div>
-
-              <!-- Color Palette -->
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Pilih Warna Tag</label>
-                <div class="flex flex-wrap gap-2">
-                  <button 
-                    v-for="color in AVAILABLE_COLORS" 
-                    :key="color.class"
-                    type="button"
-                    @click="newCategoryForm.color = color.class"
-                    class="w-7 h-7 rounded-full transition-all flex items-center justify-center"
-                    :class="[
-                      color.class,
-                      newCategoryForm.color === color.class ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'opacity-80 hover:opacity-100'
-                    ]"
-                  >
-                  </button>
-                </div>
-              </div>
-
-              <!-- Icon Picker Grid -->
-              <div>
-                <div class="flex justify-between items-center mb-1.5">
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Pilih Icon Tematik</label>
-                  <span class="text-[11px] text-slate-500 font-medium">Pratinjau:</span>
-                </div>
-
-                <div class="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
-                  <button 
-                    v-for="iconItem in AVAILABLE_ICONS" 
-                    :key="iconItem.key"
-                    type="button"
-                    @click="newCategoryForm.icon = iconItem.key"
-                    :title="iconItem.label"
-                    class="aspect-square flex flex-col items-center justify-center rounded-lg border transition-all text-slate-600 hover:text-slate-900"
-                    :class="[
-                      newCategoryForm.icon === iconItem.key 
-                        ? 'border-slate-900 bg-white text-slate-900 shadow-xs ring-2 ring-slate-900/10' 
-                        : 'border-transparent hover:bg-white'
-                    ]"
-                  >
-                    <component :is="getIconComponent(iconItem.key)" :size="20" weight="fill" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Live Preview Card -->
-              <div class="p-3 bg-slate-100/70 rounded-xl flex items-center gap-3">
-                <div :class="newCategoryForm.color" class="w-9 h-9 rounded-lg text-white flex items-center justify-center shadow-xs flex-shrink-0">
-                  <component :is="getIconComponent(newCategoryForm.icon)" :size="20" weight="fill" />
-                </div>
-                <div class="overflow-hidden">
-                  <p class="text-xs text-slate-500 font-medium">Tampilan Kategori</p>
-                  <p class="text-sm font-bold text-slate-900 truncate">{{ newCategoryForm.name || 'Nama Kategori Baru' }}</p>
-                </div>
-              </div>
-
-              <div class="pt-2 flex justify-end gap-2">
-                <button type="button" @click="closeCategoryCreator" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                  Batal
-                </button>
-                <button type="submit" :disabled="savingCategory" class="px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs disabled:opacity-50">
-                  <span v-if="savingCategory">Menyimpan...</span>
-                  <span v-else>Simpan Kategori</span>
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      </Transition>
-    </Teleport>
+        </Transition>
+      </Teleport>
 
       <!-- Expenses History Table -->
       <phantom-ui :loading="pending">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-sm border border-surface-200 dark:border-surface-700 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-slate-50/80">
-                  <th v-if="!activeProperty" class="p-4 pl-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Properti</th>
-                  <th class="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" :class="{'pl-6': activeProperty}">Tanggal</th>
-                  <th class="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Kategori</th>
-                  <th class="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Deskripsi</th>
-                  <th class="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap text-right">Nominal</th>
-                  <th class="p-4 pr-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap text-right">Aksi</th>
+                <tr class="bg-surface-50/80 dark:bg-surface-900/50 border-b border-surface-200 dark:border-surface-700">
+                  <th v-if="!activeProperty" class="p-4 pl-6 text-xs font-semibold text-surface-500 uppercase tracking-wider whitespace-nowrap">Properti</th>
+                  <th class="p-4 text-xs font-semibold text-surface-500 uppercase tracking-wider whitespace-nowrap" :class="{'pl-6': activeProperty}">Tanggal</th>
+                  <th class="p-4 text-xs font-semibold text-surface-500 uppercase tracking-wider whitespace-nowrap">Kategori</th>
+                  <th class="p-4 text-xs font-semibold text-surface-500 uppercase tracking-wider">Deskripsi</th>
+                  <th class="p-4 text-xs font-semibold text-surface-500 uppercase tracking-wider whitespace-nowrap text-right">Nominal</th>
+                  <th class="p-4 pr-6 text-xs font-semibold text-surface-500 uppercase tracking-wider whitespace-nowrap text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100">
+              <tbody class="divide-y divide-surface-100 dark:divide-surface-700/50">
                 <template v-if="pending">
                   <tr v-for="i in 5" :key="'skel-'+i" class="animate-pulse">
-                    <td v-if="!activeProperty" class="p-4 pl-6"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
-                    <td class="p-4" :class="{'pl-6': activeProperty}"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
+                    <td v-if="!activeProperty" class="p-4 pl-6"><div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-24"></div></td>
+                    <td class="p-4" :class="{'pl-6': activeProperty}"><div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-20"></div></td>
                     <td class="p-4">
                       <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-slate-200 flex-shrink-0"></div>
-                        <div class="h-4 bg-slate-200 rounded w-20"></div>
+                        <div class="w-8 h-8 rounded-lg bg-surface-200 dark:bg-surface-700 flex-shrink-0"></div>
+                        <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-20"></div>
                       </div>
                     </td>
-                    <td class="p-4"><div class="h-4 bg-slate-200 rounded w-48"></div></td>
-                    <td class="p-4 text-right"><div class="h-4 bg-slate-200 rounded w-24 ml-auto"></div></td>
-                    <td class="p-4 pr-6 text-right"><div class="h-4 bg-slate-200 rounded w-8 ml-auto"></div></td>
+                    <td class="p-4"><div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-48"></div></td>
+                    <td class="p-4 text-right"><div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-24 ml-auto"></div></td>
+                    <td class="p-4 pr-6 text-right"><div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-16 ml-auto"></div></td>
                   </tr>
                 </template>
                 <tr v-else-if="!expenses?.data?.length">
                   <td colspan="6" class="p-12 text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
-                      <PhReceipt :size="32" class="text-slate-400" />
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-100 dark:bg-surface-700 mb-4">
+                      <PhReceipt :size="32" class="text-surface-400" />
                     </div>
-                    <h3 class="text-slate-900 font-medium mb-1">Belum ada pengeluaran</h3>
-                    <p class="text-slate-500 text-sm">Mulai catat pengeluaran operasional properti Anda.</p>
+                    <h3 class="text-surface-900 dark:text-surface-100 font-medium mb-1">Belum ada pengeluaran di periode ini</h3>
+                    <p class="text-surface-500 text-sm">Tidak ada catatan pengeluaran pada {{ getMonthName(selectedMonth) }} {{ selectedYear }}.</p>
                   </td>
                 </tr>
                 <template v-else>
-                  <tr v-for="exp in expenses.data" :key="exp.id" class="group hover:bg-slate-50/80 transition-colors">
-                    <td v-if="!activeProperty" class="p-4 pl-6 text-sm font-medium text-slate-900 whitespace-nowrap">{{ exp.property?.name || '-' }}</td>
-                    <td class="p-4 text-sm text-slate-600 whitespace-nowrap" :class="{'pl-6': activeProperty}">{{ new Date(exp.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }}</td>
+                  <tr v-for="exp in expenses.data" :key="exp.id" class="group hover:bg-surface-50/80 dark:hover:bg-surface-700/30 transition-colors">
+                    <td v-if="!activeProperty" class="p-4 pl-6 text-sm font-medium text-surface-900 dark:text-surface-100 whitespace-nowrap">{{ exp.property?.name || '-' }}</td>
+                    <td class="p-4 text-sm text-surface-600 dark:text-surface-300 whitespace-nowrap" :class="{'pl-6': activeProperty}">{{ new Date(exp.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }}</td>
                     <td class="p-4">
                       <div class="flex items-center gap-3">
                         <div :class="getCategoryConfig(exp.category).color" class="p-2 rounded-lg text-white flex-shrink-0 shadow-xs">
                           <component :is="getCategoryConfig(exp.category).iconComponent" :size="16" weight="fill" />
                         </div>
-                        <span class="font-semibold text-sm text-slate-900">{{ exp.category }}</span>
+                        <span class="font-semibold text-sm text-surface-900 dark:text-surface-100">{{ exp.category }}</span>
                       </div>
                     </td>
-                    <td class="p-4 text-sm text-slate-600 max-w-xs truncate">{{ exp.description || '-' }}</td>
+                    <td class="p-4 text-sm text-surface-600 dark:text-surface-300 max-w-xs truncate">{{ exp.description || '-' }}</td>
                     <td class="p-4 text-right whitespace-nowrap">
-                      <span class="font-bold text-sm text-slate-900">Rp {{ Number(exp.amount).toLocaleString('id-ID') }}</span>
+                      <span class="font-bold text-sm text-surface-900 dark:text-surface-50">Rp {{ Number(exp.amount).toLocaleString('id-ID') }}</span>
                     </td>
                     <td class="p-4 pr-6 text-right whitespace-nowrap">
-                      <button @click="deleteExpense(exp.id)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus Pengeluaran">
-                        <PhTrashSimple :size="18" />
-                      </button>
+                      <div class="inline-flex items-center gap-1.5">
+                        <button 
+                          v-if="activeProperty"
+                          @click="openEditModal(exp)" 
+                          class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-surface-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/40 transition-colors" 
+                          title="Edit Pengeluaran"
+                        >
+                          <PhPencilSimple :size="18" />
+                        </button>
+                        <button 
+                          v-if="activeProperty"
+                          @click="confirmDeleteExpense(exp)" 
+                          class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-surface-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors" 
+                          title="Hapus Pengeluaran"
+                        >
+                          <PhTrashSimple :size="18" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </template>
@@ -329,6 +311,7 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
 import { useToast } from '~/composables/useToast'
+import { useConfirm } from '~/composables/useConfirm'
 import { computed, watch, ref, onMounted } from 'vue'
 import {
   // Phosphor Icons for Categories
@@ -367,7 +350,12 @@ import {
   // UI Action Icons
   PhPlus,
   PhX,
-  PhTrashSimple
+  PhTrashSimple,
+  PhPencilSimple,
+  PhCalendar,
+  PhCaretLeft,
+  PhCaretRight,
+  PhArrowCounterClockwise
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -376,19 +364,70 @@ definePageMeta({
 
 const { activePropertyId, activeProperty } = usePropertyState()
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 
-const showForm = ref(false)
+// Date filter states (default to current month and year)
+const todayDate = new Date()
+const selectedMonth = ref(todayDate.getMonth() + 1) // 1-12
+const selectedYear = ref(todayDate.getFullYear())   // e.g. 2026
+
+const MONTH_LIST = [
+  { value: 1, label: 'Januari' },
+  { value: 2, label: 'Februari' },
+  { value: 3, label: 'Maret' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'Mei' },
+  { value: 6, label: 'Juni' },
+  { value: 7, label: 'Juli' },
+  { value: 8, label: 'Agustus' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'Oktober' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'Desember' }
+]
+
+const YEAR_LIST = [2024, 2025, 2026, 2027, 2028]
+
+function getMonthName(m: number) {
+  return MONTH_LIST.find(item => item.value === Number(m))?.label || 'Bulan'
+}
+
+const isNotCurrentMonth = computed(() => {
+  return selectedMonth.value !== (todayDate.getMonth() + 1) || selectedYear.value !== todayDate.getFullYear()
+})
+
+function resetToCurrentMonth() {
+  selectedMonth.value = todayDate.getMonth() + 1
+  selectedYear.value = todayDate.getFullYear()
+}
+
+function prevMonth() {
+  if (selectedMonth.value === 1) {
+    selectedMonth.value = 12
+    selectedYear.value -= 1
+  } else {
+    selectedMonth.value -= 1
+  }
+}
+
+function nextMonth() {
+  if (selectedMonth.value === 12) {
+    selectedMonth.value = 1
+    selectedYear.value += 1
+  } else {
+    selectedMonth.value += 1
+  }
+}
+
+// Modal States
+const showExpenseModal = ref(false)
+const modalMode = ref<'create' | 'edit'>('create')
+const currentExpenseData = ref<any>(null)
+const submittingExpense = ref(false)
+
 const showAddCategoryModal = ref(false)
 const returnToExpenseForm = ref(false)
-const loading = ref(false)
 const savingCategory = ref(false)
-
-const form = ref({
-  date: new Date().toISOString().split('T')[0],
-  category: 'Listrik & Daya (PLN)',
-  amount: '',
-  description: ''
-})
 
 const newCategoryForm = ref({
   name: '',
@@ -503,65 +542,102 @@ function getCategoryConfig(categoryName: string) {
   }
 }
 
-function selectCategory(name: string) {
-  form.value.category = name
-}
-
-function openExpenseModal() {
-  showForm.value = true
-  if (categories.value.length > 0 && !form.value.category) {
-    form.value.category = categories.value[0].name
-  }
-}
-
 // Fetch categories from API
 async function fetchCategories() {
   try {
     const res = await $fetch<any>('/api/expenses/categories')
     if (res.status === 'success') {
       categories.value = res.data || []
-      if (!form.value.category && categories.value.length > 0) {
-        form.value.category = categories.value[0].name
-      }
     }
   } catch (e) {
     console.error('Gagal mengambil kategori:', e)
   }
 }
 
-// Handle standalone category creator opening
+// Open modal in Create mode
+function openCreateModal() {
+  modalMode.value = 'create'
+  currentExpenseData.value = null
+  showExpenseModal.value = true
+}
+
+// Open modal in Edit mode
+function openEditModal(exp: any) {
+  modalMode.value = 'edit'
+  currentExpenseData.value = { ...exp }
+  showExpenseModal.value = true
+}
+
+// Handle Save Expense (both Create and Edit)
+async function handleSaveExpense(payload: { id?: string; date: string; category: string; amount: string | number; description: string }) {
+  if (!activeProperty.value) return
+
+  try {
+    submittingExpense.value = true
+
+    if (modalMode.value === 'edit' && payload.id) {
+      await $fetch(`/api/expenses/${payload.id}`, {
+        method: 'PATCH',
+        body: {
+          date: payload.date,
+          category: payload.category,
+          amount: payload.amount,
+          description: payload.description
+        }
+      })
+      addToast('Berhasil', 'Data pengeluaran berhasil diperbarui.', 'success')
+    } else {
+      await $fetch('/api/expenses', {
+        method: 'POST',
+        body: {
+          propertyId: activeProperty.value.id,
+          date: payload.date,
+          category: payload.category,
+          amount: payload.amount,
+          description: payload.description
+        }
+      })
+      addToast('Berhasil', 'Pengeluaran baru telah dicatat.', 'success')
+    }
+
+    showExpenseModal.value = false
+    await fetchExpenses()
+  } catch (e: any) {
+    addToast('Gagal', e.data?.statusMessage || 'Gagal menyimpan pengeluaran.', 'error')
+  } finally {
+    submittingExpense.value = false
+  }
+}
+
+// Category creator handlers
 function openCategoryCreatorStandalone() {
   returnToExpenseForm.value = false
   showAddCategoryModal.value = true
 }
 
-// Handle category creator opening from within the expense form (swapping)
 function openCategoryCreatorFromForm() {
-  showForm.value = false
+  showExpenseModal.value = false
   returnToExpenseForm.value = true
-  // Let the closing animation start before opening the new modal
   setTimeout(() => {
     showAddCategoryModal.value = true
-  }, 300)
+  }, 250)
 }
 
-// Handle category creator closing (return to form if needed)
 function closeCategoryCreator() {
   showAddCategoryModal.value = false
   if (returnToExpenseForm.value) {
     setTimeout(() => {
-      showForm.value = true
+      showExpenseModal.value = true
       returnToExpenseForm.value = false
-    }, 300)
+    }, 250)
   }
 }
 
-// Submit a new custom category
 async function submitNewCategory() {
   if (!newCategoryForm.value.name.trim()) return
   try {
     savingCategory.value = true
-    const res = await $fetch<any>('/api/expenses/categories', {
+    await $fetch<any>('/api/expenses/categories', {
       method: 'POST',
       body: {
         name: newCategoryForm.value.name.trim(),
@@ -572,9 +648,6 @@ async function submitNewCategory() {
     
     addToast('Berhasil', 'Kategori custom baru berhasil dibuat.', 'success')
     await fetchCategories()
-    
-    // Auto-select the newly created category
-    form.value.category = newCategoryForm.value.name.trim()
     
     // Reset and close creator modal
     newCategoryForm.value = {
@@ -590,29 +663,39 @@ async function submitNewCategory() {
   }
 }
 
-// Delete custom category
 async function confirmDeleteCategory(cat: any) {
-  if (!confirm(`Hapus kategori '${cat.name}'? Kategori yang sudah dihapus tidak dapat dikembalikan.`)) return
+  const isConfirmed = await confirm({
+    title: 'Hapus Kategori',
+    message: `Hapus kategori '${cat.name}'? Kategori yang sudah dihapus tidak dapat dikembalikan.`,
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    type: 'danger'
+  })
+
+  if (!isConfirmed) return
+
   try {
     await $fetch(`/api/expenses/categories/${cat.id}`, {
       method: 'DELETE'
     })
     addToast('Berhasil', `Kategori '${cat.name}' telah dihapus.`, 'success')
     await fetchCategories()
-    if (form.value.category === cat.name && categories.value.length > 0) {
-      form.value.category = categories.value[0].name
-    }
   } catch (e: any) {
     addToast('Gagal', e.data?.statusMessage || 'Gagal menghapus kategori.', 'error')
   }
 }
 
-// Fetch list of expenses
+// Fetch list of expenses with reactive month & year filtering
 const fetchExpenses = async () => {
   pending.value = true
   try {
-    const query = activePropertyId.value ? `?propertyId=${activePropertyId.value}` : ''
-    const res = await $fetch<any>(`/api/expenses${query}`)
+    const params = new URLSearchParams()
+    if (activePropertyId.value) params.append('propertyId', activePropertyId.value)
+    if (selectedMonth.value) params.append('month', String(selectedMonth.value))
+    if (selectedYear.value) params.append('year', String(selectedYear.value))
+
+    const queryStr = params.toString() ? `?${params.toString()}` : ''
+    const res = await $fetch<any>(`/api/expenses${queryStr}`)
     if (res.status === 'success') {
       expenses.value.data = res.data?.data || res.data || []
     }
@@ -627,55 +710,23 @@ onMounted(() => {
   fetchCategories()
 })
 
-watch(activePropertyId, () => {
+watch([activePropertyId, selectedMonth, selectedYear], () => {
   fetchExpenses()
 }, { immediate: true })
 
-async function submitForm() {
-  if (!activeProperty.value) return
-  
-  if (!form.value.category) {
-    addToast('Kategori Kosong', 'Silakan pilih kategori pengeluaran.', 'error')
-    return
-  }
+async function confirmDeleteExpense(exp: any) {
+  const isConfirmed = await confirm({
+    title: 'Hapus Pengeluaran',
+    message: `Hapus catatan pengeluaran ${exp.category} sebesar Rp ${Number(exp.amount).toLocaleString('id-ID')}? Tindakan ini tidak dapat dibatalkan.`,
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    type: 'danger'
+  })
+
+  if (!isConfirmed) return
 
   try {
-    loading.value = true
-
-    await $fetch('/api/expenses', {
-      method: 'POST',
-      body: {
-        propertyId: activeProperty.value.id,
-        date: form.value.date,
-        category: form.value.category,
-        amount: form.value.amount,
-        description: form.value.description
-      }
-    })
-
-    showForm.value = false
-    
-    // Reset Form
-    form.value = {
-      date: new Date().toISOString().split('T')[0],
-      category: categories.value[0]?.name || 'Listrik & Daya (PLN)',
-      amount: '',
-      description: ''
-    }
-    
-    addToast('Berhasil', 'Pengeluaran baru telah dicatat.', 'success')
-    await fetchExpenses()
-  } catch (e: any) {
-    addToast('Gagal', e.data?.statusMessage || 'Gagal menyimpan pengeluaran.', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-async function deleteExpense(id: string) {
-  if (!confirm('Hapus data pengeluaran ini secara permanen?')) return
-  try {
-    await $fetch(`/api/expenses/${id}`, {
+    await $fetch(`/api/expenses/${exp.id}`, {
       method: 'DELETE'
     })
     addToast('Dihapus', 'Data pengeluaran berhasil dihapus.', 'success')
@@ -696,12 +747,15 @@ async function deleteExpense(id: string) {
   opacity: 0;
 }
 
-.modal-enter-active .transform,
-.modal-leave-active .transform {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.modal-enter-from .transform,
-.modal-leave-to .transform {
+.modal-enter-from > div {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+.modal-leave-to > div {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
 }

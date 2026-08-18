@@ -88,6 +88,7 @@
 
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
+import { useConfirm } from '~/composables/useConfirm'
 
 definePageMeta({
   layout: 'dashboard',
@@ -95,6 +96,7 @@ definePageMeta({
 
 const { activePropertyId, activeProperty } = usePropertyState()
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 const selectedMonth = ref(new Date().toISOString().slice(0, 7)) // YYYY-MM
 const generating = ref(false)
 
@@ -143,7 +145,16 @@ async function generateInvoices() {
 }
 
 async function markAsPaid(id: string) {
-  if (!confirm('Tandai tagihan ini sebagai lunas?')) return
+  const isConfirmed = await confirm({
+    title: 'Tandai Sebagai Lunas',
+    message: 'Apakah Anda yakin ingin menandai tagihan ini sebagai lunas?',
+    confirmText: 'Ya, Tandai Lunas',
+    cancelText: 'Batal',
+    type: 'primary'
+  })
+
+  if (!isConfirmed) return
+
   try {
     await $fetch(`/api/payments/${id}`, {
       method: 'PATCH'

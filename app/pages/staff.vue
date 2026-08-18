@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
 import { useAuth } from '#imports'
+import { useConfirm } from '~/composables/useConfirm'
 
 definePageMeta({
   layout: 'dashboard',
@@ -10,6 +11,7 @@ definePageMeta({
 const { activePropertyId } = usePropertyState()
 const { data: authData } = useAuth()
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 const isOwner = computed(() => ['superadmin', 'owner'].includes((authData.value?.user as any)?.role))
 
 const staffList = ref<any[]>([])
@@ -73,7 +75,16 @@ const inviteOperator = async () => {
 }
 
 const removeOperator = async (userId: string) => {
-  if (!confirm('Cabut akses operator ini?')) return
+  const isConfirmed = await confirm({
+    title: 'Cabut Akses Operator',
+    message: 'Apakah Anda yakin ingin mencabut akses operator ini dari properti Anda?',
+    confirmText: 'Ya, Cabut Akses',
+    cancelText: 'Batal',
+    type: 'warning'
+  })
+
+  if (!isConfirmed) return
+
   try {
     const res: any = await $fetch(`/api/staff/${userId}?propertyId=${activePropertyId.value}`, {
       method: 'DELETE'
