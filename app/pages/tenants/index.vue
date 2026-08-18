@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePropertyState } from '~/composables/usePropertyState'
+import { useConfirm } from '~/composables/useConfirm'
 
 definePageMeta({
   layout: 'dashboard',
@@ -7,6 +8,7 @@ definePageMeta({
 
 const { activePropertyId } = usePropertyState()
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 
 const tenants = ref<any[]>([])
 const availableRooms = ref<any[]>([])
@@ -182,7 +184,16 @@ const submitTenant = async () => {
 }
 
 const checkoutTenant = async (id: string) => {
-  if (!confirm('Checkout penghuni ini? Kamar akan kembali tersedia.')) return
+  const isConfirmed = await confirm({
+    title: 'Checkout Penghuni',
+    message: 'Checkout penghuni ini? Kamar akan kembali berstatus tersedia.',
+    confirmText: 'Ya, Checkout',
+    cancelText: 'Batal',
+    type: 'warning'
+  })
+
+  if (!isConfirmed) return
+
   try {
     await $fetch(`/api/tenants/${id}`, {
       method: 'PATCH',
@@ -197,7 +208,16 @@ const checkoutTenant = async (id: string) => {
 }
 
 const deleteTenant = async (id: string) => {
-  if (!confirm('Hapus data historis penghuni ini secara permanen?')) return
+  const isConfirmed = await confirm({
+    title: 'Hapus Data Penghuni',
+    message: 'Apakah Anda yakin ingin menghapus data historis penghuni ini secara permanen? Data yang sudah dihapus tidak dapat dipulihkan.',
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    type: 'danger'
+  })
+
+  if (!isConfirmed) return
+
   try {
     await $fetch(`/api/tenants/${id}`, {
       method: 'DELETE'
