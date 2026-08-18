@@ -5,6 +5,7 @@
       <NuxtPage />
     </NuxtLayout>
     <Toast />
+    <ConfirmModal />
   </div>
 </template>
 
