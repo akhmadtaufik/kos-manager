@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId, category, amount, and date are required' })
   }
 
-  await requirePropertyPermission(event.context.user, propertyId, 'manage_expenses')
+  await requirePropertyPermission(event.context.user, propertyId, 'expenses:create')
 
   const newExpense = await createExpense(propertyId, { category, amount, description, date }, event.context.user.id)
   

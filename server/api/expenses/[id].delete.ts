@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Expense not found' })
   }
 
-  await requirePropertyPermission(event.context.user, expense.propertyId, 'manage_expenses')
+  await requirePropertyPermission(event.context.user, expense.propertyId, 'expenses:delete')
 
   // Delete expense
   await db.delete(expenses).where(eq(expenses.id, id))

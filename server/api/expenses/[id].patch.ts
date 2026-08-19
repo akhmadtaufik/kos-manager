@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check user permission for the property
-  await requirePropertyPermission(event.context.user, existing.propertyId, 'manage_expenses')
+  await requirePropertyPermission(event.context.user, existing.propertyId, 'expenses:update')
 
   const body = await readBody(event)
   const parseResult = updateExpenseSchema.safeParse(body)
