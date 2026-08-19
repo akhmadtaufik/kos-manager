@@ -33,12 +33,34 @@ export const usePropertyState = () => {
     return properties.value.find(p => p.id === activePropertyId.value) || null
   })
 
+  const MACRO_MAP: Record<string, string[]> = {
+    manage_rooms: ['rooms:read', 'rooms:create', 'rooms:update', 'rooms:delete'],
+    manage_tenants: ['tenants:read', 'tenants:create', 'tenants:update', 'tenants:delete'],
+    manage_payments: ['payments:read', 'payments:create', 'payments:update', 'payments:delete'],
+    manage_expenses: ['expenses:read', 'expenses:create', 'expenses:update', 'expenses:delete'],
+    view_reports: ['reports:read'],
+  }
+
   // Full access for superadmin/owner. For operators, use the permissions array
   const hasPermission = (permission: string) => {
     if (!activeProperty.value) return false
     // If it doesn't have a permissions array, assume they are owner/superadmin with full access
     if (!activeProperty.value.permissions) return true
-    return activeProperty.value.permissions.includes(permission)
+    
+    const perms = (activeProperty.value.permissions as string[]) || []
+    if (perms.includes(permission)) return true
+
+    // Check legacy mapping
+    for (const [macro, micros] of Object.entries(MACRO_MAP)) {
+      if (micros.includes(permission) && perms.includes(macro)) {
+        return true
+      }
+      if (permission === macro && micros.some(m => perms.includes(m))) {
+        return true
+      }
+    }
+
+    return false
   }
 
   return {
