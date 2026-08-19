@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId and billingMonth are required' })
   }
 
-  await requirePropertyPermission(event.context.user, propertyId, 'manage_payments')
+  await requirePropertyPermission(event.context.user, propertyId, 'payments:create')
 
   const result = await generateMonthlyInvoices(propertyId, billingMonth, event.context.user.id)
   

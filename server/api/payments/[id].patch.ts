@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Payment not found' })
   }
 
-  await requirePropertyPermission(event.context.user, payment.propertyId, 'manage_payments')
+  await requirePropertyPermission(event.context.user, payment.propertyId, 'payments:update')
 
   const updated = await markPaymentAsPaid(id, event.context.user.id)
   

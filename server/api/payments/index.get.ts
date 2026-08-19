@@ -2,24 +2,34 @@ import { getPaymentsByProperty } from '../../services/payment.service'
 import { getUserProperties } from '../../services/property.service'
 import { requirePropertyAccess } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
-import { selectPaymentSchema, insertPaymentSchema, createPaginatedSchema } from '../../utils/schemaValidations'
+import { z } from 'zod'
 
+const paymentSummarySchema = z.object({
+  totalBilled: z.number(),
+  totalPaid: z.number(),
+  totalOutstanding: z.number(),
+  countTotal: z.number(),
+  countPaid: z.number(),
+  countUnpaid: z.number()
+})
 
 defineRouteMeta({
   openAPI: {
     tags: ['Payments'],
-    summary: 'List All Payments',
-    description: 'Retrieves a list of all payment transactions, allowing filtering by status, date, and tenant.'
+    summary: 'List All Payments with Financial Summary',
+    description: 'Retrieves a list of all payment transactions alongside aggregated monthly financial metrics (total billed, paid, and outstanding amounts).'
   }
 })
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const propertyId = query.propertyId as string
+  const billingMonth = query.billingMonth as string | undefined
   const user = event.context.user
 
   let targetPropertyIds: string[] = []
 
-  if (propertyId && propertyId !== 'null' && propertyId !== 'undefined') {
+  if (propertyId && propertyId !== 'null' && propertyId !== 'undefined' && propertyId !== '') {
     await requirePropertyAccess(user, propertyId)
     targetPropertyIds = [propertyId]
   } else {
@@ -27,7 +37,38 @@ export default defineEventHandler(async (event) => {
     targetPropertyIds = props.map(p => p.id)
   }
 
-  const records = await getPaymentsByProperty(targetPropertyIds)
+  const records = await getPaymentsByProperty(targetPropertyIds, billingMonth)
+
+  // Calculate real-time summary metrics
+  let totalBilled = 0
+  let totalPaid = 0
+  let totalOutstanding = 0
+  let countPaid = 0
+  let countUnpaid = 0
+
+  for (const record of records) {
+    const amount = Number(record.totalAmount) || 0
+    totalBilled += amount
+    if (record.status === 'paid') {
+      totalPaid += amount
+      countPaid++
+    } else {
+      totalOutstanding += amount
+      countUnpaid++
+    }
+  }
+
+  const summary = paymentSummarySchema.parse({
+    totalBilled,
+    totalPaid,
+    totalOutstanding,
+    countTotal: records.length,
+    countPaid,
+    countUnpaid
+  })
   
-  return apiSuccess(records, 'Payments retrieved successfully')
+  return apiSuccess({
+    items: records,
+    summary
+  }, 'Payments retrieved successfully')
 })
