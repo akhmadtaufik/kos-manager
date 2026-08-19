@@ -1,14 +1,14 @@
 import { db } from '../../db'
-import { payments } from '../../db/schema'
-import { eq } from 'drizzle-orm'
+import { payments, paymentTransactions } from '../../db/schema'
+import { eq, desc, and, lt, ne, sql } from 'drizzle-orm'
 import { requirePropertyAccess } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 
 defineRouteMeta({
   openAPI: {
     tags: ['Payments'],
-    summary: 'Get Detailed Invoice',
-    description: 'Retrieves complete invoice breakdown including base room rent, itemized additional fees, tenant details, and payment timestamp.'
+    summary: 'Get Detailed Invoice with Transactions',
+    description: 'Retrieves complete invoice breakdown including base room rent, itemized additional fees, tenant details, payment timestamp, transaction history ledger, and rolled-over arrears.'
   }
 })
 
@@ -28,6 +28,12 @@ export default defineEventHandler(async (event) => {
         with: {
           room: true
         }
+      },
+      transactions: {
+        with: {
+          recorder: true
+        },
+        orderBy: [desc(paymentTransactions.paymentDate), desc(paymentTransactions.createdAt)]
       }
     }
   })
@@ -39,5 +45,26 @@ export default defineEventHandler(async (event) => {
   // Verify property access
   await requirePropertyAccess(user, payment.propertyId)
 
-  return apiSuccess(payment, 'Payment details retrieved successfully')
+  // Calculate Rollover Arrears (Tunggakan)
+  const previousArrearsResult = await db
+    .select({
+      totalArrears: sql<number>`SUM(CAST(${payments.totalAmount} AS NUMERIC) - CAST(${payments.amountPaid} AS NUMERIC))`.mapWith(Number)
+    })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.tenantId, payment.tenantId),
+        lt(payments.billingMonth, payment.billingMonth),
+        ne(payments.status, 'paid')
+      )
+    )
+
+  const previousArrears = previousArrearsResult[0]?.totalArrears || 0
+  const grandTotal = Number(payment.totalAmount) + previousArrears
+
+  return apiSuccess({
+    ...payment,
+    previousArrears,
+    grandTotal
+  }, 'Payment details retrieved successfully')
 })

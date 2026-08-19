@@ -10,6 +10,7 @@ const paymentSummarySchema = z.object({
   totalOutstanding: z.number(),
   countTotal: z.number(),
   countPaid: z.number(),
+  countPartial: z.number(),
   countUnpaid: z.number()
 })
 
@@ -44,16 +45,23 @@ export default defineEventHandler(async (event) => {
   let totalPaid = 0
   let totalOutstanding = 0
   let countPaid = 0
+  let countPartial = 0
   let countUnpaid = 0
 
   for (const record of records) {
-    const amount = Number(record.totalAmount) || 0
-    totalBilled += amount
+    const total = Number(record.totalAmount) || 0
+    const paid = Number(record.amountPaid) || 0
+    const remaining = Math.max(0, total - paid)
+
+    totalBilled += total
+    totalPaid += paid
+    totalOutstanding += remaining
+
     if (record.status === 'paid') {
-      totalPaid += amount
       countPaid++
+    } else if (record.status === 'partial') {
+      countPartial++
     } else {
-      totalOutstanding += amount
       countUnpaid++
     }
   }
@@ -64,6 +72,7 @@ export default defineEventHandler(async (event) => {
     totalOutstanding,
     countTotal: records.length,
     countPaid,
+    countPartial,
     countUnpaid
   })
   
