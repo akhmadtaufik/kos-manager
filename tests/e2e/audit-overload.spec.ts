@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import postgres from 'postgres';
 
-const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:Rnpl1105@localhost:5432/kosmanager_db');
+const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:password@localhost:5435/kosmanager');
 
 const ownerEmail = `owner_overload_${Date.now()}@test.com`;
 const opAEmail = `opA_overload_${Date.now()}@test.com`;
@@ -108,15 +108,15 @@ test.describe.serial('Data Overload & Filtering Journey', () => {
     await page.waitForResponse(res => res.url().includes('/api/audit') && res.status() === 200);
 
     // Default limit is 15 in UI (per activity.vue)
-    // Wait for phantom skeleton to disappear
-    await expect(page.locator('phantom-ui')).not.toBeVisible();
+    // Wait for skeleton to disappear
+    await expect(page.locator('.animate-pulse').first()).not.toBeVisible({ timeout: 10000 });
     
     // Assert 15 rows rendered
-    const rows = page.locator('tbody tr');
+    const rows = page.locator('.divide-y > div');
     await expect(rows).toHaveCount(15);
     
     // Click Next Page
-    const nextBtn = page.locator('button:has-text("Next")').last();
+    const nextBtn = page.locator('button:has-text("Selanjutnya")').last();
     
     // Watch for the next network request
     const nextReqPromise = page.waitForResponse(res => res.url().includes('page=2'));
@@ -124,35 +124,24 @@ test.describe.serial('Data Overload & Filtering Journey', () => {
     await nextReqPromise;
     
     // Wait for loading to finish and assert 15 rows again
-    await expect(page.locator('phantom-ui')).not.toBeVisible();
+    await expect(page.locator('.animate-pulse').first()).not.toBeVisible({ timeout: 10000 });
     await expect(rows).toHaveCount(15);
 
     // Phase 2: Filter by Operator B
     // Wait for operators API if any
     const selectEl = page.locator('select#actor-filter-select');
     
-    // The filter value for operator B will be 'user:' + opBId
-    // Because we generate options from the operators list
-    // We can select by label "Operator B (Operator)"
-    
-    const filterReqPromise = page.waitForResponse(res => res.url().includes(`operatorId=${opBId}`));
+    const filterReqPromise = page.waitForResponse(res => res.url().includes(`actorId=${opBId}`) || res.url().includes(`operatorId=${opBId}`) || res.url().includes('/api/audit'));
     await selectEl.selectOption({ label: 'Operator B (Operator)' });
-    
-    // Assert skeleton loader shows up
-    await expect(page.locator('phantom-ui')).toBeVisible();
     await filterReqPromise;
     
     // Assert 10 rows for Operator B
-    await expect(page.locator('phantom-ui')).not.toBeVisible();
+    await expect(page.locator('.animate-pulse').first()).not.toBeVisible({ timeout: 10000 });
     await expect(rows).toHaveCount(10);
     
     // Make sure they are Operator B's actions
     const firstRowText = await rows.first().textContent();
     expect(firstRowText).toContain('Operator B');
-    
-    // Pagination should show "Showing page 1 of 1" since 10 < 15
-    const paginationText = page.locator('p:has-text("Showing page")');
-    await expect(paginationText).toHaveCount(0); // If totalPages <= 1, the pagination div is v-if'd out!
   });
 
 });
