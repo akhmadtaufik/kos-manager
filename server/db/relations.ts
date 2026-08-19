@@ -8,6 +8,7 @@ import {
   rooms,
   tenants,
   payments,
+  paymentTransactions,
   expenses,
   expenseCategories,
   activityLogs,
@@ -24,6 +25,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   userProperties: many(userProperties),
   expenseCategories: many(expenseCategories),
   activityLogs: many(activityLogs),
+  recordedPaymentTransactions: many(paymentTransactions),
 }))
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -82,7 +84,7 @@ export const tenantsRelations = relations(tenants, ({ one, many }) => ({
   payments: many(payments),
 }))
 
-export const paymentsRelations = relations(payments, ({ one }) => ({
+export const paymentsRelations = relations(payments, ({ one, many }) => ({
   tenant: one(tenants, {
     fields: [payments.tenantId],
     references: [tenants.id],
@@ -90,6 +92,18 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   property: one(properties, {
     fields: [payments.propertyId],
     references: [properties.id],
+  }),
+  transactions: many(paymentTransactions),
+}))
+
+export const paymentTransactionsRelations = relations(paymentTransactions, ({ one }) => ({
+  payment: one(payments, {
+    fields: [paymentTransactions.paymentId],
+    references: [payments.id],
+  }),
+  recorder: one(users, {
+    fields: [paymentTransactions.recordedBy],
+    references: [users.id],
   }),
 }))
 

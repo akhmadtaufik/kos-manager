@@ -149,6 +149,7 @@ export const tenants = pgTable('tenants', {
   roomId: uuid('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   phone: varchar('phone', { length: 20 }),
+  emergencyContact: varchar('emergency_contact', { length: 255 }),
   idCardUrl: text('id_card_url'),
   provinceId: varchar('province_id', { length: 10 }), // Static API identifier
   regencyId: varchar('regency_id', { length: 10 }),   // Static API identifier
@@ -178,6 +179,7 @@ export const payments = pgTable('payments', {
   baseRent: decimal('base_rent', { precision: 12, scale: 2 }).notNull(),
   additionalFees: jsonb('additional_fees').default([]), // JSONB array of { name, amount }
   totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
+  amountPaid: decimal('amount_paid', { precision: 12, scale: 2 }).notNull().default('0'),
   status: paymentStatusEnum('status').notNull().default('unpaid'),
   paidAt: timestamp('paid_at', { mode: 'date' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
@@ -187,6 +189,23 @@ export const payments = pgTable('payments', {
   index('payments_property_id_idx').on(table.propertyId),
   index('payments_billing_month_idx').on(table.billingMonth),
   uniqueIndex('payments_tenant_billing_idx').on(table.tenantId, table.billingMonth),
+])
+
+/**
+ * Payment Transactions — Cash ledger recording partial and full payments
+ */
+export const paymentTransactions = pgTable('payment_transactions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  paymentId: uuid('payment_id').notNull().references(() => payments.id, { onDelete: 'cascade' }),
+  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
+  paymentDate: timestamp('payment_date', { mode: 'date' }).defaultNow().notNull(),
+  recordedBy: uuid('recorded_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => [
+  index('payment_transactions_payment_id_idx').on(table.paymentId),
+  index('payment_transactions_payment_date_idx').on(table.paymentDate),
+  index('payment_transactions_recorded_by_idx').on(table.recordedBy),
 ])
 
 /**
@@ -289,7 +308,7 @@ export const tenantsRelations = relations(tenants, ({ one, many }) => ({
   payments: many(payments),
 }))
 
-export const paymentsRelations = relations(payments, ({ one }) => ({
+export const paymentsRelations = relations(payments, ({ one, many }) => ({
   tenant: one(tenants, {
     fields: [payments.tenantId],
     references: [tenants.id],
@@ -297,6 +316,18 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   property: one(properties, {
     fields: [payments.propertyId],
     references: [properties.id],
+  }),
+  transactions: many(paymentTransactions),
+}))
+
+export const paymentTransactionsRelations = relations(paymentTransactions, ({ one }) => ({
+  payment: one(payments, {
+    fields: [paymentTransactions.paymentId],
+    references: [payments.id],
+  }),
+  recorder: one(users, {
+    fields: [paymentTransactions.recordedBy],
+    references: [users.id],
   }),
 }))
 
