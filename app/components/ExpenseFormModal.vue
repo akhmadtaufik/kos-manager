@@ -98,13 +98,14 @@
                   <!-- Add Custom Category Button -->
                   <button 
                     type="button"
+                    id="btn-add-custom-category"
                     @click="$emit('openCategoryCreator')"
                     class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-brand-300 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 hover:bg-brand-100/70 hover:border-brand-400 transition-all text-center group min-h-[82px]"
                   >
                     <div class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
                       <PhPlus :size="18" weight="bold" />
                     </div>
-                    <span class="text-xs font-bold">+ Kategori Baru</span>
+                    <span class="text-xs font-bold">Kategori Baru</span>
                   </button>
                 </div>
               </div>
