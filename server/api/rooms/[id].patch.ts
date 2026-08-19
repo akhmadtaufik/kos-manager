@@ -45,7 +45,9 @@ export default defineEventHandler(async (event) => {
 
   await logActivity({
     userId: event.context.user.id,
-    action: 'UPDATE',
+    actorName: event.context.user.name,
+    actorRole: event.context.user.role,
+    action: 'UPDATE_ROOM',
     entityType: 'room',
     entityId: id,
     before: room,
