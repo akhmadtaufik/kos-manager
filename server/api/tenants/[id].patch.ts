@@ -66,6 +66,7 @@ export default defineEventHandler(async (event) => {
     .set({
       name: body.name,
       phone: body.phone || null,
+      emergencyContact: body.emergencyContact || null,
       provinceId: body.provinceId || null,
       regencyId: body.regencyId || null,
       districtId: body.districtId || null,

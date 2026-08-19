@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
     roomId: body.roomId,
     name: body.name,
     phone: body.phone,
+    emergencyContact: body.emergencyContact,
     provinceId: body.provinceId,
     regencyId: body.regencyId,
     districtId: body.districtId,
