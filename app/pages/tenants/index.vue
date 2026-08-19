@@ -1,6 +1,249 @@
+<template>
+  <div class="space-y-6">
+    <!-- Page Header & Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-50 font-outfit tracking-tight">
+          Direktori Penghuni
+        </h1>
+        <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
+          Kelola data penyewa, riwayat kamar, domisili Kemendagri, dan pantau status tagihan finansial.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Add Tenant Primary Button -->
+        <button 
+          @click="openAddSlideOver"
+          id="btn-onboard-tenant"
+          type="button"
+          :disabled="!activePropertyId"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 transition-all shadow-sm active:scale-95 whitespace-nowrap"
+        >
+          <PhUserPlus :size="16" weight="bold" />
+          <span>Pendaftaran Penghuni</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode Global View Alert when no property selected -->
+    <div v-if="!activePropertyId" class="bg-blue-50/70 text-blue-800 p-4 rounded-2xl border border-blue-200/60 flex items-center gap-3">
+      <div class="flex-1 text-xs">
+        <h2 class="font-bold">Mode Global View Aktif</h2>
+        <p class="text-3xs text-blue-700/80 mt-0.5">Menampilkan seluruh penghuni dari semua properti kos. Pilih properti spesifik pada menu atas untuk mendaftarkan penghuni baru.</p>
+      </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="bg-white dark:bg-surface-900 p-4 rounded-2xl border border-surface-200/80 dark:border-surface-800 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- Status Tabs -->
+      <div class="inline-flex p-1 bg-surface-100 dark:bg-surface-800 rounded-xl">
+        <button 
+          v-for="tab in ['all', 'active', 'inactive'] as const"
+          :key="tab"
+          @click="statusFilter = tab"
+          class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all capitalize"
+          :class="statusFilter === tab 
+            ? 'bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-100 shadow-2xs' 
+            : 'text-surface-500 hover:text-surface-700 dark:text-surface-400'"
+        >
+          {{ tab === 'all' ? 'Semua' : (tab === 'active' ? 'Aktif' : 'Non-Aktif') }}
+          <span class="ml-1 text-3xs opacity-70">
+            ({{ getCountByStatus(tab) }})
+          </span>
+        </button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative w-full sm:w-72">
+        <PhMagnifyingGlass :size="15" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
+        <input 
+          v-model="searchQuery" 
+          type="text" 
+          placeholder="Cari nama, kamar, atau HP..."
+          class="w-full pl-9 pr-4 py-2 bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl text-xs text-surface-900 dark:text-surface-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+        />
+      </div>
+    </div>
+
+    <!-- SaaS Directory Data Table -->
+    <div class="bg-white dark:bg-surface-900 rounded-2xl border border-surface-200/80 dark:border-surface-800 shadow-2xs overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left text-surface-600 dark:text-surface-300">
+          <thead class="text-3xs uppercase tracking-wider text-surface-400 bg-surface-50/80 dark:bg-surface-850 border-b border-surface-100 dark:border-surface-800 font-bold font-mono">
+            <tr>
+              <th v-if="!activePropertyId" scope="col" class="px-6 py-4">Properti</th>
+              <th scope="col" class="px-6 py-4">Nama Penghuni</th>
+              <th scope="col" class="px-6 py-4">Kontak & Darurat</th>
+              <th scope="col" class="px-6 py-4">Domisili Asal</th>
+              <th scope="col" class="px-6 py-4">Check In</th>
+              <th scope="col" class="px-6 py-4">Status</th>
+              <th scope="col" class="px-6 py-4 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-100 dark:divide-surface-800">
+            <!-- Loading Skeleton -->
+            <template v-if="isLoading">
+              <tr v-for="i in 4" :key="'skel-'+i" class="animate-pulse">
+                <td v-if="!activePropertyId" class="px-6 py-4.5"><div class="h-3.5 bg-surface-200 rounded w-24"></div></td>
+                <td class="px-6 py-4.5"><div class="h-3.5 bg-surface-200 rounded w-32"></div></td>
+                <td class="px-6 py-4.5"><div class="h-3.5 bg-surface-200 rounded w-28"></div></td>
+                <td class="px-6 py-4.5"><div class="h-3.5 bg-surface-200 rounded w-36"></div></td>
+                <td class="px-6 py-4.5"><div class="h-3.5 bg-surface-200 rounded w-20"></div></td>
+                <td class="px-6 py-4.5"><div class="h-3.5 bg-surface-200 rounded w-16"></div></td>
+                <td class="px-6 py-4.5 text-right"><div class="h-3.5 bg-surface-200 rounded w-16 ml-auto"></div></td>
+              </tr>
+            </template>
+
+            <!-- Empty State -->
+            <tr v-else-if="filteredTenants.length === 0">
+              <td :colspan="activePropertyId ? 6 : 7" class="px-6 py-12 text-center text-surface-400">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <PhUsers :size="32" class="text-surface-300 dark:text-surface-700" />
+                  <p class="font-semibold text-xs text-surface-600 dark:text-surface-300">Tidak ada data penghuni ditemukan.</p>
+                  <p class="text-3xs text-surface-400">Silakan daftarkan penghuni baru untuk properti ini.</p>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Table Rows -->
+            <template v-else>
+              <tr 
+                v-for="tenant in filteredTenants" 
+                :key="tenant.id"
+                @click="openProfileSlideOver(tenant)"
+                class="hover:bg-surface-50/70 dark:hover:bg-surface-800/40 cursor-pointer transition-colors group"
+              >
+                <!-- Property (if global view) -->
+                <td v-if="!activePropertyId" class="px-6 py-4.5 font-medium text-surface-700 dark:text-surface-300">
+                  {{ tenant.room?.property?.name || '-' }}
+                </td>
+
+                <!-- Tenant Name -->
+                <td class="px-6 py-4.5 font-bold text-surface-900 dark:text-surface-100">
+                  {{ tenant.name }}
+                </td>
+
+                <!-- Contact & Emergency -->
+                <td class="px-6 py-4.5">
+                  <div class="font-mono text-2xs tabular-nums text-surface-700 dark:text-surface-300">
+                    {{ tenant.phone || '-' }}
+                  </div>
+                  <div v-if="tenant.emergencyContact" class="text-3xs text-surface-400 truncate max-w-[160px]" :title="tenant.emergencyContact">
+                    Darurat: {{ tenant.emergencyContact }}
+                  </div>
+                </td>
+
+                <!-- Demographics (Kemendagri) -->
+                <td class="px-6 py-4.5">
+                  <div class="text-2xs font-medium text-surface-700 dark:text-surface-300 max-w-[180px] truncate" :title="tenant.location?.formattedAddress">
+                    {{ tenant.location?.formattedAddress || '-' }}
+                  </div>
+                </td>
+
+                <!-- Check In Date -->
+                <td class="px-6 py-4.5 text-2xs text-surface-500 tabular-nums">
+                  {{ formatDate(tenant.checkIn) }}
+                </td>
+
+                <!-- Minimalist Dot-Badge Status -->
+                <td class="px-6 py-4.5">
+                  <span 
+                    v-if="tenant.isActive === 1"
+                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-3xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Aktif</span>
+                  </span>
+                  <span 
+                    v-else
+                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-3xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    <span>Non-Aktif</span>
+                  </span>
+                </td>
+
+                <!-- Actions Icons -->
+                <td class="px-6 py-4.5 text-right" @click.stop>
+                  <div class="flex items-center justify-end gap-1">
+                    <!-- View 360 Profile -->
+                    <button 
+                      @click="openProfileSlideOver(tenant)"
+                      title="Lihat Profil 360"
+                      class="p-1.5 rounded-lg text-surface-500 hover:text-brand-600 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                    >
+                      <PhEye :size="16" weight="bold" />
+                    </button>
+
+                    <!-- Edit -->
+                    <button 
+                      @click="openEditSlideOver(tenant)"
+                      title="Edit Data"
+                      class="p-1.5 rounded-lg text-surface-500 hover:text-brand-600 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                    >
+                      <PhPencilSimple :size="16" weight="bold" />
+                    </button>
+
+                    <!-- Check Out (Only if active) -->
+                    <button 
+                      v-if="tenant.isActive === 1"
+                      @click="handleCheckout(tenant.id)"
+                      title="Check Out Penghuni"
+                      class="p-1.5 rounded-lg text-surface-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
+                    >
+                      <PhSignOut :size="16" weight="bold" />
+                    </button>
+
+                    <!-- Delete -->
+                    <button 
+                      @click="handleDelete(tenant.id)"
+                      title="Hapus Historis"
+                      class="p-1.5 rounded-lg text-surface-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                    >
+                      <PhTrash :size="16" weight="bold" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Onboarding & Edit Slide-over Component -->
+    <TenantFormSlideOver
+      v-model="isFormOpen"
+      :tenant="selectedTenantForEdit"
+      :property-id="activePropertyId"
+      :available-rooms="availableRooms"
+      @saved="onTenantSaved"
+    />
+
+    <!-- Tenant 360 View Profile Slide-over Component -->
+    <TenantProfileSlideOver
+      v-model="isProfileOpen"
+      :tenant-id="selectedTenantForProfile?.id || null"
+      @edit="openEditSlideOver"
+      @checkout="handleCheckout"
+    />
+  </div>
+</template>
+
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { usePropertyState } from '~/composables/usePropertyState'
 import { useConfirm } from '~/composables/useConfirm'
+import { 
+  PhUserPlus, 
+  PhUsers, 
+  PhMagnifyingGlass, 
+  PhEye, 
+  PhPencilSimple, 
+  PhSignOut, 
+  PhTrash 
+} from '@phosphor-icons/vue'
 
 definePageMeta({
   layout: 'dashboard',
@@ -13,60 +256,14 @@ const { confirm } = useConfirm()
 const tenants = ref<any[]>([])
 const availableRooms = ref<any[]>([])
 const isLoading = ref(false)
-const isCreating = ref(false)
-const editingId = ref<string | null>(null)
 
-const formData = reactive({
-  roomId: '',
-  name: '',
-  phone: '',
-  checkIn: '',
-  provinceId: '',
-  regencyId: '',
-  districtId: ''
-})
+const searchQuery = ref('')
+const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
 
-const PROVINCES = [
-  { id: '31', name: 'DKI Jakarta' },
-  { id: '32', name: 'Jawa Barat' }
-]
-
-const regencies = ref<any[]>([])
-const districts = ref<any[]>([])
-const isLoadingRegencies = ref(false)
-const isLoadingDistricts = ref(false)
-
-const onProvinceChange = async () => {
-  formData.regencyId = ''
-  formData.districtId = ''
-  regencies.value = []
-  districts.value = []
-  if (!formData.provinceId) return
-  
-  isLoadingRegencies.value = true
-  try {
-    regencies.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
-  } catch (e) {
-    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kabupaten/kota.', 'error')
-  } finally {
-    isLoadingRegencies.value = false
-  }
-}
-
-const onRegencyChange = async () => {
-  formData.districtId = ''
-  districts.value = []
-  if (!formData.regencyId) return
-  
-  isLoadingDistricts.value = true
-  try {
-    districts.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${formData.regencyId}.json`)
-  } catch (e) {
-    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kecamatan.', 'error')
-  } finally {
-    isLoadingDistricts.value = false
-  }
-}
+const isFormOpen = ref(false)
+const isProfileOpen = ref(false)
+const selectedTenantForEdit = ref<any | null>(null)
+const selectedTenantForProfile = ref<any | null>(null)
 
 const fetchTenants = async () => {
   isLoading.value = true
@@ -92,7 +289,7 @@ const fetchAvailableRooms = async () => {
       availableRooms.value = data.filter((r: any) => r.status === 'available')
     }
   } catch (err) {
-    addToast('Gagal memuat data', 'Terjadi kesalahan saat mengambil daftar kamar tersedia.', 'error')
+    console.error('Failed to fetch rooms', err)
   }
 }
 
@@ -101,92 +298,55 @@ watch(activePropertyId, () => {
   fetchAvailableRooms()
 }, { immediate: true })
 
-const startEdit = async (tenant: any) => {
-  editingId.value = tenant.id
-  formData.roomId = tenant.roomId // Not editable usually, but keep for state
-  formData.name = tenant.name
-  formData.phone = tenant.phone || ''
-  formData.checkIn = new Date(tenant.checkIn).toISOString().split('T')[0]
-  formData.provinceId = tenant.provinceId || ''
-  formData.regencyId = tenant.regencyId || ''
-  formData.districtId = tenant.districtId || ''
+const filteredTenants = computed(() => {
+  return tenants.value.filter(t => {
+    // Status Filter
+    if (statusFilter.value === 'active' && t.isActive !== 1) return false
+    if (statusFilter.value === 'inactive' && t.isActive === 1) return false
 
-  // Pre-load regencies and districts if editing an existing tenant with region data
-  if (formData.provinceId) {
-    isLoadingRegencies.value = true
-    try {
-      regencies.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
-    } finally {
-      isLoadingRegencies.value = false
+    // Search Query
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase()
+      const matchName = t.name?.toLowerCase().includes(q)
+      const matchRoom = t.room?.roomNumber?.toLowerCase().includes(q)
+      const matchPhone = t.phone?.toLowerCase().includes(q)
+      return matchName || matchRoom || matchPhone
     }
-  }
-  if (formData.regencyId) {
-    isLoadingDistricts.value = true
-    try {
-      districts.value = await $fetch<any[]>(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${formData.regencyId}.json`)
-    } finally {
-      isLoadingDistricts.value = false
-    }
-  }
+
+    return true
+  })
+})
+
+const getCountByStatus = (status: 'all' | 'active' | 'inactive') => {
+  if (status === 'all') return tenants.value.length
+  if (status === 'active') return tenants.value.filter(t => t.isActive === 1).length
+  return tenants.value.filter(t => t.isActive !== 1).length
 }
 
-const cancelEdit = () => {
-  editingId.value = null
-  formData.roomId = ''
-  formData.name = ''
-  formData.phone = ''
-  formData.checkIn = ''
-  formData.provinceId = ''
-  formData.regencyId = ''
-  formData.districtId = ''
-  regencies.value = []
-  districts.value = []
+const openAddSlideOver = () => {
+  selectedTenantForEdit.value = null
+  isFormOpen.value = true
 }
 
-const submitTenant = async () => {
-  if (!activePropertyId.value || !formData.name || !formData.checkIn) return
-  isCreating.value = true
-  
-  try {
-    if (editingId.value) {
-      await $fetch(`/api/tenants/${editingId.value}`, {
-        method: 'PATCH',
-        body: {
-          action: 'update',
-          name: formData.name,
-          phone: formData.phone,
-          checkIn: formData.checkIn,
-          provinceId: formData.provinceId,
-          regencyId: formData.regencyId,
-          districtId: formData.districtId
-        }
-      })
-    } else {
-      if (!formData.roomId) return
-      await $fetch('/api/tenants', {
-        method: 'POST',
-        body: {
-          propertyId: activePropertyId.value,
-          ...formData
-        }
-      })
-    }
-    
-    cancelEdit()
-    await fetchTenants()
-    await fetchAvailableRooms() // Refresh available rooms list
-    addToast('Berhasil', editingId.value ? 'Data penghuni diperbarui.' : 'Penghuni berhasil didaftarkan.', 'success')
-  } catch (err: any) {
-    addToast('Gagal', err.data?.statusMessage || 'Gagal menyimpan data penghuni.', 'error')
-  } finally {
-    isCreating.value = false
-  }
+const openEditSlideOver = (tenant: any) => {
+  selectedTenantForEdit.value = tenant
+  isFormOpen.value = true
 }
 
-const checkoutTenant = async (id: string) => {
+const openProfileSlideOver = (tenant: any) => {
+  selectedTenantForProfile.value = tenant
+  isProfileOpen.value = true
+}
+
+const onTenantSaved = async () => {
+  await fetchTenants()
+  await fetchAvailableRooms()
+}
+
+const handleCheckout = async (id: string) => {
   const isConfirmed = await confirm({
     title: 'Checkout Penghuni',
-    message: 'Checkout penghuni ini? Kamar akan kembali berstatus tersedia.',
+    message: 'Apakah Anda yakin ingin menyelesaikan sewa penghuni ini? Kamar akan otomatis kembali berstatus Tersedia.',
     confirmText: 'Ya, Checkout',
     cancelText: 'Batal',
     type: 'warning'
@@ -201,16 +361,16 @@ const checkoutTenant = async (id: string) => {
     })
     await fetchTenants()
     await fetchAvailableRooms()
-    addToast('Berhasil', 'Checkout penghuni berhasil.', 'success')
+    addToast('Berhasil', 'Checkout penghuni berhasil diselesaikan.', 'success')
   } catch (err: any) {
     addToast('Gagal', err.data?.statusMessage || 'Gagal melakukan checkout.', 'error')
   }
 }
 
-const deleteTenant = async (id: string) => {
+const handleDelete = async (id: string) => {
   const isConfirmed = await confirm({
     title: 'Hapus Data Penghuni',
-    message: 'Apakah Anda yakin ingin menghapus data historis penghuni ini secara permanen? Data yang sudah dihapus tidak dapat dipulihkan.',
+    message: 'Apakah Anda yakin ingin menghapus data historis penghuni ini secara permanen? Tindakan ini tidak dapat dibatalkan.',
     confirmText: 'Ya, Hapus',
     cancelText: 'Batal',
     type: 'danger'
@@ -223,140 +383,18 @@ const deleteTenant = async (id: string) => {
       method: 'DELETE'
     })
     await fetchTenants()
-    addToast('Berhasil', 'Data historis penghuni dihapus.', 'success')
+    addToast('Berhasil', 'Data historis penghuni berhasil dihapus.', 'success')
   } catch (err: any) {
     addToast('Gagal', err.data?.statusMessage || 'Gagal menghapus data.', 'error')
   }
 }
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '-'
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(new Date(dateString))
+}
 </script>
-
-<template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-slate-900 font-outfit">Tenant Directory</h1>
-    </div>
-    
-    <div v-if="!activePropertyId" class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-8 flex items-center gap-3">
-      <div class="flex-1">
-        <h2 class="font-bold text-sm">Mode Global View Aktif</h2>
-        <p class="text-xs">Menampilkan seluruh penghuni dari semua properti. Pilih properti spesifik di menu atas untuk menambah penghuni baru.</p>
-      </div>
-    </div>
-
-    <div v-if="activePropertyId" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
-      <h2 class="text-lg font-bold mb-4 font-outfit">{{ editingId ? 'Edit Tenant' : 'Onboard New Tenant' }}</h2>
-        <form @submit.prevent="submitTenant" class="flex flex-col gap-5">
-          <!-- Primary Info -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div v-if="!editingId">
-              <label class="block text-sm font-medium text-slate-700 mb-1">Assign Room</label>
-              <select v-model="formData.roomId" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors">
-                <option value="" disabled>Select Room</option>
-                <option v-for="room in availableRooms" :key="room.id" :value="room.id">{{ room.roomNumber }}</option>
-              </select>
-            </div>
-            <div :class="editingId ? 'md:col-span-2' : 'md:col-span-1'">
-              <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-              <input v-model="formData.name" type="text" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-              <input v-model="formData.phone" type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Check-in Date</label>
-              <input v-model="formData.checkIn" type="date" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
-            </div>
-          </div>
-
-          <!-- Demographics -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Province</label>
-              <select id="province-select" v-model="formData.provinceId" @change="onProvinceChange" class="w-full bg-white border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors">
-                <option value="">Select Province</option>
-                <option v-for="prov in PROVINCES" :key="prov.id" :value="prov.id">{{ prov.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Regency/City</label>
-              <select id="regency-select" v-model="formData.regencyId" @change="onRegencyChange" :disabled="!formData.provinceId || isLoadingRegencies" class="w-full bg-white border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors disabled:opacity-60">
-                <option value="">{{ isLoadingRegencies ? 'Loading...' : 'Select Regency' }}</option>
-                <option v-for="reg in regencies" :key="reg.id" :value="reg.id">{{ reg.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">District/Kecamatan</label>
-              <select id="district-select" v-model="formData.districtId" :disabled="!formData.regencyId || isLoadingDistricts" class="w-full bg-white border border-slate-200 text-slate-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors disabled:opacity-60">
-                <option value="">{{ isLoadingDistricts ? 'Loading...' : 'Select District' }}</option>
-                <option v-for="dist in districts" :key="dist.id" :value="dist.id">{{ dist.name }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="flex gap-3 justify-end mt-2">
-            <button v-if="editingId" type="button" @click="cancelEdit" class="text-slate-600 hover:bg-slate-100 font-medium rounded-lg px-6 py-2.5 transition-colors">
-              Cancel
-            </button>
-            <button type="submit" :disabled="isCreating || (!editingId && availableRooms.length === 0)" class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg px-8 py-2.5 transition-colors">
-              {{ isCreating ? 'Saving...' : (editingId ? 'Update Tenant' : 'Onboard Tenant') }}
-            </button>
-          </div>
-        </form>
-      </div>
-      
-      <phantom-ui :loading="isLoading">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <table class="w-full text-sm text-left text-slate-500">
-            <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th v-if="!activePropertyId" scope="col" class="px-6 py-3">Property</th>
-                <th scope="col" class="px-6 py-3">Room</th>
-                <th scope="col" class="px-6 py-3">Tenant Name</th>
-                <th scope="col" class="px-6 py-3">Phone</th>
-                <th scope="col" class="px-6 py-3">Check In</th>
-                <th scope="col" class="px-6 py-3">Status</th>
-                <th scope="col" class="px-6 py-3">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-if="isLoading">
-                <tr v-for="i in 5" :key="'skel-'+i" class="bg-white border-b border-slate-100">
-                  <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">Mock Property</td>
-                  <td class="px-6 py-4 font-bold text-slate-900">A101</td>
-                  <td class="px-6 py-4 font-medium text-slate-900">Budi Santoso</td>
-                  <td class="px-6 py-4">081234567890</td>
-                  <td class="px-6 py-4">01/01/2026</td>
-                  <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Active</span></td>
-                  <td class="px-6 py-4"><div class="flex gap-2"><span class="text-blue-600 text-xs font-medium">Edit</span></div></td>
-                </tr>
-              </template>
-              <tr v-else-if="tenants.length === 0">
-                <td colspan="7" class="px-6 py-8 text-center text-slate-500">No tenants found for this property.</td>
-              </tr>
-              <template v-else>
-                <tr v-for="tenant in tenants" :key="tenant.id" class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td v-if="!activePropertyId" class="px-6 py-4 text-slate-700 font-medium">{{ tenant.room?.property?.name || '-' }}</td>
-                  <td class="px-6 py-4 font-bold text-slate-900">{{ tenant.room?.roomNumber }}</td>
-                  <td class="px-6 py-4 font-medium text-slate-900">{{ tenant.name }}</td>
-                  <td class="px-6 py-4">{{ tenant.phone || '-' }}</td>
-                  <td class="px-6 py-4">{{ new Date(tenant.checkIn).toLocaleDateString() }}</td>
-                  <td class="px-6 py-4">
-                    <span v-if="tenant.isActive === 1" class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">Active</span>
-                    <span v-else class="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded border border-slate-200">Inactive</span>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="flex gap-2">
-                      <button @click="startEdit(tenant)" class="text-blue-600 hover:text-blue-800 font-medium text-xs">Edit</button>
-                      <button v-if="tenant.isActive === 1" @click="checkoutTenant(tenant.id)" class="text-amber-600 hover:text-amber-800 font-medium text-xs">Check Out</button>
-                      <button @click="deleteTenant(tenant.id)" class="text-rose-600 hover:text-rose-800 font-medium text-xs">Hapus</button>
-                    </div>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </phantom-ui>
-  </div>
-</template>
