@@ -25,8 +25,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Room not found' })
   }
 
-  // Must have manage_rooms permission for the property this room belongs to
-  await requirePropertyPermission(event.context.user, room.propertyId, 'manage_rooms')
+  // Must have rooms:update permission for the property this room belongs to
+  await requirePropertyPermission(event.context.user, room.propertyId, 'rooms:update')
 
   const body = await readBody(event)
   if (!body.roomNumber || !body.monthlyRate) {
