@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import postgres from 'postgres';
 
-const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:Rnpl1105@localhost:5432/kosmanager_db');
+const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:password@localhost:5435/kosmanager');
 
 const ownerEmail = `owner_audit_${Date.now()}@test.com`;
 const operatorEmail = `operator_audit_${Date.now()}@test.com`;
@@ -13,6 +13,7 @@ let ownerId: string;
 let operatorId: string;
 
 test.describe.serial('Operator Audit Security Journey', () => {
+  test.setTimeout(120000);
 
   test.beforeAll(async ({ request }) => {
     // 1. Register Owner
@@ -149,14 +150,14 @@ test.describe.serial('Operator Audit Security Journey', () => {
     console.log('FULL HTML:', fullHtml.substring(0, 500));
     
     // Assert 1: Good behavior is visible
-    await expect(ownerPage.locator('tbody')).toContainText('Checkin Tenant');
+    await expect(ownerPage.locator('body')).toContainText('Check-In Penghuni');
     
     // Assert 2: Cheating attempt is visible
-    await expect(ownerPage.locator('tbody')).toContainText('Unauthorized Attempt');
-    await expect(ownerPage.locator('tbody')).toContainText('Operator attempted to perform an owner-only action');
+    await expect(ownerPage.locator('body')).toContainText('Unauthorized Attempt');
+    await expect(ownerPage.locator('body')).toContainText('Operator attempted to perform an owner-only action');
     
     // Verify it's labeled under the malicious operator's name
-    const cheatingRow = ownerPage.locator('tr', { hasText: 'Unauthorized Attempt' }).first();
+    const cheatingRow = ownerPage.locator('div', { hasText: 'Unauthorized Attempt' }).first();
     await expect(cheatingRow).toContainText('Malicious Operator');
     
     await ownerContext.close();

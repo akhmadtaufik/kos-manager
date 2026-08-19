@@ -164,6 +164,7 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
 
     // Close expense modal
     await page.click('button:has-text("Batal")');
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
 
     // ----------------------------------------------------
     // Scenario 5: Edit Expense Flow
