@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   let targetPropertyIds: string[] = []
 
   if (propertyId && propertyId !== 'null' && propertyId !== 'undefined' && propertyId !== '') {
-    await requirePropertyPermission(user, propertyId, 'view_reports')
+    await requirePropertyPermission(user, propertyId, 'reports:read')
     targetPropertyIds = [propertyId]
   } else {
     // Global view
