@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import postgres from 'postgres';
 
-const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:Rnpl1105@localhost:5432/kosmanager_db');
+const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:password@localhost:5435/kosmanager');
 
 const ownerEmail = `owner_tamper_${Date.now()}@test.com`;
 const operatorEmail = `operator_tamper_${Date.now()}@test.com`;
@@ -129,8 +129,8 @@ test.describe.serial('Audit Tamper Journey', () => {
     await ownerPage.waitForTimeout(3000); // Wait for data load
 
     // Verify the tamper attempts were caught and logged under the rogue operator's name
-    const textContent = await ownerPage.locator('tbody').textContent();
-    expect(textContent).toContain('Tamper Attempt');
+    const textContent = await ownerPage.locator('main').textContent();
+    expect(textContent).toContain('Percobaan Pelanggaran');
     expect(textContent).toContain('Operator attempted to delete/modify audit logs');
     expect(textContent).toContain('Rogue Operator');
 
