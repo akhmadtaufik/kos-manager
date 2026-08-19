@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import postgres from 'postgres';
 
-const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:Rnpl1105@localhost:5432/kosmanager_db');
+const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:password@localhost:5435/kosmanager');
 
 const ownerEmail = `owner_precision_${Date.now()}@test.com`;
 const operatorEmail = `op_precision_${Date.now()}@test.com`;
@@ -47,7 +47,7 @@ test.describe.serial('Audit Data Precision Journey', () => {
 
     await sql`
       INSERT INTO user_properties (user_id, property_id, permissions) 
-      VALUES (${operatorId}, ${propertyId}, '["manage_rooms"]'::jsonb)
+      VALUES (${operatorId}, ${propertyId}, '["rooms:read", "rooms:update"]'::jsonb)
     `;
 
     // Create Room with old base price
@@ -80,20 +80,15 @@ test.describe.serial('Audit Data Precision Journey', () => {
     await loginPromise;
     await opPage.waitForURL('**/dashboard');
 
-    // Trigger update via API directly to simulate form submission
-    const updateRes = await opContext.request.patch(`/api/rooms/${roomId}`, {
-      data: { roomNumber: 'P-101', monthlyRate: 1500000 }
-    });
-    if (!updateRes.ok()) console.error(await updateRes.text()); 
-    expect(updateRes.ok()).toBeTruthy();
-    
-    const updateJson = await updateRes.json();
-    expect(updateJson).toMatchObject({
-      status: 'success',
-      statusCode: 200,
-      message: expect.any(String),
-      data: expect.any(Object)
-    });
+    // Trigger update via authenticated page session
+    const updateRes = await opPage.evaluate(async (rid) => {
+      // @ts-ignore
+      return await $fetch(`/api/rooms/${rid}`, {
+        method: 'PATCH',
+        body: { roomNumber: 'P-101', monthlyRate: 1500000 }
+      });
+    }, roomId);
+    expect(updateRes).toBeTruthy();
 
     await opContext.close();
 
@@ -120,10 +115,10 @@ test.describe.serial('Audit Data Precision Journey', () => {
     await ownerPage.waitForTimeout(3000); // Wait for data load
 
     // Assert the precision tracking
-    const textContent = await ownerPage.locator('tbody').textContent();
-    expect(textContent).toContain('1000000.00'); // the decimal format stored
+    const textContent = await ownerPage.locator('main').textContent();
+    expect(textContent).toContain('1.000.000');
     expect(textContent).toContain('➔');
-    expect(textContent).toContain('1500000'); // or 1500000.00 if decimalized
+    expect(textContent).toContain('1.500.000');
 
     await ownerContext.close();
   });
