@@ -2,9 +2,6 @@ import { db } from '../../db'
 import { properties, userProperties, users } from '../../db/schema'
 import { eq, inArray } from 'drizzle-orm'
 import { getServerSession } from '#auth'
-import { selectActivityLogSchema, insertActivityLogSchema, createPaginatedSchema } from '../../utils/schemaValidations'
-
-
 import { sendSuccessResponse } from '../../utils/response'
 
 defineRouteMeta({
@@ -14,6 +11,7 @@ defineRouteMeta({
     description: 'Fetches activity logs specifically filtered for operators/staff, showing their administrative actions within the system.'
   }
 })
+
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
   if (!session?.user) {
@@ -27,7 +25,7 @@ export default defineEventHandler(async (event) => {
     // Operators only see themselves
     const op = await db.query.users.findFirst({
       where: eq(users.id, userId),
-      columns: { id: true, name: true, role: true }
+      columns: { id: true, name: true, role: true, email: true }
     })
     return sendSuccessResponse(event, { data: op ? [op] : [] })
   }
@@ -53,9 +51,17 @@ export default defineEventHandler(async (event) => {
 
     const ops = await db.query.users.findMany({
       where: inArray(users.id, operatorIds),
-      columns: { id: true, name: true, role: true }
+      columns: { id: true, name: true, role: true, email: true }
     })
 
+    return sendSuccessResponse(event, { data: ops })
+  }
+
+  if (userRole === 'superadmin') {
+    const ops = await db.query.users.findMany({
+      where: eq(users.role, 'operator'),
+      columns: { id: true, name: true, role: true, email: true }
+    })
     return sendSuccessResponse(event, { data: ops })
   }
 

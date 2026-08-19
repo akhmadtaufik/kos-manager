@@ -1,18 +1,17 @@
 import { db } from '../../db'
 import { activityLogs, properties, userProperties } from '../../db/schema'
-import { eq, desc, and, inArray, SQL, count } from 'drizzle-orm'
+import { eq, desc, and, inArray, SQL, count, isNotNull } from 'drizzle-orm'
 import { getServerSession } from '#auth'
-import { selectActivityLogSchema, insertActivityLogSchema, createPaginatedSchema } from '../../utils/schemaValidations'
 import { sendSuccessResponse } from '../../utils/response'
-
 
 defineRouteMeta({
   openAPI: {
     tags: ['Audit'],
     summary: 'List Audit Logs',
-    description: 'Retrieves a comprehensive list of system audit logs, tracking user actions, data modifications, and security events.'
+    description: 'Retrieves a comprehensive list of human-generated audit logs, tracking administrative actions, property modifications, and security events.'
   }
 })
+
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
   if (!session?.user) {
@@ -27,19 +26,19 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
   const roleFilter = query.role as string // 'all', 'owner', 'operator'
-  const operatorIdFilter = query.operatorId as string // Specific operator
+  const actorIdFilter = (query.actorId as string) || (query.operatorId as string) // Specific actor (operator or owner)
   const page = parseInt(query.page as string) || 1
-  const limit = parseInt(query.limit as string) || 20
+  const limit = parseInt(query.limit as string) || 15
   const offset = (page - 1) * limit
 
   const conditions: SQL[] = []
 
+  // Anti-Fraud Requirement: Strictly exclude system-generated automated logs
+  conditions.push(isNotNull(activityLogs.userId))
+  conditions.push(isNotNull(activityLogs.actorRole))
+
   if (roleFilter && roleFilter !== 'all') {
     conditions.push(eq(activityLogs.actorRole, roleFilter))
-  }
-  
-  if (operatorIdFilter) {
-    conditions.push(eq(activityLogs.userId, operatorIdFilter))
   }
 
   if (userRole === 'owner') {
@@ -54,21 +53,25 @@ export default defineEventHandler(async (event) => {
        operatorIds = ops.map(o => o.userId)
     }
     
-    // 3. The valid user IDs are the owner's ID + operator IDs
+    // 3. The valid human user IDs for this owner's audit trail: Owner itself + assigned operators
     const validUserIds = [userId, ...operatorIds].filter(Boolean)
     
-    // 4. Exclude 'system' and restrict to valid users (if not explicitly querying a specific operator)
-    if (validUserIds.length > 0 && !operatorIdFilter) {
-      conditions.push(inArray(activityLogs.userId, validUserIds))
-    } else if (!operatorIdFilter) {
-      // If no valid users (shouldn't happen since userId is there, but just in case)
-      conditions.push(eq(activityLogs.userId, userId))
+    if (actorIdFilter) {
+      // Security Check: If filtering by a specific actor, ensure they belong to this owner
+      if (!validUserIds.includes(actorIdFilter)) {
+        throw createError({ statusCode: 403, statusMessage: 'Forbidden: Cannot access logs for this actor' })
+      }
+      conditions.push(eq(activityLogs.userId, actorIdFilter))
+    } else {
+      if (validUserIds.length > 0) {
+        conditions.push(inArray(activityLogs.userId, validUserIds))
+      } else {
+        conditions.push(eq(activityLogs.userId, userId))
+      }
     }
-    
-    // Security Check: If requesting a specific operator, ensure they belong to this owner
-    if (operatorIdFilter && !validUserIds.includes(operatorIdFilter)) {
-        throw createError({ statusCode: 403, statusMessage: 'Forbidden: Cannot access logs for this operator' })
-    }
+  } else if (actorIdFilter) {
+    // Superadmin filtering by specific actor
+    conditions.push(eq(activityLogs.userId, actorIdFilter))
   }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined
@@ -81,7 +84,7 @@ export default defineEventHandler(async (event) => {
     offset,
   })
 
-  // Count total for pagination (True Database Count)
+  // Count total for pagination
   const countResult = await db.select({ total: count() })
     .from(activityLogs)
     .where(whereClause)
