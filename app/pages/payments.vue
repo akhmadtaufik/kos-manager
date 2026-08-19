@@ -21,13 +21,13 @@
             Tagihan & Pembayaran
           </h1>
           <p class="text-xs text-surface-500 dark:text-surface-400">
-            Kelola tagihan sewa bulanan penghuni dan pantau status pembayaran secara terpusat.
+            Buku besar tagihan sewa dan pencatatan cicilan / pembayaran sebagian penghuni.
           </p>
         </div>
       </div>
 
       <!-- Action Controls -->
-      <div v-if="activeProperty" class="flex flex-wrap items-center gap-2.5">
+      <div class="flex flex-wrap items-center gap-2.5">
         <input 
           type="month" 
           v-model="selectedMonth" 
@@ -68,11 +68,13 @@
           <PhCheckCircle :size="20" weight="duotone" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-medium text-surface-500 dark:text-surface-400">Total Terbayar (Lunas)</p>
+          <p class="text-xs font-medium text-surface-500 dark:text-surface-400">Total Kas Diterima</p>
           <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400 tabular-nums truncate">
             Rp {{ formatNumber(summaryMetrics.totalPaid) }}
           </p>
-          <span class="text-3xs text-emerald-600 dark:text-emerald-400 font-semibold">{{ summaryMetrics.countPaid }} Invoice Lunas</span>
+          <span class="text-3xs text-emerald-600 dark:text-emerald-400 font-semibold">
+            {{ summaryMetrics.countPaid }} Lunas, {{ summaryMetrics.countPartial }} Sebagian
+          </span>
         </div>
       </div>
 
@@ -82,11 +84,13 @@
           <PhClock :size="20" weight="duotone" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-medium text-surface-500 dark:text-surface-400">Sisa Piutang (Belum Lunas)</p>
+          <p class="text-xs font-medium text-surface-500 dark:text-surface-400">Sisa Piutang (Belum Masuk)</p>
           <p class="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums truncate">
             Rp {{ formatNumber(summaryMetrics.totalOutstanding) }}
           </p>
-          <span class="text-3xs text-rose-600 dark:text-rose-400 font-semibold">{{ summaryMetrics.countUnpaid }} Belum Lunas</span>
+          <span class="text-3xs text-rose-600 dark:text-rose-400 font-semibold">
+            {{ summaryMetrics.countUnpaid }} Belum Bayar
+          </span>
         </div>
       </div>
     </div>
@@ -96,7 +100,7 @@
       <!-- Segmented Control Tab Header -->
       <div class="p-4 border-b border-surface-100 dark:border-surface-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-50/50 dark:bg-surface-800/30">
         <!-- Tab Buttons -->
-        <div class="inline-flex p-1 rounded-xl bg-surface-200/60 dark:bg-surface-800 border border-surface-200/80 dark:border-surface-700/60">
+        <div class="inline-flex flex-wrap p-1 rounded-xl bg-surface-200/60 dark:bg-surface-800 border border-surface-200/80 dark:border-surface-700/60">
           <button
             type="button"
             @click="activeTab = 'all'"
@@ -128,6 +132,23 @@
             <span>Belum Lunas</span>
             <span class="px-1.5 py-0.2 rounded-full text-3xs font-bold bg-rose-100/80 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 tabular-nums">
               {{ summaryMetrics.countUnpaid }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            @click="activeTab = 'partial'"
+            id="tab-partial-payments"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
+            :class="[
+              activeTab === 'partial'
+                ? 'bg-white dark:bg-surface-900 text-amber-600 dark:text-amber-400 shadow-2xs'
+                : 'text-surface-600 dark:text-surface-400 hover:text-amber-600 dark:hover:text-amber-400'
+            ]"
+          >
+            <span>Sebagian (Cicilan)</span>
+            <span class="px-1.5 py-0.2 rounded-full text-3xs font-bold bg-amber-100/80 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 tabular-nums">
+              {{ summaryMetrics.countPartial }}
             </span>
           </button>
 
@@ -191,7 +212,7 @@
               <th v-if="!activeProperty" scope="col" class="px-5 py-3.5">Properti</th>
               <th scope="col" class="px-5 py-3.5">Penghuni & Kamar</th>
               <th scope="col" class="px-5 py-3.5">Bulan Tagihan</th>
-              <th scope="col" class="px-5 py-3.5">Total Tagihan</th>
+              <th scope="col" class="px-5 py-3.5">Terbayar / Total Tagihan</th>
               <th scope="col" class="px-5 py-3.5">Status Pembayaran</th>
               <th scope="col" class="px-5 py-3.5 text-right">Aksi</th>
             </tr>
@@ -226,9 +247,21 @@
                 {{ formatBillingMonth(payment.billingMonth) }}
               </td>
 
-              <!-- Total Amount -->
-              <td class="px-5 py-4 font-bold text-surface-900 dark:text-surface-100 tabular-nums">
-                Rp {{ formatNumber(payment.totalAmount) }}
+              <!-- Paid Amount / Total Amount with mini progress -->
+              <td class="px-5 py-4">
+                <div class="space-y-1">
+                  <p class="font-bold text-surface-900 dark:text-surface-100 tabular-nums">
+                    Rp {{ formatNumber(payment.amountPaid || 0) }} 
+                    <span class="text-surface-400 font-normal">/ Rp {{ formatNumber(payment.totalAmount) }}</span>
+                  </p>
+                  <div class="w-28 h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+                    <div 
+                      class="h-full rounded-full transition-all duration-300"
+                      :class="payment.status === 'paid' ? 'bg-emerald-500' : (payment.status === 'partial' ? 'bg-amber-500' : 'bg-rose-500')"
+                      :style="{ width: `${calculatePercentage(payment.amountPaid, payment.totalAmount)}%` }"
+                    />
+                  </div>
+                </div>
               </td>
 
               <!-- Status with Minimalist Indicator Dot -->
@@ -237,17 +270,29 @@
                   <div class="flex items-center gap-1.5">
                     <span 
                       class="w-2 h-2 rounded-full flex-shrink-0"
-                      :class="payment.status === 'paid' ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'"
+                      :class="[
+                        payment.status === 'paid' ? 'bg-emerald-500' : 
+                        (payment.status === 'partial' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500 animate-pulse')
+                      ]"
                     />
                     <span 
                       class="font-bold text-xs"
-                      :class="payment.status === 'paid' ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'"
+                      :class="[
+                        payment.status === 'paid' ? 'text-emerald-700 dark:text-emerald-400' : 
+                        (payment.status === 'partial' ? 'text-amber-700 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400')
+                      ]"
                     >
-                      {{ payment.status === 'paid' ? 'Lunas' : 'Belum Lunas' }}
+                      {{ 
+                        payment.status === 'paid' ? 'Lunas' : 
+                        (payment.status === 'partial' ? 'Bayar Sebagian' : 'Belum Lunas') 
+                      }}
                     </span>
                   </div>
                   <span v-if="payment.status === 'paid' && payment.paidAt" class="text-3xs text-surface-400 tabular-nums pl-3.5">
                     {{ formatDate(payment.paidAt) }}
+                  </span>
+                  <span v-else-if="payment.status === 'partial'" class="text-3xs text-amber-600 dark:text-amber-400 font-semibold tabular-nums pl-3.5">
+                    Sisa Rp {{ formatNumber(Math.max(0, Number(payment.totalAmount) - Number(payment.amountPaid || 0))) }}
                   </span>
                 </div>
               </td>
@@ -256,12 +301,12 @@
               <td class="px-5 py-4 text-right">
                 <button 
                   v-if="payment.status !== 'paid'" 
-                  @click.stop="markAsPaid(payment.id)" 
+                  @click.stop="openInvoiceSlideOver(payment)" 
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:text-brand-300 dark:hover:bg-brand-900/50 border border-brand-200 dark:border-brand-800 transition-all active:scale-95 shadow-2xs whitespace-nowrap"
-                  title="Tandai Sebagai Lunas"
+                  title="Buka Rincian & Catat Pembayaran"
                 >
-                  <PhCheckCircle :size="14" weight="bold" />
-                  <span>Tandai Lunas</span>
+                  <PhReceipt :size="14" weight="bold" />
+                  <span>Kelola</span>
                 </button>
                 <span v-else class="text-3xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/60">
                   Terverifikasi
@@ -278,12 +323,13 @@
       v-model="isSlideOverOpen"
       :payment="selectedPayment"
       @marked-paid="handleSlideOverMarkPaid"
+      @transaction-recorded="handleTransactionRecorded"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { usePropertyState } from '~/composables/usePropertyState'
 import { useConfirm } from '~/composables/useConfirm'
 import InvoiceSlideOver from '~/components/InvoiceSlideOver.vue'
@@ -302,14 +348,23 @@ definePageMeta({
   layout: 'dashboard',
 })
 
-const { activePropertyId, activeProperty } = usePropertyState()
+const { activePropertyId, activeProperty, properties, loadProperties } = usePropertyState()
 const { addToast } = useToast()
 const { confirm } = useConfirm()
+
+onMounted(async () => {
+  if (properties.value.length === 0) {
+    await loadProperties(true)
+  }
+  if (!activePropertyId.value && properties.value.length > 0) {
+    activePropertyId.value = properties.value[0].id
+  }
+})
 
 const selectedMonth = ref(new Date().toISOString().slice(0, 7)) // YYYY-MM
 const generating = ref(false)
 const pending = ref(false)
-const activeTab = ref<'all' | 'unpaid' | 'paid'>('all')
+const activeTab = ref<'all' | 'unpaid' | 'partial' | 'paid'>('all')
 
 const rawPayments = ref<any[]>([])
 const summaryMetrics = ref({
@@ -318,6 +373,7 @@ const summaryMetrics = ref({
   totalOutstanding: 0,
   countTotal: 0,
   countPaid: 0,
+  countPartial: 0,
   countUnpaid: 0
 })
 
@@ -325,9 +381,20 @@ const summaryMetrics = ref({
 const isSlideOverOpen = ref(false)
 const selectedPayment = ref<any | null>(null)
 
-const openInvoiceSlideOver = (payment: any) => {
+const openInvoiceSlideOver = async (payment: any) => {
   selectedPayment.value = payment
   isSlideOverOpen.value = true
+  // Fetch freshest details including transactions
+  if (payment?.id) {
+    try {
+      const res = await $fetch<any>(`/api/payments/${payment.id}`)
+      if (res.status === 'success' && res.data) {
+        selectedPayment.value = res.data
+      }
+    } catch (e) {
+      // fallback to current object
+    }
+  }
 }
 
 const fetchPayments = async () => {
@@ -346,7 +413,6 @@ const fetchPayments = async () => {
     
     if (res.status === 'success') {
       const payload = res.data || {}
-      // Support both structured { items, summary } and legacy arrays
       if (Array.isArray(payload)) {
         rawPayments.value = payload
         recalculateLocalSummary(payload)
@@ -363,7 +429,17 @@ const fetchPayments = async () => {
       if (selectedPayment.value) {
         const found = rawPayments.value.find(p => p.id === selectedPayment.value.id)
         if (found) {
-          selectedPayment.value = found
+          // If found, fetch fresh details
+          try {
+            const detailRes = await $fetch<any>(`/api/payments/${found.id}`)
+            if (detailRes.status === 'success' && detailRes.data) {
+              selectedPayment.value = detailRes.data
+            } else {
+              selectedPayment.value = found
+            }
+          } catch {
+            selectedPayment.value = found
+          }
         }
       }
     }
@@ -379,16 +455,23 @@ const recalculateLocalSummary = (items: any[]) => {
   let totalPaid = 0
   let totalOutstanding = 0
   let countPaid = 0
+  let countPartial = 0
   let countUnpaid = 0
 
   for (const item of items) {
-    const amount = Number(item.totalAmount) || 0
-    totalBilled += amount
+    const total = Number(item.totalAmount) || 0
+    const paid = Number(item.amountPaid) || 0
+    const remaining = Math.max(0, total - paid)
+
+    totalBilled += total
+    totalPaid += paid
+    totalOutstanding += remaining
+
     if (item.status === 'paid') {
-      totalPaid += amount
       countPaid++
+    } else if (item.status === 'partial') {
+      countPartial++
     } else {
-      totalOutstanding += amount
       countUnpaid++
     }
   }
@@ -399,6 +482,7 @@ const recalculateLocalSummary = (items: any[]) => {
     totalOutstanding,
     countTotal: items.length,
     countPaid,
+    countPartial,
     countUnpaid
   }
 }
@@ -408,8 +492,11 @@ const filteredPayments = computed(() => {
   if (activeTab.value === 'paid') {
     return rawPayments.value.filter(p => p.status === 'paid')
   }
+  if (activeTab.value === 'partial') {
+    return rawPayments.value.filter(p => p.status === 'partial')
+  }
   if (activeTab.value === 'unpaid') {
-    return rawPayments.value.filter(p => p.status !== 'paid')
+    return rawPayments.value.filter(p => p.status === 'unpaid')
   }
   return rawPayments.value
 })
@@ -419,14 +506,21 @@ watch([activePropertyId, selectedMonth], () => {
 }, { immediate: true })
 
 async function generateInvoices() {
-  if (!activeProperty.value) return
+  if (properties.value.length === 0) {
+    await loadProperties(true)
+  }
+  const targetPropId = activeProperty.value?.id || properties.value[0]?.id
+  if (!targetPropId) {
+    addToast('Peringatan', 'Silakan pilih properti terlebih dahulu.', 'warning')
+    return
+  }
   try {
     generating.value = true
 
     const res: any = await $fetch('/api/payments/generate', {
       method: 'POST',
       body: {
-        propertyId: activeProperty.value.id,
+        propertyId: targetPropId,
         billingMonth: selectedMonth.value
       }
     })
@@ -442,9 +536,9 @@ async function generateInvoices() {
 
 async function markAsPaid(id: string) {
   const isConfirmed = await confirm({
-    title: 'Konfirmasi Pelunasan',
-    message: 'Apakah Anda yakin ingin menandai tagihan sewa ini sebagai lunas?',
-    confirmText: 'Ya, Tandai Lunas',
+    title: 'Konfirmasi Pelunasan Penuh',
+    message: 'Apakah Anda yakin ingin melunasi seluruh sisa tagihan sewa ini?',
+    confirmText: 'Ya, Lunasi Sekarang',
     cancelText: 'Batal',
     type: 'primary'
   })
@@ -455,7 +549,7 @@ async function markAsPaid(id: string) {
     await $fetch(`/api/payments/${id}`, {
       method: 'PATCH'
     })
-    addToast('Berhasil', 'Tagihan berhasil ditandai sebagai lunas.', 'success')
+    addToast('Berhasil', 'Tagihan berhasil dilunasi sepenuhnya.', 'success')
     await fetchPayments()
   } catch (e: any) {
     addToast('Gagal', e.data?.statusMessage || 'Gagal mengubah status tagihan.', 'error')
@@ -466,7 +560,18 @@ const handleSlideOverMarkPaid = async (id: string) => {
   await markAsPaid(id)
 }
 
+const handleTransactionRecorded = async (_paymentId: string) => {
+  await fetchPayments()
+}
+
 // Formatting Helpers
+const calculatePercentage = (paid: any, total: any) => {
+  const paidNum = Number(paid) || 0
+  const totalNum = Number(total) || 0
+  if (totalNum <= 0) return 0
+  return Math.min(100, Math.max(0, Math.round((paidNum / totalNum) * 100)))
+}
+
 const formatNumber = (val: any) => {
   const num = Number(val)
   if (isNaN(num)) return '0'
