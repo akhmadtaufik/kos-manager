@@ -41,11 +41,15 @@ test.describe.serial('Partial Payments & Accounting Ledger Journey', () => {
 
     // ---- Step 3: Create Room (monthly rate: Rp 1.500.000) ----
     await page.locator('nav').locator('text=Rooms').click();
-    await expect(page.locator('h2:has-text("Add New Room")')).toBeVisible();
-    await page.fill('input[placeholder="e.g., A101 or Mawar"]', roomNumber);
-    await page.fill('input[placeholder="e.g., 1500000"]', baseMonthlyRate);
-    await page.click('button:has-text("Create")');
-    await expect(page.locator('table')).toContainText(roomNumber);
+    await expect(page.locator('h1:has-text("Manajemen Kamar")')).toBeVisible();
+    await page.click('#btn-add-room');
+    const roomFormPanel = page.locator('#room-form-slideover-panel');
+    await expect(roomFormPanel).toBeVisible();
+    await roomFormPanel.locator('#input-room-number').fill(roomNumber);
+    await roomFormPanel.locator('#input-room-rate').fill(baseMonthlyRate);
+    await roomFormPanel.locator('#btn-submit-room-form').click();
+    await expect(roomFormPanel).not.toBeVisible();
+    await expect(page.locator('#rooms-grid')).toContainText(roomNumber);
 
     // ---- Step 4: Check-in Tenant ----
     await page.locator('nav').locator('text=Tenants').click();

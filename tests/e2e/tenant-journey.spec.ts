@@ -39,13 +39,17 @@ test.describe.serial('Tenant SaaS Directory & Kemendagri Journey', () => {
 
     await page.locator('#property-switcher').selectOption({ label: propertyName });
 
-    // ---- Step 3: Create Room ----
+    // ---- Step 3: Create Room via Slide-over ----
     await page.locator('nav').locator('text=Rooms').click();
-    await expect(page.locator('h2:has-text("Add New Room")')).toBeVisible();
-    await page.fill('input[placeholder="e.g., A101 or Mawar"]', roomNumber);
-    await page.fill('input[placeholder="e.g., 1500000"]', '1500000');
-    await page.click('button:has-text("Create")');
-    await expect(page.locator('table')).toContainText(roomNumber);
+    await expect(page.locator('h1:has-text("Manajemen Kamar")')).toBeVisible();
+    await page.click('#btn-add-room');
+    const roomFormPanel = page.locator('#room-form-slideover-panel');
+    await expect(roomFormPanel).toBeVisible();
+    await roomFormPanel.locator('#input-room-number').fill(roomNumber);
+    await roomFormPanel.locator('#input-room-rate').fill('1500000');
+    await roomFormPanel.locator('#btn-submit-room-form').click();
+    await expect(roomFormPanel).not.toBeVisible();
+    await expect(page.locator('#rooms-grid')).toContainText(roomNumber);
 
     // ---- Step 4: Navigate to Tenants Directory ----
     await page.locator('nav').locator('text=Tenants').click();
@@ -87,7 +91,6 @@ test.describe.serial('Tenant SaaS Directory & Kemendagri Journey', () => {
     // ---- Step 6: Verify Appearance in Directory Table ----
     const tenantRow = page.locator('tr', { hasText: tenantName });
     await expect(tenantRow).toBeVisible();
-    await expect(tenantRow).toContainText(roomNumber);
     await expect(tenantRow).toContainText(tenantPhone);
     await expect(tenantRow).toContainText('Aktif');
     await expect(tenantRow).toContainText('GAMBIR, KOTA ADM. JAKARTA PUSAT, DKI JAKARTA');

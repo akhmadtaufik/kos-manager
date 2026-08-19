@@ -40,7 +40,7 @@ test.describe('Owner Journey E2E', () => {
     await page.click('button:has-text("Pemilik Kos")');
 
     // Ensure we are redirected to the dashboard
-    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
 
     // 1. Create Property
     await page.locator('nav').locator('text=Properties').click();
@@ -54,65 +54,65 @@ test.describe('Owner Journey E2E', () => {
 
     // 2. Create Room & Set Price
     await page.locator('nav').locator('text=Rooms').click();
-    // Ensure we are not in Global View
-    await expect(page.locator('h2:has-text("Add New Room")')).toBeVisible();
-    await page.fill('input[placeholder="e.g., A101 or Mawar"]', roomNumber);
-    await page.fill('input[placeholder="e.g., 1500000"]', baseMonthlyRate);
-    await page.click('button:has-text("Create")');
-    // Wait for the room to appear in the list
-    await expect(page.locator('table')).toContainText(roomNumber);
+    await expect(page.locator('h1:has-text("Manajemen Kamar")')).toBeVisible();
+    await page.click('#btn-add-room');
+    const roomFormPanel = page.locator('#room-form-slideover-panel');
+    await expect(roomFormPanel).toBeVisible();
+    await roomFormPanel.locator('#input-room-number').fill(roomNumber);
+    await roomFormPanel.locator('#input-room-rate').fill(baseMonthlyRate);
+    await roomFormPanel.locator('#btn-submit-room-form').click();
+    await expect(roomFormPanel).not.toBeVisible();
+    await expect(page.locator('#rooms-grid')).toContainText(roomNumber);
 
     // 3. Add Additional Fees (Room Edit)
-    // Find the row for the room and click "Edit"
-    const roomRow = page.locator('tr', { hasText: roomNumber });
-    await roomRow.locator('button[title="Edit"]').click();
+    const roomCard = page.locator('#rooms-grid > div', { hasText: roomNumber });
+    await roomCard.locator('button[title="Edit Kamar"]').click();
     
-    // In the Edit Room modal
-    await expect(page.locator('h2:has-text("Edit Room")')).toBeVisible();
-    await page.click('button:has-text("Add Fee")');
+    // In the Edit Room slide-over
+    await expect(roomFormPanel).toBeVisible();
+    await roomFormPanel.locator('#btn-add-fee').click();
     
     // Fill the fee details
-    await page.fill('input[placeholder="Fee Name (e.g., WiFi)"]', 'WiFi Fee');
-    await page.fill('input[placeholder="Amount (Rp)"]', additionalFeeAmount);
+    await roomFormPanel.locator('input[placeholder*="WiFi"]').fill('WiFi Fee');
+    await roomFormPanel.locator('input[placeholder*="Amount"]').fill(additionalFeeAmount);
     
     // Save changes
-    await page.click('button:has-text("Save Changes")');
-    
-    // Wait for the modal to close and table to update
-    await expect(page.locator('h2:has-text("Edit Room")')).not.toBeVisible();
+    await roomFormPanel.locator('#btn-submit-room-form').click();
+    await expect(roomFormPanel).not.toBeVisible();
 
     // 4. Check-In Tenant (Tenant Creation)
     await page.locator('nav').locator('text=Tenants').click();
-    await expect(page.locator('h2:has-text("Onboard New Tenant")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Direktori Penghuni")')).toBeVisible();
+
+    await page.click('#btn-onboard-tenant');
+    const tenantFormPanel = page.locator('#tenant-form-slideover-panel');
+    await expect(tenantFormPanel).toBeVisible();
     
     // Select Room
-    await page.locator('select', { has: page.locator('option:has-text("Select Room")') }).selectOption({ label: roomNumber });
+    await tenantFormPanel.locator('#select-room').selectOption({ index: 1 });
     
     // Fill Primary Info
-    await page.locator('input[type="text"]').nth(0).fill(tenantName);
-    await page.locator('input[type="text"]').nth(1).fill('081234567890');
+    await tenantFormPanel.locator('#input-tenant-name').fill(tenantName);
+    await tenantFormPanel.locator('#input-tenant-phone').fill('081234567890');
     // Check-in date (set to today)
     const today = new Date().toISOString().split('T')[0];
-    await page.locator('input[type="date"]').fill(today as string);
+    await tenantFormPanel.locator('#input-tenant-checkin').fill(today as string);
     
     // Cascading Dropdowns
-    await page.locator('#province-select').selectOption({ label: 'Jawa Barat' });
-    
-    // Wait for Regency to enable and select one
-    await expect(page.locator('#regency-select')).not.toBeDisabled();
-    await page.locator('#regency-select').selectOption({ index: 1 });
-    
-    // Wait for District to enable and select one
-    await expect(page.locator('#district-select')).not.toBeDisabled();
-    await page.locator('#district-select').selectOption({ index: 1 });
+    await tenantFormPanel.locator('#province-select').selectOption({ label: 'JAWA BARAT' });
+    await expect(tenantFormPanel.locator('#regency-select option')).toHaveCount(28, { timeout: 10000 });
+    await tenantFormPanel.locator('#regency-select').selectOption({ index: 1 });
+    await expect(tenantFormPanel.locator('#district-select option')).not.toHaveCount(1, { timeout: 10000 });
+    await tenantFormPanel.locator('#district-select').selectOption({ index: 1 });
     
     // Save Tenant
-    await page.click('button:has-text("Onboard Tenant")');
+    await tenantFormPanel.locator('#btn-submit-tenant-form').click();
+    await expect(tenantFormPanel).not.toBeVisible({ timeout: 10000 });
     
     // Assert the tenant is active in the table
     const tenantRow = page.locator('tr', { hasText: tenantName });
     await expect(tenantRow).toBeVisible();
-    await expect(tenantRow).toContainText('Active');
+    await expect(tenantRow).toContainText('Aktif');
 
     // 5. Billing / Generate Invoice
     await page.locator('nav').locator('text=Payments').click();

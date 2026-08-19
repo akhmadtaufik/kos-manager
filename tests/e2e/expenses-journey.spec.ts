@@ -86,8 +86,8 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await page.click('button:has-text("Catat Pengeluaran")');
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).toBeVisible();
     
-    // Click "+ Kategori Baru" to open Icon Picker dialog
-    await page.click('button:has-text("+ Kategori Baru")');
+    // Click "Kategori Baru" to open Icon Picker dialog
+    await page.click('#btn-add-custom-category');
     
     // VERIFY ELEGANT SWAPPING: Main form must disappear, Category form must appear
     await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
@@ -163,8 +163,8 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
     await expect(page.locator(`button:has-text("${customCategoryTitle}")`)).not.toBeVisible();
 
     // Close expense modal
-    await page.click('button:has-text("Batal")');
-    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible();
+    await page.locator('form').locator('button:has-text("Batal")').click();
+    await expect(page.locator('h3:has-text("Catat Pengeluaran Baru")')).not.toBeVisible({ timeout: 10000 });
 
     // ----------------------------------------------------
     // Scenario 5: Edit Expense Flow
