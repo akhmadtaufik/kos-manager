@@ -10,6 +10,22 @@ export interface AuthUser {
   email?: string | null
 }
 
+export const MACRO_TO_MICRO_MAP: Record<string, string[]> = {
+  manage_rooms: ['rooms:read', 'rooms:create', 'rooms:update', 'rooms:delete'],
+  manage_tenants: ['tenants:read', 'tenants:create', 'tenants:update', 'tenants:delete'],
+  manage_payments: ['payments:read', 'payments:create', 'payments:update', 'payments:delete'],
+  manage_expenses: ['expenses:read', 'expenses:create', 'expenses:update', 'expenses:delete'],
+  view_reports: ['reports:read'],
+}
+
+export const ALL_MICRO_PERMISSIONS = [
+  'rooms:read', 'rooms:create', 'rooms:update', 'rooms:delete',
+  'tenants:read', 'tenants:create', 'tenants:update', 'tenants:delete',
+  'payments:read', 'payments:create', 'payments:update', 'payments:delete',
+  'expenses:read', 'expenses:create', 'expenses:update', 'expenses:delete',
+  'reports:read',
+]
+
 /**
  * Checks if a user has access to a specific property.
  * Superadmins have access to all properties.
@@ -47,6 +63,7 @@ export async function verifyPropertyAccess(user: AuthUser, propertyId: string): 
 
 /**
  * Checks if a user has a specific permission for a property.
+ * Supports granular micro-permissions (e.g. 'rooms:create') and legacy macro permissions ('manage_rooms').
  */
 export async function verifyPropertyPermission(user: AuthUser, propertyId: string, permission: string): Promise<boolean> {
   if (user.role === 'superadmin') {
@@ -73,9 +90,27 @@ export async function verifyPropertyPermission(user: AuthUser, propertyId: strin
 
     if (!access || !access.permissions) return false
     
-    // Check if permissions array contains the required permission
-    const permissions = access.permissions as string[]
-    return permissions.includes(permission)
+    const userPermissions = (access.permissions as string[]) || []
+
+    // 1. Direct exact match
+    if (userPermissions.includes(permission)) return true
+
+    // 2. If checking a micro-permission (e.g. 'rooms:create'), check if user has corresponding legacy macro (e.g. 'manage_rooms')
+    for (const [macro, micros] of Object.entries(MACRO_TO_MICRO_MAP)) {
+      if (micros.includes(permission) && userPermissions.includes(macro)) {
+        return true
+      }
+    }
+
+    // 3. If checking a legacy macro (e.g. 'manage_rooms'), check if user has any of the constituent micro-permissions
+    if (MACRO_TO_MICRO_MAP[permission]) {
+      const constituentMicros = MACRO_TO_MICRO_MAP[permission]!
+      if (constituentMicros.some(m => userPermissions.includes(m))) {
+        return true
+      }
+    }
+
+    return false
   }
 
   return false
@@ -83,7 +118,6 @@ export async function verifyPropertyPermission(user: AuthUser, propertyId: strin
 
 /**
  * Throws a 403 Forbidden error if the user does not have access to the property.
- * Useful for fast-failing inside API handlers.
  */
 export async function requirePropertyAccess(user: AuthUser | undefined, propertyId: string): Promise<void> {
   if (!user) {
@@ -136,7 +170,6 @@ export async function requirePropertyPermission(user: AuthUser | undefined, prop
 
 /**
  * Throws a 403 Forbidden error if the user is an operator.
- * Useful for admin actions like editing/deleting a property or room.
  */
 export async function requirePropertyOwnership(user: AuthUser | undefined, propertyId: string): Promise<void> {
   if (!user) {
@@ -159,7 +192,6 @@ export async function requirePropertyOwnership(user: AuthUser | undefined, prope
     })
   }
 
-  // Still verify they actually own this specific property (or are superadmin)
   const hasAccess = await verifyPropertyAccess(user, propertyId)
   if (!hasAccess) {
     await logActivity({
