@@ -1,5 +1,6 @@
+import { eq } from 'drizzle-orm'
 import { db } from '../db'
-import { activityLogs } from '../db/schema'
+import { activityLogs, users } from '../db/schema'
 
 interface LogActivityParams {
   userId?: string
@@ -40,10 +41,24 @@ export async function logActivity(params: LogActivityParams): Promise<void> {
     // Keep it null if empty so DB is cleaner
     const dbDetails = Object.keys(finalDetails).length > 0 ? finalDetails : null
 
+    let actorName = params.actorName || null
+    let actorRole = params.actorRole || null
+
+    if (params.userId && (!actorName || !actorRole)) {
+      const u = await db.query.users.findFirst({
+        where: eq(users.id, params.userId),
+        columns: { name: true, email: true, role: true }
+      })
+      if (u) {
+        if (!actorName) actorName = u.name || u.email || 'User'
+        if (!actorRole) actorRole = u.role || 'user'
+      }
+    }
+
     await db.insert(activityLogs).values({
       userId: params.userId || null,
-      actorName: params.actorName || null,
-      actorRole: params.actorRole || null,
+      actorName,
+      actorRole,
       action: params.action,
       entityType: params.entityType,
       entityId: params.entityId || null,
