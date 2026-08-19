@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import postgres from 'postgres';
 
-const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:Rnpl1105@localhost:5432/kosmanager_db');
+const sql = postgres(process.env.DATABASE_MIGRATE_URL || 'postgres://postgres:password@localhost:5435/kosmanager');
 
 const ownerEmail = `owner_iso_${Date.now()}@test.com`;
 const operatorEmail = `operator_iso_${Date.now()}@test.com`;
@@ -122,15 +122,15 @@ test.describe.serial('Audit Isolation Journey', () => {
 
     // Assert Success:
     // We should see Owner A and Operator A actions
-    await expect(page.locator('tbody')).toContainText('Create Property');
-    await expect(page.locator('tbody')).toContainText('Owner A');
+    await expect(page.locator('main')).toContainText('Buat Properti');
+    await expect(page.locator('main')).toContainText('Owner A');
 
-    await expect(page.locator('tbody')).toContainText('Checkin Tenant');
-    await expect(page.locator('tbody')).toContainText('Operator A');
+    await expect(page.locator('main')).toContainText('Check-In Penghuni');
+    await expect(page.locator('main')).toContainText('Operator A');
 
     // Assert Isolation:
     // We should ABSOLUTELY NOT see Test User and System logs
-    const textContent = await page.locator('tbody').textContent();
+    const textContent = await page.locator('main').textContent();
     expect(textContent).not.toContain('Test Action');
     expect(textContent).not.toContain('Test User');
     expect(textContent).not.toContain('System Cron');
