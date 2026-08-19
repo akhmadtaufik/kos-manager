@@ -1,7 +1,7 @@
 import { db } from '../../db'
 import { userProperties, users } from '../../db/schema'
 import { eq, and } from 'drizzle-orm'
-import { requirePropertyOwnership } from '../../utils/rbac'
+import { requirePropertyOwnership, ALL_MICRO_PERMISSIONS } from '../../utils/rbac'
 import { apiSuccess } from '../../utils/response'
 import { logActivity } from '../../utils/audit'
 import { selectUserSchema, insertUserSchema, createPaginatedSchema } from '../../utils/schemaValidations'
@@ -51,11 +51,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // Assign to property
-  const defaultPermissions = ['manage_rooms', 'manage_tenants', 'manage_payments', 'manage_expenses', 'view_reports']
   await db.insert(userProperties).values({
     userId: targetUser.id,
     propertyId: propertyId,
-    permissions: Array.isArray(permissions) ? permissions : defaultPermissions
+    permissions: Array.isArray(permissions) && permissions.length > 0 ? permissions : ALL_MICRO_PERMISSIONS
   })
 
   // If role is pending, update to operator
