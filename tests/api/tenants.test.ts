@@ -67,6 +67,7 @@ describe('Tenants API Endpoints', () => {
         roomId: 'room-1',
         name: 'John Doe',
         phone: '081234567890',
+        emergencyContact: 'Jane Doe (081987654321)',
         checkIn: '2026-06-01',
         provinceId: '31',
         regencyId: '3171',
@@ -84,6 +85,7 @@ describe('Tenants API Endpoints', () => {
         expect.objectContaining({
           roomId: 'room-1',
           name: 'John Doe',
+          emergencyContact: 'Jane Doe (081987654321)',
           provinceId: '31',
           regencyId: '3171',
           districtId: '3171010' // Verifying districtId is mapped
@@ -98,6 +100,7 @@ describe('Tenants API Endpoints', () => {
         action: 'update',
         name: 'John Doe Updated',
         phone: '081234567890',
+        emergencyContact: 'Jane Doe Updated (081987654321)',
         checkIn: '2026-06-01',
         provinceId: '32',
         regencyId: '3201',
@@ -114,6 +117,7 @@ describe('Tenants API Endpoints', () => {
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'John Doe Updated',
+          emergencyContact: 'Jane Doe Updated (081987654321)',
           provinceId: '32',
           regencyId: '3201',
           districtId: '3201010' // Verifying districtId is saved to DB
