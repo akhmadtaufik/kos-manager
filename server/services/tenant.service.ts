@@ -3,6 +3,7 @@ import { db } from '../db'
 import { tenants, rooms } from '../db/schema'
 import type { AuthUser } from '../utils/rbac'
 import { logActivity } from '../utils/audit'
+import { resolveKemendagriLocation } from '../utils/kemendagri'
 
 export async function getTenantsByProperty(propertyIds: string[]) {
   if (propertyIds.length === 0) return []
@@ -17,16 +18,21 @@ export async function getTenantsByProperty(propertyIds: string[]) {
     },
   })
 
-  // Flatten the tenants array
+  // Flatten the tenants array and resolve Kemendagri regional labels
   const allTenants = propertyRooms.flatMap(room => 
-    room.tenants.map(tenant => ({
-      ...tenant,
-      room: {
-        id: room.id,
-        roomNumber: room.roomNumber,
-        property: room.property
+    room.tenants.map(tenant => {
+      const location = resolveKemendagriLocation(tenant.provinceId, tenant.regencyId, tenant.districtId)
+      return {
+        ...tenant,
+        location,
+        room: {
+          id: room.id,
+          roomNumber: room.roomNumber,
+          monthlyRate: room.monthlyRate,
+          property: room.property
+        }
       }
-    }))
+    })
   )
 
   return allTenants
@@ -36,6 +42,7 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
   roomId: string; 
   name: string; 
   phone?: string;
+  emergencyContact?: string;
   provinceId?: string;
   regencyId?: string;
   districtId?: string;
@@ -56,6 +63,7 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
       roomId: payload.roomId,
       name: payload.name,
       phone: payload.phone || null,
+      emergencyContact: payload.emergencyContact || null,
       provinceId: payload.provinceId || null,
       regencyId: payload.regencyId || null,
       districtId: payload.districtId || null,
@@ -80,3 +88,4 @@ export async function createTenant(user: AuthUser, propertyId: string, payload: 
 
   return newTenant!
 }
+
