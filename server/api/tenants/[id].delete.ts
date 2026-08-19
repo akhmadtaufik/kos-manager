@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Tenant not found' })
   }
 
-  await requirePropertyPermission(event.context.user, tenant.room.propertyId, 'manage_tenants')
+  await requirePropertyPermission(event.context.user, tenant.room.propertyId, 'tenants:delete')
 
   try {
     const [deleted] = await db.delete(tenants).where(eq(tenants.id, id)).returning()

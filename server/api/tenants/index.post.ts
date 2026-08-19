@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'propertyId, roomId, name, and checkIn are required' })
   }
 
-  await requirePropertyPermission(event.context.user, propertyId, 'manage_tenants')
+  await requirePropertyPermission(event.context.user, propertyId, 'tenants:create')
 
   const newTenant = await createTenant(event.context.user, propertyId, {
     roomId: body.roomId,

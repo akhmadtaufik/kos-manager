@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Tenant not found' })
   }
 
-  await requirePropertyPermission(event.context.user, tenant.room.propertyId, 'manage_tenants')
+  await requirePropertyPermission(event.context.user, tenant.room.propertyId, 'tenants:update')
 
   const body = await readBody(event)
   const action = body.action // 'update' or 'checkout'
