@@ -99,7 +99,7 @@ export default NuxtAuthHandler({
 
   callbacks: {
     // Enrich JWT token with user role from DB
-    async jwt({ token, user, account, trigger, session }) {
+    async jwt({ token, user, account, trigger, session }: any) {
       if (trigger === 'update' && session?.role) {
         token.role = session.role
       }
@@ -125,7 +125,7 @@ export default NuxtAuthHandler({
     },
 
     // Expose role and userId on the client-side session object
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (token && session.user) {
         (session.user as any).role = token.role
         ;(session.user as any).id = token.userId
