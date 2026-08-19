@@ -3,10 +3,14 @@ import { payments, tenants, rooms } from '../db/schema'
 import { and, eq, inArray, desc } from 'drizzle-orm'
 import { logActivity } from '../utils/audit'
 
-export async function getPaymentsByProperty(propertyIds: string[]) {
+export async function getPaymentsByProperty(propertyIds: string[], billingMonth?: string) {
   if (propertyIds.length === 0) return []
+  const conditions = [inArray(payments.propertyId, propertyIds)]
+  if (billingMonth) {
+    conditions.push(eq(payments.billingMonth, billingMonth))
+  }
   return await db.query.payments.findMany({
-    where: inArray(payments.propertyId, propertyIds),
+    where: and(...conditions),
     with: {
       property: true,
       tenant: {
