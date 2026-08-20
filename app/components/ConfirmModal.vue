@@ -54,6 +54,7 @@
           <!-- Modal Actions Footer -->
           <div class="px-6 py-4 bg-surface-50/80 dark:bg-surface-800/40 border-t border-surface-100 dark:border-surface-800 flex items-center justify-end gap-3">
             <button 
+              id="confirm-modal-cancel-btn"
               type="button" 
               @click="handleCancel" 
               class="px-4 py-2.5 text-sm font-medium text-surface-700 dark:text-surface-300 bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-700 rounded-xl hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors shadow-xs"
@@ -61,6 +62,7 @@
               {{ options.cancelText }}
             </button>
             <button 
+              id="confirm-modal-confirm-btn"
               type="button" 
               @click="handleConfirm" 
               class="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all shadow-sm active:scale-95 flex items-center gap-2"

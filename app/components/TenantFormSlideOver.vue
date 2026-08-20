@@ -167,7 +167,6 @@
                   <select 
                     v-model="form.provinceId" 
                     id="province-select"
-                    @change="handleProvinceChange"
                     class="w-full bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-surface-100 rounded-xl px-3.5 py-2.5 text-xs focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
                   >
                     <option value="">-- Pilih Provinsi --</option>
@@ -185,7 +184,6 @@
                   <select 
                     v-model="form.regencyId" 
                     id="regency-select"
-                    @change="handleRegencyChange"
                     :disabled="!form.provinceId || loadingRegencies"
                     class="w-full bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-surface-100 rounded-xl px-3.5 py-2.5 text-xs focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all disabled:opacity-50"
                   >
@@ -303,16 +301,26 @@ const fetchProvinces = async () => {
   }
 }
 
-const handleProvinceChange = async () => {
-  form.regencyId = ''
-  form.districtId = ''
-  regencies.value = []
-  districts.value = []
+watch(() => form.provinceId, async (newVal, oldVal) => {
+  if (newVal === oldVal) return
+  if (!newVal) {
+    form.regencyId = ''
+    form.districtId = ''
+    regencies.value = []
+    districts.value = []
+    return
+  }
   
-  if (!form.provinceId) return
+  // If user changed province, clear child selections
+  if (oldVal !== undefined && oldVal !== '' && oldVal !== newVal) {
+    form.regencyId = ''
+    form.districtId = ''
+    districts.value = []
+  }
+
   loadingRegencies.value = true
   try {
-    const res: any = await $fetch(`/api/regions/regencies?provinceId=${form.provinceId}`)
+    const res: any = await $fetch(`/api/regions/regencies?provinceId=${newVal}`)
     if (res.status === 'success') {
       regencies.value = res.data || []
     }
@@ -321,16 +329,23 @@ const handleProvinceChange = async () => {
   } finally {
     loadingRegencies.value = false
   }
-}
+})
 
-const handleRegencyChange = async () => {
-  form.districtId = ''
-  districts.value = []
-  
-  if (!form.regencyId) return
+watch(() => form.regencyId, async (newVal, oldVal) => {
+  if (newVal === oldVal) return
+  if (!newVal) {
+    form.districtId = ''
+    districts.value = []
+    return
+  }
+
+  if (oldVal !== undefined && oldVal !== '' && oldVal !== newVal) {
+    form.districtId = ''
+  }
+
   loadingDistricts.value = true
   try {
-    const res: any = await $fetch(`/api/regions/districts?regencyId=${form.regencyId}`)
+    const res: any = await $fetch(`/api/regions/districts?regencyId=${newVal}`)
     if (res.status === 'success') {
       districts.value = res.data || []
     }
@@ -339,7 +354,7 @@ const handleRegencyChange = async () => {
   } finally {
     loadingDistricts.value = false
   }
-}
+})
 
 const resetForm = () => {
   form.roomId = ''
@@ -360,29 +375,30 @@ const initEditData = async (tenantData: any) => {
   form.phone = tenantData.phone || ''
   form.emergencyContact = tenantData.emergencyContact || ''
   form.checkIn = tenantData.checkIn ? (new Date(tenantData.checkIn).toISOString().split('T')[0] || '') : ''
+  
   form.provinceId = tenantData.provinceId || ''
-  form.regencyId = tenantData.regencyId || ''
-  form.districtId = tenantData.districtId || ''
-
-  if (form.provinceId) {
+  if (tenantData.provinceId) {
     loadingRegencies.value = true
     try {
-      const res: any = await $fetch(`/api/regions/regencies?provinceId=${form.provinceId}`)
+      const res: any = await $fetch(`/api/regions/regencies?provinceId=${tenantData.provinceId}`)
       if (res.status === 'success') regencies.value = res.data || []
     } finally {
       loadingRegencies.value = false
     }
   }
 
-  if (form.regencyId) {
+  form.regencyId = tenantData.regencyId || ''
+  if (tenantData.regencyId) {
     loadingDistricts.value = true
     try {
-      const res: any = await $fetch(`/api/regions/districts?regencyId=${form.regencyId}`)
+      const res: any = await $fetch(`/api/regions/districts?regencyId=${tenantData.regencyId}`)
       if (res.status === 'success') districts.value = res.data || []
     } finally {
       loadingDistricts.value = false
     }
   }
+
+  form.districtId = tenantData.districtId || ''
 }
 
 watch(() => props.modelValue, (newVal) => {
