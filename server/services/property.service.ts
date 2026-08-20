@@ -1,30 +1,71 @@
-import { eq } from 'drizzle-orm'
+import { eq, desc, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { properties, userProperties, users } from '../db/schema'
+import { properties, rooms, userProperties, users } from '../db/schema'
 import type { AuthUser } from '../utils/rbac'
 import { logActivity } from '../utils/audit'
 
 export async function getUserProperties(user: AuthUser) {
   if (user.role === 'superadmin') {
-    return await db.query.properties.findMany({
-      orderBy: (props, { desc }) => [desc(props.createdAt)],
-    })
+    const rows = await db
+      .select({
+        id: properties.id,
+        userId: properties.userId,
+        name: properties.name,
+        address: properties.address,
+        createdAt: properties.createdAt,
+        updatedAt: properties.updatedAt,
+        totalRooms: sql<number>`cast(count(${rooms.id}) as int)`,
+        occupiedRooms: sql<number>`cast(count(case when ${rooms.status} = 'occupied' then 1 end) as int)`,
+      })
+      .from(properties)
+      .leftJoin(rooms, eq(rooms.propertyId, properties.id))
+      .groupBy(properties.id)
+      .orderBy(desc(properties.createdAt))
+
+    return rows
   } else if (user.role === 'owner') {
-    return await db.query.properties.findMany({
-      where: eq(properties.userId, user.id),
-      orderBy: (props, { desc }) => [desc(props.createdAt)],
-    })
+    const rows = await db
+      .select({
+        id: properties.id,
+        userId: properties.userId,
+        name: properties.name,
+        address: properties.address,
+        createdAt: properties.createdAt,
+        updatedAt: properties.updatedAt,
+        totalRooms: sql<number>`cast(count(${rooms.id}) as int)`,
+        occupiedRooms: sql<number>`cast(count(case when ${rooms.status} = 'occupied' then 1 end) as int)`,
+      })
+      .from(properties)
+      .leftJoin(rooms, eq(rooms.propertyId, properties.id))
+      .where(eq(properties.userId, user.id))
+      .groupBy(properties.id)
+      .orderBy(desc(properties.createdAt))
+
+    return rows
   } else {
-    // Operator: get only mapped properties and include permissions
-    const mappings = await db.query.userProperties.findMany({
-      where: eq(userProperties.userId, user.id),
-      with: {
-        property: true,
-      },
-    })
-    return mappings.map(m => ({
-      ...m.property,
-      permissions: m.permissions || []
+    // Operator: get only mapped properties and include permissions + room metrics
+    const rows = await db
+      .select({
+        id: properties.id,
+        userId: properties.userId,
+        name: properties.name,
+        address: properties.address,
+        createdAt: properties.createdAt,
+        updatedAt: properties.updatedAt,
+        permissions: userProperties.permissions,
+        totalRooms: sql<number>`cast(count(${rooms.id}) as int)`,
+        occupiedRooms: sql<number>`cast(count(case when ${rooms.status} = 'occupied' then 1 end) as int)`,
+      })
+      .from(userProperties)
+      .innerJoin(properties, eq(properties.id, userProperties.propertyId))
+      .leftJoin(rooms, eq(rooms.propertyId, properties.id))
+      .where(eq(userProperties.userId, user.id))
+      .groupBy(properties.id, userProperties.permissions)
+      .orderBy(desc(properties.createdAt))
+
+    return rows.map(r => ({
+      ...r,
+      permissions: (r.permissions as string[]) || []
     }))
   }
 }
