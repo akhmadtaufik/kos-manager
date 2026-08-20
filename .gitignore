@@ -13,7 +13,6 @@ node_modules
 .env
 .env.local
 .env.*.local
-.env.example
 
 # IDE
 .vscode
@@ -37,8 +36,6 @@ docker-compose.override.yml
 # etc
 .agents/
 prd.md
-.dockerignore
-README.md
 .antigravitycli/
 .npmrc
 
