@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock auto-imported Nitro/H3 helpers
 vi.stubGlobal('defineEventHandler', (handler: any) => handler)
+vi.stubGlobal('defineRouteMeta', () => {})
 let mockBody: any = {}
 vi.stubGlobal('readBody', vi.fn(() => Promise.resolve(mockBody)))
 let mockQuery: any = {}
@@ -146,7 +147,7 @@ describe('Expenses API & PATCH Endpoint Test Suite', () => {
       expect(requirePropertyPermission).toHaveBeenCalledWith(
         mockEvent.context.user,
         'prop-1',
-        'manage_expenses'
+        'expenses:update'
       )
     })
 
