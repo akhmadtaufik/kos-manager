@@ -1,16 +1,18 @@
-import { defineVitestConfig } from '@nuxt/test-utils/config'
+import { defineConfig } from 'vitest/config'
+import path from 'path'
 
-export default defineVitestConfig({
-  test: {
-    environment: 'nuxt',
-    globals: true,
-    setupFiles: [],
-    include: ['tests/**/*.test.ts'],
-    hookTimeout: 300000,
-    testTimeout: 300000,
+export default defineConfig({
+  resolve: {
     alias: {
-      'bun:test': 'vitest',
-      'magic-string': 'magic-string/dist/magic-string.cjs.js'
+      '~': path.resolve(__dirname, './'),
+      '@': path.resolve(__dirname, './'),
+      '#imports': path.resolve(__dirname, './tests/mocks/nitro-imports.ts')
     }
+  },
+  test: {
+    environment: 'node',
+    globals: true,
+    include: ['tests/**/*.test.ts'],
+    testTimeout: 30000
   }
 })
