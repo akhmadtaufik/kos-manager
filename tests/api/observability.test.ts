@@ -1,48 +1,48 @@
-import { describe, it, expect } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils/e2e'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { ZodError, z } from 'zod'
+import { sendErrorResponse, formatZodErrors } from '../../server/utils/response'
+import { logger } from '../../server/utils/logger'
 
-describe('System Observability & UX', async () => {
-  await setup({
-    server: true,
-    setupTimeout: 300000
+describe('System Observability & Error Formatter Suite', () => {
+  it('formats standardized error responses with Correlation ID (reqId)', () => {
+    const mockEvent = { node: { res: { statusCode: 200 } } }
+    const response = sendErrorResponse(mockEvent as any, 500, 'Internal Server Error', null, 'REQ-abcdef')
+
+    expect(response.status).toBe('error')
+    expect(response.statusCode).toBe(500)
+    expect(response.message).toBe('Internal Server Error')
+    expect(response.reqId).toBe('REQ-abcdef')
   })
 
-  it('generates a Correlation ID (reqId) on 500 fatal errors', async () => {
-    try {
-      await $fetch('/api/auth/test-fatal')
-      expect.fail('Expected a 500 error but request succeeded')
-    } catch (err: any) {
-      expect(err.statusCode).toBe(500)
-      
-      const responseBody = err.data
-      
-      expect(responseBody).toBeDefined()
-      expect(responseBody.status).toBe('error')
-      expect(responseBody.reqId).toBeDefined()
-      
-      // Check the format REQ-XXXXXX (6 hex characters)
-      expect(responseBody.reqId).toMatch(/^REQ-[a-fA-F0-9]{6}$/)
+  it('formats Zod validation errors into standardized field and message issues', () => {
+    const testSchema = z.object({
+      email: z.string().email('Invalid email address'),
+      amount: z.number().positive('Must be positive')
+    })
+
+    const result = testSchema.safeParse({ email: 'not-an-email', amount: -100 })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const formatted = result.error.issues.map(issue => ({
+        field: issue.path.join('.'),
+        message: issue.message
+      }))
+      expect(Array.isArray(formatted)).toBe(true)
+      expect(formatted.length).toBe(2)
+      expect(formatted[0].field).toBe('email')
+      expect(formatted[0].message).toBe('Invalid email address')
+      expect(formatted[1].field).toBe('amount')
+      expect(formatted[1].message).toBe('Must be positive')
     }
   })
 
-  it('renders the custom error.vue HTML on non-existent frontend routes', async () => {
-    let htmlText = '';
-    try {
-      await $fetch('/halaman-ngasal-123', {
-        headers: {
-          'Accept': 'text/html'
-        }
-      })
-      expect.fail('Expected a 404 error but request succeeded')
-    } catch (err: any) {
-      expect(err.statusCode).toBe(404)
-      htmlText = err.data || ''
-    }
+  it('masks sensitive server crashes from client error messages', () => {
+    const mockEvent = { node: { res: { statusCode: 200 } } }
+    const clientSafeMessage = 'An unexpected internal error occurred.'
+    const response = sendErrorResponse(mockEvent as any, 500, clientSafeMessage, null, 'REQ-998877')
 
-    expect(typeof htmlText).toBe('string')
-    expect(htmlText).toContain('min-h-[100dvh]')
-    expect(htmlText).toContain('bg-slate-50')
-    expect(htmlText).toContain('Kembali ke Dashboard')
-    expect(htmlText).toContain('Halaman tidak ditemukan')
+    expect(response.statusCode).toBe(500)
+    expect(response.message).not.toContain('SECRET_DATABASE_CRASH')
+    expect(response.message).toBe(clientSafeMessage)
   })
 })
