@@ -9,7 +9,24 @@ defineRouteMeta({
   openAPI: {
     tags: ['Tenants'],
     summary: 'Get Tenant 360 Profile & Financial Summary',
-    description: 'Retrieves complete demographic profile, room assignment, and financial ledger arrears for a specific tenant.'
+    description: 'Retrieves complete demographic profile, room assignment, Kemendagri geographical location, and financial ledger arrears for a specific tenant.',
+    parameters: [
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        schema: { type: 'string' },
+        description: 'Target tenant ID.'
+      }
+    ],
+    responses: {
+      200: {
+        description: 'Tenant 360 profile retrieved successfully.'
+      },
+      404: {
+        description: 'Tenant not found.'
+      }
+    }
   }
 })
 
