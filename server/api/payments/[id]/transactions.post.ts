@@ -15,7 +15,39 @@ defineRouteMeta({
   openAPI: {
     tags: ['Payments'],
     summary: 'Record Payment Transaction (Partial / Installment)',
-    description: 'Records a partial or full payment cash flow against an invoice. Dynamically updates amount paid and mutates invoice status to partial or paid.'
+    description: 'Records an installment or settlement payment against an invoice. Dynamically updates amount paid and mutates invoice status to partial or paid with automatic rollover arrears distribution.',
+    parameters: [
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        schema: { type: 'string' },
+        description: 'Invoice payment ID to record cash flow against.'
+      }
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['amount'],
+            properties: {
+              amount: { type: 'number', example: 750000, description: 'Payment amount in IDR (must be > 0 and <= remaining total debt)' },
+              notes: { type: 'string', example: 'Cicilan ke-1 via Transfer BCA', description: 'Optional memo or notes' }
+            }
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'Transaction recorded and payment record updated.'
+      },
+      400: {
+        description: 'Bad request - Overpayment or non-positive amount.'
+      }
+    }
   }
 })
 
