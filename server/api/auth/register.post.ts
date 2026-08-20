@@ -1,5 +1,15 @@
+import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { db, users } from '../../db'
+import { hashPassword } from '../../utils/hash'
+import { sendSuccessResponse } from '../../utils/response'
+
+export const registerSchema = z.object({
+  name: z.string().min(1, 'Nama wajib diisi'),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(6, 'Password minimal 6 karakter'),
+  role: z.enum(['owner', 'operator', 'pending']).default('pending'),
+})
 
 defineRouteMeta({
   openAPI: {
