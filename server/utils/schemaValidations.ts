@@ -27,6 +27,17 @@ export const selectUserSchema = createSelectSchema(users)
 export const insertUserSchema = createInsertSchema(users)
 
 export const selectPropertySchema = createSelectSchema(properties)
+export const selectPropertyWithMetricsSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  name: z.string(),
+  address: z.string().nullable().optional(),
+  createdAt: z.union([z.date(), z.string()]).optional(),
+  updatedAt: z.union([z.date(), z.string()]).optional(),
+  totalRooms: z.coerce.number().int().default(0),
+  occupiedRooms: z.coerce.number().int().default(0),
+  permissions: z.array(z.string()).optional()
+})
 export const insertPropertySchema = createInsertSchema(properties)
 
 export const selectRoomSchema = createSelectSchema(rooms)
