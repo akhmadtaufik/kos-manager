@@ -33,9 +33,13 @@ test.describe('Expenses Module & Dynamic Icon Categories Journey', () => {
 
     // 1. Create Property
     await page.locator('nav').locator('text=Properties').click();
-    await page.fill('input[placeholder="e.g., Kos Eksekutif Sudirman"]', propertyName);
-    await page.click('button:has-text("Create")');
-    await expect(page.locator('table')).toContainText(propertyName);
+    await page.click('#btn-add-property');
+    const propertyFormPanel = page.locator('#property-form-slideover-panel');
+    await expect(propertyFormPanel).toBeVisible();
+    await propertyFormPanel.locator('#input-property-name').fill(propertyName);
+    await propertyFormPanel.locator('#btn-submit-property-form').click();
+    await expect(propertyFormPanel).not.toBeVisible();
+    await expect(page.locator('#properties-grid')).toContainText(propertyName);
 
     // Select the newly created property in the global switcher
     await page.locator('#property-switcher').selectOption({ label: propertyName });
