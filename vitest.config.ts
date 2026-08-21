@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/api/**/*.test.ts', 'tests/unit/**/*.test.ts'],
     testTimeout: 30000
   }
 })
