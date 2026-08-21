@@ -1,6 +1,6 @@
 CREATE TYPE "public"."payment_status" AS ENUM('paid', 'unpaid', 'partial');--> statement-breakpoint
 CREATE TYPE "public"."room_status" AS ENUM('available', 'occupied');--> statement-breakpoint
-CREATE TYPE "public"."user_role" AS ENUM('superadmin', 'operator');--> statement-breakpoint
+CREATE TYPE "public"."user_role" AS ENUM('superadmin', 'owner', 'operator', 'pending');--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"user_id" uuid NOT NULL,
 	"type" text NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE "users" (
 	"email_verified" timestamp,
 	"image" text,
 	"password" text,
-	"role" "user_role" DEFAULT 'operator' NOT NULL,
+	"role" "user_role" DEFAULT 'pending' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
