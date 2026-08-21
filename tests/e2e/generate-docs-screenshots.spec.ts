@@ -382,7 +382,7 @@ test.describe('Automated Visual Documentation Generator', () => {
     await page.click('#btn-onboard-tenant, #btn-add-tenant');
     const tenantFormPanel = page.locator('#tenant-form-slideover-panel');
     await expect(tenantFormPanel).toBeVisible({ timeout: 10000 });
-    await tenantFormPanel.locator('#select-room').selectOption({ label: `Kamar ${roomNumber}` });
+    await tenantFormPanel.locator('#select-room').selectOption({ index: 1 });
     await tenantFormPanel.locator('#input-tenant-name').fill(tenantName);
     await tenantFormPanel.locator('#input-tenant-phone').fill('081234567890');
     await tenantFormPanel.locator('#input-tenant-emergency').fill('Ibu Siti (081298765432)');
@@ -482,14 +482,20 @@ test.describe('Automated Visual Documentation Generator', () => {
     await expect(permissionModal).not.toBeVisible();
 
     // 9. Dashboard Global View (Captured with Global Switcher & Complete SaaS Charts)
-    await page.locator('#sidebar-nav a[href="/dashboard"]').click();
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1:has-text("Dashboard Overview")')).toBeVisible({ timeout: 15000 });
+
+    // Set Dashboard month filter to 2026-08 to display current active financial metrics
+    await page.fill('#dashboard-month-filter', '2026-08');
+    await page.waitForTimeout(500);
 
     // Switch to Global View to capture the aggregate metrics across all properties
     const switcher = page.locator('#property-switcher');
     await switcher.selectOption({ label: 'Global View' });
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000); // Settle sparklines and CSS chart transitions
+    await expect(page.locator('#dashboard-summary-cards')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(2000); // Settle sparklines, charts, and CSS transitions
 
     // Capture 1: Dashboard Global View
     await page.screenshot({

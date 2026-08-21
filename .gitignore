@@ -39,6 +39,7 @@ prd.md
 # Playwright
 test-results/
 playwright-report/
+local-test-results/
 
 # Database Backups & Dumps
 backups/
