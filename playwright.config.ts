@@ -43,6 +43,7 @@ export default defineConfig({
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
+      testMatch: /.*responsive-layout\.spec\.ts/,
     },
   ],
 
