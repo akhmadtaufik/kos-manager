@@ -57,15 +57,37 @@ KosManager is built with a highly modern, type-safe stack:
 - **Validation:** Zod (for end-to-end type-safe APIs)
 - **Authentication:** NextAuth.js via `@sidebase/nuxt-auth` (Bcrypt hashing, secure sessions)
 
-### Database Schema Overview
-Our database design relies on a relational architecture powered by Drizzle ORM to maintain strict referential integrity. Core tables include:
-- `users`, `accounts`, `sessions`, `verification_tokens` — Comprehensive NextAuth authentication system.
-- `properties`, `rooms` — Core inventory and branching entities.
-- `user_properties` — Advanced RBAC mapping operator access to specific properties.
-- `tenants` — Active residents linked directly to the external Kemendagri static API schema.
-- `payments`, `payment_transactions` — Invoice-based ledger handling base rent, dynamic `additional_fees` (JSONB), and partial cash transactions.
-- `expenses`, `expense_categories` — Operational cost tracking supporting both system defaults and user-defined categories.
-- `activity_logs` — Immutable audit trail of all CRUD operations for transparency.
+### Database Schema & Entity Relationship Diagram (ERD)
+
+KosManager is powered by PostgreSQL and Drizzle ORM, enforcing strict relational integrity, foreign key cascading, and domain indexing across 13 core tables grouped into 6 architectural domains.
+
+![KosManager Database ERD](docs/screenshots/kosmanager-erd.png)
+
+#### 1. Identity & Access Management Domain
+- **`users`**: Central account identity store containing credentials (`password` hashed with Bcrypt), user profile (`name`, `email`, `image`), and global system role (`superadmin`, `owner`, `operator`, `pending`).
+- **`accounts`**: OAuth provider links (e.g., Google OAuth SSO) conforming to the Auth.js / NextAuth specification (`provider`, `provider_account_id`, `access_token`, `refresh_token`, etc.).
+- **`sessions`**: Server-side user sessions managing active session tokens (`session_token`, `user_id`, `expires`).
+- **`verification_tokens`**: Ephemeral tokens used for magic links, password resets, and email verification flows.
+
+#### 2. Property & Room Inventory Domain
+- **`properties`**: Physical boarding house (kos) locations owned by a user (`id`, `user_id`, `name`, `address`).
+- **`rooms`**: Individual rentable room inventory units belonging to a specific property (`property_id`, `room_number`, `status: available | occupied`, `monthly_rate`). Supports dynamic `additional_fees` (`JSONB` array of line items such as `[{ "name": "AC", "amount": 150000 }]`).
+- **`user_properties`**: Junction table establishing granular Role-Based Access Control (RBAC). Maps operators to assigned properties along with an explicit `permissions` array (`JSONB`) controlling micro-actions across rooms, tenants, payments, expenses, and reports.
+
+#### 3. Tenant & Geographic Demographics Domain
+- **`tenants`**: Active and historical resident records linked to assigned rooms (`room_id`, `name`, `phone`, `emergency_contact`, `id_card_url`, `check_in`, `check_out`, `is_active`).
+- **Official Kemendagri Standardization**: Stores static external administrative IDs (`province_id`, `regency_id`, `district_id`) referencing the official Indonesian Ministry of Home Affairs data. This enables zero-overhead aggregation and accurate distinction between `KOTA` (City) and `KABUPATEN` (Regency) demographics on the dashboard without database bloat.
+
+#### 4. Invoicing, Billing & Cash Ledger Domain
+- **`payments`**: Recurring monthly billing invoices per tenant and property (`tenant_id`, `property_id`, `billing_month: YYYY-MM`, `base_rent`, `additional_fees`, `total_amount`, `amount_paid`, `status: paid | partial | unpaid`, `paid_at`). Supports automated delinquency tracking and rollover arrears.
+- **`payment_transactions`**: Double-entry cash flow ledger recording individual payment installments and full settlements (`payment_id`, `amount`, `payment_date`, `recorded_by`, `notes`). Provides an immutable audit trail for split payments and partial receipts.
+
+#### 5. Operational Expenses Domain
+- **`expenses`**: Operational expenditures tracked per property (`property_id`, `category`, `amount`, `description`, `date`). Feeds directly into real-time Net Profit and 6-month P&L trajectory analytics.
+- **`expense_categories`**: Dynamic taxonomy for expense classification supporting both built-in system defaults and user-defined custom categories with Phosphor icon names and Tailwind badge color tags (`name`, `icon`, `color`, `is_system`, `user_id`).
+
+#### 6. Immutable Anti-Fraud Audit Trail Domain
+- **`activity_logs`**: Immutable event stream recording all administrative mutations across the SaaS platform (`user_id`, `action: CREATE | UPDATE | DELETE | LOGIN`, `entity_type`, `entity_id`, `actor_name`, `actor_role`, `details: JSONB`). Captures before-and-after change diffs and actor context for forensic auditing.
 
 ### API Integration Reference
 KosManager features a fully documented RESTful API layer protected by route-level role guards and correlation IDs (`reqId`). 
