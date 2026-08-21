@@ -40,21 +40,17 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'NITRO_PORT=3005 node .output/server/index.mjs',
-  //   url: 'http://localhost:3005',
-  //   reuseExistingServer: false,
-  //   timeout: 30 * 1000,
-  // },
+  webServer: {
+    command: 'PORT=3000 node .output/server/index.mjs',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
 });

@@ -60,10 +60,10 @@ jobs:
         run: npx drizzle-kit migrate
 
       - name: Install Playwright Chromium
-        run: npx playwright install chromium
+        run: npx playwright install chromium --with-deps
 
       - name: Run E2E Tests
-        run: npx playwright test tests/e2e/responsive-layout.spec.ts --project='Mobile Chrome'
+        run: npx playwright test
 
       - name: Upload Playwright report
         if: always()
