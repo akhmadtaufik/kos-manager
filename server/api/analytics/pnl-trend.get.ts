@@ -8,7 +8,9 @@ import { apiSuccess } from '../../utils/response'
 const MONTH_NAMES_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 function getPastMonths(targetMonthStr: string, count: number = 6): Array<{ monthStr: string, label: string }> {
-  const [yearStr, monthNumStr] = targetMonthStr.split('-')
+  const parts = targetMonthStr.split('-')
+  const yearStr = parts[0] || '1970'
+  const monthNumStr = parts[1] || '1'
   let year = parseInt(yearStr, 10)
   let month = parseInt(monthNumStr, 10) // 1-12
 

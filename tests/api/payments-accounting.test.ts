@@ -153,8 +153,8 @@ describe('Payments & Accounting Integrity API Suite', () => {
 
       const result = await recordPaymentTransaction('pay-1', 800000, 'user-1', 'Cicilan ke-1')
       expect(result.transactions.length).toBe(1)
-      expect(result.payment.status).toBe('partial')
-      expect(Number(result.payment.amountPaid)).toBe(800000)
+      expect(result.payment?.status).toBe('partial')
+      expect(Number(result.payment?.amountPaid)).toBe(800000)
     })
 
     it('should transition status from partial to paid on complete settlement', async () => {
@@ -196,8 +196,8 @@ describe('Payments & Accounting Integrity API Suite', () => {
 
       const result = await recordPaymentTransaction('pay-1', 1200000, 'user-1', 'Pelunasan')
       expect(result.transactions.length).toBe(1)
-      expect(result.payment.status).toBe('paid')
-      expect(Number(result.payment.amountPaid)).toBe(2000000)
+      expect(result.payment?.status).toBe('paid')
+      expect(Number(result.payment?.amountPaid)).toBe(2000000)
     })
   })
 

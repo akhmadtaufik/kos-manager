@@ -134,7 +134,7 @@ const occupancyPercent = computed(() => {
 // Trend Chart Calculations (Max Scale)
 const maxTrendValue = computed(() => {
   if (!pnlTrends.value.length) return 1000000
-  const maxVal = Math.max(...pnlTrends.value.flatMap(t => [t.revenue, t.expenses]))
+  const maxVal = Math.max(...pnlTrends.value.flatMap((t: PnLTrendItem) => [t.revenue, t.expenses]))
   return maxVal > 0 ? maxVal * 1.15 : 1000000
 })
 

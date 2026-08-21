@@ -7,7 +7,9 @@ import { apiSuccess, HttpError } from '../../utils/response'
 
 
 function getPreviousMonth(monthStr: string): string {
-  const [yearStr, monthNumStr] = monthStr.split('-')
+  const parts = monthStr.split('-')
+  const yearStr = parts[0] || '1970'
+  const monthNumStr = parts[1] || '1'
   let year = parseInt(yearStr, 10)
   let month = parseInt(monthNumStr, 10) - 1
   if (month < 1) {

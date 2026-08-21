@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger'
 import { ZodError } from 'zod'
-import { sendErrorResponse } from '../utils/response'
+import { sendErrorResponse, formatZodErrors } from '../utils/response'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('error', async (error: any, { event }) => {
@@ -26,10 +26,7 @@ export default defineNitroPlugin((nitroApp) => {
 
       if (error instanceof ZodError) {
         isValidationError = true;
-        formattedIssues = error.issues.map(issue => ({
-          field: issue.path.join('.'),
-          message: issue.message
-        }));
+        formattedIssues = formatZodErrors(error);
       } else if (error.statusCode === 400 && (error.data?.issues || error.data?.zodError)) {
         isValidationError = true;
         const issues = error.data?.issues || error.data?.zodError?.issues || [];

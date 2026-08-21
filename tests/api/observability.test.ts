@@ -23,16 +23,13 @@ describe('System Observability & Error Formatter Suite', () => {
     const result = testSchema.safeParse({ email: 'not-an-email', amount: -100 })
     expect(result.success).toBe(false)
     if (!result.success) {
-      const formatted = result.error.issues.map(issue => ({
-        field: issue.path.join('.'),
-        message: issue.message
-      }))
+      const formatted = formatZodErrors(result.error)
       expect(Array.isArray(formatted)).toBe(true)
       expect(formatted.length).toBe(2)
-      expect(formatted[0].field).toBe('email')
-      expect(formatted[0].message).toBe('Invalid email address')
-      expect(formatted[1].field).toBe('amount')
-      expect(formatted[1].message).toBe('Must be positive')
+      expect(formatted[0]?.field).toBe('email')
+      expect(formatted[0]?.message).toBe('Invalid email address')
+      expect(formatted[1]?.field).toBe('amount')
+      expect(formatted[1]?.message).toBe('Must be positive')
     }
   })
 

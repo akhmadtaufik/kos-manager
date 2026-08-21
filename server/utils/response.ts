@@ -1,10 +1,23 @@
 import { setResponseStatus, createError } from 'h3'
 import type { H3Event } from 'h3'
+import type { ZodError } from 'zod'
 
 /**
  * Standardized API response wrapper
  * Ensures consistent response format across all endpoints
  */
+
+export interface FormattedValidationError {
+  field: string
+  message: string
+}
+
+export function formatZodErrors(error: ZodError): FormattedValidationError[] {
+  return error.issues.map(issue => ({
+    field: issue.path.join('.'),
+    message: issue.message
+  }))
+}
 
 export interface UniversalResponse<T = null> {
   status: 'success' | 'error'
