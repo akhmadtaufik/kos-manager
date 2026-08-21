@@ -27,9 +27,6 @@ Thumbs.db
 # Secrets
 client_secret_*.json
 
-# Drizzle
-server/db/migrations/meta/
-
 # Docker
 docker-compose.override.yml
 
@@ -43,7 +40,8 @@ prd.md
 test-results/
 playwright-report/
 
-# Database Backups
+# Database Backups & Dumps
 backups/
-*.sql
-*.sql.gz
+*.dump
+backups/*.sql
+backups/*.sql.gz

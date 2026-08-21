@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1779851948684,
+      "tag": "0000_new_vanisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781276244657,
+      "tag": "0001_tidy_reavers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781589213224,
+      "tag": "0002_cultured_edwin_jarvis",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781787128138,
+      "tag": "0003_modern_ken_ellis",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786884585569,
+      "tag": "0004_lovely_kinsey_walden",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787124394509,
+      "tag": "0005_overrated_sabra",
+      "breakpoints": true
+    }
+  ]
+}
